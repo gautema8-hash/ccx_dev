@@ -266,7 +266,12 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     await sleep(1400);
     const confirmPage = await mini.currentPage();
     eq('进入确认订单页', confirmPage.path, 'pages/confirm/confirm');
+    /* recalc() 是异步的（真实后端走 POST /coupons/usable），轮询等待金额算完，避免读到初始 '0.00' */
     let cd = await confirmPage.data();
+    for (let i = 0; i < 20 && (cd.payText === '0.00' || cd.usableCount === 0); i++) {
+      await sleep(300);
+      cd = await confirmPage.data();
+    }
     eq('明细已带过来', cd.items.length, 2);
     eq('应付 = 27.00（未选券）', cd.payText, '27.00');
     eq('未选券时无抵扣', cd.discount, 0);

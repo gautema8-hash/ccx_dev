@@ -2,13 +2,18 @@
 (function () {
   'use strict';
   /**
-   * 配置：管理系统后端地址
-   * 默认走同源（由 Nginx 把 /miniapp/v1/admin 反代到 admin-server）。
-   * 前后端分离部署（不同域名/端口）时，改为绝对地址，例如：
-   *   var API = 'https://admin-api.example.com/miniapp/v1/admin';
-   * 也可以由部署时替换占位符 __ADMIN_API_BASE__。
+   * 配置：管理系统后端 base URL
+   *
+   * 注意：页面内的接口路径统一以 /admin/ 开头（如 api('/admin/auth/login')），
+   * 所以 base 只需写到 /miniapp/v1，最终 URL = /miniapp/v1/admin/auth/login。
+   * 千万不要把 base 写成 /miniapp/v1/admin —— 会拼出双重 /admin/admin/ 导致 404。
+   *
+   * 同源部署：走默认相对路径（Nginx 把 /miniapp/v1/admin 反代到 admin-server:3001）
+   * 前后端分域：改为绝对地址，例如
+   *   var API = 'https://admin-api.example.com/miniapp/v1';
+   * 也可由部署时替换占位符 __ADMIN_API_BASE__。
    */
-  var API = (window.__ADMIN_API_BASE__ || '/miniapp/v1/admin');
+  var API = (window.__ADMIN_API_BASE__ || '/miniapp/v1');
   var LS = { token: 'lbz_staff_token', refresh: 'lbz_staff_refresh', staff: 'lbz_staff_info' };
 
   var S = {
