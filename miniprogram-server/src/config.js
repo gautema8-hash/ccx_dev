@@ -97,11 +97,6 @@ const config = {
     menuCacheTtl: num('MENU_CACHE_TTL', 60),
   },
 
-  /** 商家端后台令牌（兼容旧单店模式，连锁模式下走 mp_staff 账号体系） */
-  admin: {
-    token: str('ADMIN_TOKEN', ''),
-  },
-
   /** 管理端账号体系（连锁） */
   staff: {
     /** 访问令牌有效期（秒），短时效降低被窃取后的风险窗口 */
@@ -148,7 +143,6 @@ function assertProductionReady() {
   };
   need(config.jwtSecret && config.jwtSecret.length >= 32, 'JWT_SECRET 必须 ≥ 32 位随机串');
   need(config.jwtSecret !== 'dev-only-change-me-9f2c1a7b4e6d8f30', 'JWT_SECRET 仍是默认值');
-  need(!!config.admin.token && config.admin.token.length >= 16, 'ADMIN_TOKEN 未配置或过短（商家端后台令牌）');
   if (config.wx.loginMode === 'real') {
     need(!!config.wx.appid, 'APPID 未配置');
     need(!!config.wx.appSecret, 'APP_SECRET 未配置（LOGIN_MODE=real 时必填）');

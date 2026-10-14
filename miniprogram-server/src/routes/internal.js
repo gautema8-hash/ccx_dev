@@ -17,7 +17,6 @@
 const db = require('../db');
 const logger = require('../logger');
 const orderRoute = require('./order');
-const payRoute = require('./pay');
 const menuRoute = require('./menu');
 const couponService = require('../couponService');
 const voucherService = require('../voucherService');
@@ -281,5 +280,4 @@ module.exports = {
   updateStoreDishes,
   toggleStoreDish,
   invalidateMenuCache,
-  payRoute,
 };

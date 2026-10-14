@@ -40,7 +40,6 @@ admin-server/
 │   ├── auth.js             # 精简版 JWT（仅 sign/verify/extractToken，无用户体系）
 │   ├── staffAuth.js        # scrypt 口令、锁定、强制改密、审计
 │   ├── rbac.js             # 权限点、角色、门店范围、SQL 片段
-│   ├── orderStatus.js      # ★ 状态常量（与 miniprogram-server 同步约定）
 │   ├── internalApi.js      # ★ 调用 miniprogram-server 的 /internal/*
 │   ├── voucherQuery.js     # 核销记录查询（管理端专用，带范围过滤与面值合计）
 │   ├── themeService.js / couponService.js
@@ -89,6 +88,5 @@ node src/index.js           # http://127.0.0.1:3001
 
 | 文件 | 与谁同步 |
 | --- | --- |
-| `src/orderStatus.js` | `miniprogram-server/src/routes/order.js` 的 `ORDER_STATUS` |
 | `src/auth.js` 的 JWT 算法与密钥 | `miniprogram-server/src/auth.js`（同一 `JWT_SECRET` 配置） |
 | `.env` 的 `INTERNAL_TOKEN` | `miniprogram-server/.env` |

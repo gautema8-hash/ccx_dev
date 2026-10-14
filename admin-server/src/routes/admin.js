@@ -11,7 +11,6 @@
  *   前者一旦漏判就是数据泄露；后者最坏情况是查不到数据 —— 安全兜底方向正确。
  */
 const db = require('../db');
-const config = require('../config');
 const logger = require('../logger');
 const rbac = require('../rbac');
 const staffAuth = require('../staffAuth');
@@ -21,7 +20,6 @@ const voucherQuery = require('../voucherQuery');
 const { bizError, notFound, forbidden, CODES } = require('../errors');
 
 const internalApi = require('../internalApi');
-const { ORDER_STATUS, FLOW_ACTIONS } = require('../orderStatus');
 
 /* ============================================================ 通用工具 */
 function toInt(v, d) {
@@ -38,13 +36,6 @@ function pageArgs(q, defSize, maxSize) {
     page: Math.min(10000, Math.max(1, toInt(q.page, 1))),
     size: Math.min(maxSize || 100, Math.max(1, toInt(q.size, defSize || 30))),
   };
-}
-function authInvalidate(userId) {
-  try {
-    return require('../auth').invalidateUser(userId);
-  } catch (e) {
-    return Promise.resolve();
-  }
 }
 
 /* ============================================================ 品牌 */
@@ -509,13 +500,6 @@ async function updateStoreDish(ctx) {
 }
 
 /* ============================================================ 订单 */
-const FLOW = {
-  accept: { from: [ORDER_STATUS.PAID], to: ORDER_STATUS.ACCEPTED, text: '商家接单', perm: rbac.PERMS.ORDER_ADVANCE },
-  cook: { from: [ORDER_STATUS.ACCEPTED], to: ORDER_STATUS.COOKING, text: '开始制作', perm: rbac.PERMS.ORDER_ADVANCE },
-  ready: { from: [ORDER_STATUS.COOKING], to: ORDER_STATUS.READY, text: '已出餐', perm: rbac.PERMS.ORDER_ADVANCE },
-  done: { from: [ORDER_STATUS.READY], to: ORDER_STATUS.DONE, text: '订单完成', perm: rbac.PERMS.ORDER_ADVANCE },
-};
-
 async function listOrders(ctx) {
   rbac.assertPerm(ctx, rbac.PERMS.ORDER_READ);
   const { page, size } = pageArgs(ctx.query, 30, 100);
@@ -544,7 +528,9 @@ async function listOrders(ctx) {
 
 async function advance(ctx, action) {
   rbac.assertPerm(ctx, rbac.PERMS.ORDER_ADVANCE);
-  if (FLOW_ACTIONS.indexOf(action) === -1) throw bizError(CODES.PARAM_INVALID, '未知的流转动作：' + action);
+  /* 可推进的动作白名单，与 miniprogram-server/src/routes/flow.js 的 FLOW 键一一对应 */
+  const ACTIONS = ['accept', 'cook', 'ready', 'done'];
+  if (ACTIONS.indexOf(action) === -1) throw bizError(CODES.PARAM_INVALID, '未知的流转动作：' + action);
   const orderId = ctx.params.id;
   const order = await db.queryOne('SELECT id, store_id, status FROM mp_order WHERE id = ? AND brand_id = ?', [orderId, ctx.scope.brandId]);
   if (!order) throw notFound('订单不存在');

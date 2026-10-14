@@ -74,7 +74,6 @@ ccx_dev/
 | --- | --- |
 | `JWT_SECRET` | 两服务 `.env` 同名同值（令牌 `typ` 不同，互不可用） |
 | `INTERNAL_TOKEN` | 两服务 `.env` 同名同值 |
-| `ORDER_STATUS` 常量 | `②src/routes/order.js` ↔ `④src/orderStatus.js` |
 | 菜单种子数据 | `miniprogram/mock/menu.js` ↔ `miniprogram-server/data/menuSeed.js` |
 | JWT 算法 | `②src/auth.js` ↔ `④src/auth.js` |
 
