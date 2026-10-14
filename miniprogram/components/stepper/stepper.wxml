@@ -1,0 +1,24 @@
+<!--
+  数量步进器
+  两种形态：
+    min=0 → 列表中「只显示 +，数量>0 才出现 −」(点单列表用)
+    min=1 → 始终显示「− 数量 +」(购物车 / 规格弹层用)
+-->
+<view class="stepper {{size}}">
+  <view
+    wx:if="{{value > min || min > 0}}"
+    class="stepper__btn stepper__minus {{value <= min ? 'is-off' : ''}}"
+    hover-class="is-press"
+    hover-stay-time="80"
+    catchtap="onMinus"
+  >−</view>
+
+  <view wx:if="{{value > min || min > 0}}" class="stepper__num {{bounce ? 'is-bounce' : ''}}">{{value}}</view>
+
+  <view
+    class="stepper__btn stepper__plus"
+    hover-class="is-press"
+    hover-stay-time="80"
+    catchtap="onPlus"
+  >+</view>
+</view>

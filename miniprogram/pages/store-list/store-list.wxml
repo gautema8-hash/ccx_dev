@@ -1,0 +1,84 @@
+<!-- 选择门店：定位 → 就近排序 → 切换（菜单/库存/主题都跟着变） -->
+<view class="page" style="{{themeStyle}}">
+  <!-- 定位状态条 -->
+  <view class="locbar {{locState}}">
+    <block wx:if="{{locState === 'OK'}}">
+      <text class="locbar__icon">📍</text>
+      <text class="locbar__text">已按距你由近到远排序</text>
+      <text class="locbar__btn" bindtap="refresh">刷新</text>
+    </block>
+    <block wx:elif="{{locState === 'DENIED'}}">
+      <text class="locbar__icon">🔒</text>
+      <text class="locbar__text">未授权定位，无法按距离排序</text>
+      <text class="locbar__btn" bindtap="askLocation">去开启</text>
+    </block>
+    <block wx:elif="{{locState === 'LOADING'}}">
+      <text class="locbar__icon">⏳</text>
+      <text class="locbar__text">正在定位…</text>
+    </block>
+    <block wx:else>
+      <text class="locbar__icon">📍</text>
+      <text class="locbar__text">开启定位可看到「距你最近」的门店</text>
+      <text class="locbar__btn" bindtap="askLocation">开启定位</text>
+    </block>
+  </view>
+
+  <!-- 搜索 + 类型筛选 -->
+  <view class="filters">
+    <input
+      class="filters__input"
+      value="{{keyword}}"
+      placeholder="搜索门店名称 / 地址 / 城市"
+      placeholder-class="filters__ph"
+      confirm-type="search"
+      bindinput="onKeyword"
+    />
+  </view>
+  <view class="tabs">
+    <view class="tabs__item {{type === '' ? 'is-on' : ''}}" data-t="" bindtap="onType">全部门店</view>
+    <view class="tabs__item {{type === 'DIRECT' ? 'is-on' : ''}}" data-t="DIRECT" bindtap="onType">直营店</view>
+    <view class="tabs__item {{type === 'FRANCHISE' ? 'is-on' : ''}}" data-t="FRANCHISE" bindtap="onType">加盟店</view>
+  </view>
+
+  <!-- 门店列表 -->
+  <scroll-view class="list" scroll-y enhanced show-scrollbar="{{false}}">
+    <view
+      wx:for="{{stores}}"
+      wx:for-item="s"
+      wx:key="id"
+      class="store {{s.id === currentId ? 'is-current' : ''}}"
+      data-id="{{s.id}}"
+      bindtap="onPick"
+    >
+      <view class="store__head">
+        <view class="store__name ellipsis">{{s.name}}</view>
+        <view class="store__tags">
+          <text class="tag {{s.type === 'FRANCHISE' ? 'tag--accent' : 'tag--info'}}">{{s.typeText}}</text>
+          <text wx:if="{{s.openNow}}" class="tag tag--ok">营业中</text>
+          <text wx:else class="tag">已打烊</text>
+          <text wx:if="{{s.id === currentId}}" class="tag tag--current">当前</text>
+        </view>
+      </view>
+
+      <view class="store__addr">{{s.address}}</view>
+
+      <view class="store__meta">
+        <text wx:if="{{s.distanceText}}" class="store__dist">🚶 {{s.distanceText}}</text>
+        <text class="store__time">🕐 {{s.openTime}}</text>
+        <text class="store__per">人均 ¥{{s.perCapita}}</text>
+      </view>
+
+      <view class="store__ops">
+        <view class="btn-ghost store__op" catchtap="onNavigate" data-id="{{s.id}}">导航</view>
+        <view class="btn-ghost store__op" catchtap="onCall" data-id="{{s.id}}">打电话</view>
+        <view class="store__choose">{{s.id === currentId ? '当前门店' : '选择该店'}}</view>
+      </view>
+    </view>
+
+    <view wx:if="{{!loading && !stores.length}}" class="empty">
+      <view class="empty__icon">🏪</view>
+      <view class="empty__text">{{keyword ? '没有匹配的门店' : '附近暂无营业门店'}}</view>
+    </view>
+    <view class="list__holder"></view>
+  </scroll-view>
+</view>

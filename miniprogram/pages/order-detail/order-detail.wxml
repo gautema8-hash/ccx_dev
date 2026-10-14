@@ -1,0 +1,145 @@
+<!-- 订单详情：状态进度 + 取餐码 + 明细 + 金额 + 状态时间轴 -->
+<view class="page" style="{{themeStyle}}">
+  <block wx:if="{{order}}">
+    <!-- ============ 状态头 ============ -->
+    <view class="banner" style="background:linear-gradient(150deg,{{order.statusColor}},{{order.statusColor}}cc)">
+      <view class="banner__status">{{order.statusText}}</view>
+      <view class="banner__desc">{{order.statusDesc}}</view>
+
+      <view wx:if="{{showPickup}}" class="banner__pickup">
+        <view class="banner__pickup-label">{{order.diningType === 'takeout' ? '取餐码' : '桌号'}}</view>
+        <view class="banner__pickup-no">{{order.diningType === 'takeout' ? order.pickupNo : order.tableNo}}</view>
+        <view class="banner__pickup-tip">
+          {{order.diningType === 'takeout' ? '请到取餐口报号取餐' : '菜品将送至该桌，请留意上菜'}}
+        </view>
+      </view>
+    </view>
+
+    <!-- ============ 状态时间轴 ============ -->
+    <view wx:if="{{order.timeline.length}}" class="card">
+      <view class="block-title block-title--inline">订单进度</view>
+      <view class="tl">
+        <view
+          wx:for="{{order.timeline}}"
+          wx:for-item="s"
+          wx:for-index="si"
+          wx:key="key"
+          class="tl__item {{s.done ? 'is-done' : ''}} {{s.current ? 'is-cur' : ''}}"
+        >
+          <view class="tl__axis">
+            <view class="tl__dot"></view>
+            <view wx:if="{{si < order.timeline.length - 1}}" class="tl__line"></view>
+          </view>
+          <view class="tl__main">
+            <view class="tl__text">{{s.text}}</view>
+            <view class="tl__time">{{s.timeText || '等待中'}}</view>
+          </view>
+        </view>
+      </view>
+      <view wx:if="{{polling}}" class="tl__hint">● 状态实时刷新中（每 5 秒）</view>
+    </view>
+
+    <!-- ============ 就餐信息 ============ -->
+    <view class="card">
+      <view class="row--between">
+        <text class="lbl">就餐方式</text>
+        <text class="val">{{order.diningTypeText}}{{order.tableNo ? ' · ' + order.tableNo : ''}}</text>
+      </view>
+      <view class="row--between mt-s">
+        <text class="lbl">就餐人数</text>
+        <text class="val">{{order.peopleCount}} 人</text>
+      </view>
+      <view class="row--between mt-s">
+        <text class="lbl">锅底</text>
+        <text class="val">{{order.soupText}}</text>
+      </view>
+      <view class="row--between mt-s">
+        <text class="lbl">蘸料</text>
+        <text class="val ellipsis">{{order.dipsText}}</text>
+      </view>
+      <view class="row--between mt-s">
+        <text class="lbl">口味备注</text>
+        <text class="val ellipsis">{{order.remark || '无'}}</text>
+      </view>
+    </view>
+
+    <!-- ============ 明细 ============ -->
+    <view class="block-title">菜品明细 <text class="sub">共 {{order.itemCount}} 件</text></view>
+    <view class="card">
+      <view wx:for="{{order.items}}" wx:for-item="line" wx:key="key" class="line">
+        <view class="line__icon">{{line.emoji}}</view>
+        <view class="line__left">
+          <view class="line__name ellipsis">{{line.name}}</view>
+          <view class="line__spec" wx:if="{{line.spicyName}}">🌶 {{line.spicyName}}</view>
+        </view>
+        <view class="line__qty">×{{line.count}}</view>
+        <view class="line__amount">¥{{line.amountText}}</view>
+      </view>
+
+      <view class="divider"></view>
+      <view class="row--between">
+        <text class="muted">菜品小计</text>
+        <text>¥{{order.amount.goodsText}}</text>
+      </view>
+      <view class="row--between mt-s">
+        <text class="muted">锅底</text>
+        <text>¥{{order.amount.soupFeeText}}</text>
+      </view>
+      <view wx:if="{{order.amount.packFee}}" class="row--between mt-s">
+        <text class="muted">打包费</text>
+        <text>¥{{order.amount.packFeeText}}</text>
+      </view>
+      <view wx:if="{{order.amount.discount}}" class="row--between mt-s">
+        <text class="muted">优惠券抵扣</text>
+        <text class="coupon-on">-¥{{order.amount.discountText}}</text>
+      </view>
+      <view class="divider"></view>
+      <view class="row--between">
+        <text class="lbl">实付金额</text>
+        <text class="price total"><text class="price__unit">¥</text>{{order.amount.payText}}</text>
+      </view>
+    </view>
+
+    <!-- ============ 订单信息 ============ -->
+    <view class="card">
+      <view class="row--between">
+        <text class="muted">订单号</text>
+        <view class="row">
+          <text class="val">{{order.orderNo}}</text>
+          <text class="copy" catchtap="copyOrderNo">复制</text>
+        </view>
+      </view>
+      <view class="row--between mt-s">
+        <text class="muted">下单时间</text>
+        <text class="val">{{order.createDateText}}</text>
+      </view>
+      <view class="row--between mt-s">
+        <text class="muted">门店</text>
+        <text class="val ellipsis">{{order.shopName}}</text>
+      </view>
+    </view>
+
+    <!-- ============ 更多操作 ============ -->
+    <view class="card" wx:if="{{order.canAddDish || order.canUrge || order.canRefund || order.canRate}}">
+      <view class="ops">
+        <view wx:if="{{order.canAddDish}}" class="ops__btn" bindtap="onAddDish">➕ 加菜</view>
+        <view wx:if="{{order.canUrge}}" class="ops__btn" bindtap="onUrge">🔔 催单</view>
+        <view wx:if="{{order.canRefund}}" class="ops__btn" bindtap="onRefund">💸 申请退款</view>
+        <view wx:if="{{order.canRate}}" class="ops__btn ops__btn--accent" bindtap="onRate">⭐ 评价</view>
+      </view>
+    </view>
+
+    <view class="holder"></view>
+
+    <!-- ============ 操作栏 ============ -->
+    <view class="action-bar">
+      <view class="btn-ghost bar__ghost" bindtap="callShop">联系门店</view>
+      <view wx:if="{{order.canCancel}}" class="btn-ghost bar__ghost" bindtap="onCancel">取消订单</view>
+      <view wx:if="{{order.canReorder}}" class="btn-ghost bar__ghost" bindtap="onReorder">再来一单</view>
+      <view wx:if="{{order.canFinish}}" class="btn-ghost bar__ghost" bindtap="onFinish">确认完成</view>
+      <view wx:if="{{order.canPay}}" class="btn-primary bar__primary" bindtap="onPay">立即支付 ¥{{order.amount.payText}}</view>
+    </view>
+  </block>
+
+  <view wx:else class="loading">加载中…</view>
+</view>

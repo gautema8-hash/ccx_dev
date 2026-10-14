@@ -1,0 +1,84 @@
+<!-- 团购券核销：顾客在店自助核销美团/抖音团购券 -->
+<view class="page" style="{{themeStyle}}">
+  <scroll-view class="scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <!-- 头部 -->
+    <view class="hero">
+      <view class="hero__title">🎫 团购券核销</view>
+      <view class="hero__sub">在门店内输入团购券码，即可自助核销并开单</view>
+    </view>
+
+    <!-- 核销表单 -->
+    <view class="card">
+      <view class="field" bindtap="pickStore">
+        <view class="field__label">核销门店</view>
+        <view class="field__value">
+          {{store ? store.name : '请选择门店'}}
+          <text class="field__arrow">›</text>
+        </view>
+      </view>
+      <view wx:if="{{store && !storeOpen}}" class="warn">该门店当前不在营业时间，无法核销</view>
+
+      <view class="field field--input">
+        <view class="field__label">券码</view>
+        <input
+          class="field__input"
+          type="text"
+          value="{{code}}"
+          placeholder="请输入团购券码，如 MT1688888888"
+          placeholder-class="field__ph"
+          confirm-type="done"
+          bindinput="onCode"
+        />
+        <view wx:if="{{code}}" class="field__clear" bindtap="clearCode">✕</view>
+      </view>
+
+      <view class="tips">
+        · 支持美团团购券；券码在美团 App → 我的 → 我的订单 → 团购券详情页查看
+        · 同一张券只能核销一次，重复提交会提示「已核销」
+        · 核销后请把手机交给服务员确认菜品
+      </view>
+
+      <view class="btn-primary submit {{canSubmit ? '' : 'is-disabled'}}" bindtap="onSubmit">
+        {{submitting ? '核销中…' : '确认核销'}}
+      </view>
+    </view>
+
+    <!-- 核销结果 -->
+    <view wx:if="{{result}}" class="card result {{result.ok ? 'is-ok' : 'is-fail'}}">
+      <view class="result__title">{{result.ok ? '✅ 核销成功' : '❌ ' + result.message}}</view>
+      <block wx:if="{{result.ok}}">
+        <view class="result__row"><text>套餐</text><text>{{result.productName}}</text></view>
+        <view class="result__row"><text>面值</text><text class="price">¥{{result.faceValueText}}</text></view>
+        <view class="result__row"><text>数量</text><text>{{result.quantity}} 份</text></view>
+        <view class="result__row"><text>门店</text><text>{{result.storeName}}</text></view>
+        <view class="result__row"><text>核销时间</text><text>{{result.verifiedAtText}}</text></view>
+        <view class="result__tip">请向服务员出示本页面，核对后即可用餐</view>
+      </block>
+      <block wx:else>
+        <view class="result__tip">{{result.message}}</view>
+      </block>
+    </view>
+
+    <!-- 我的核销记录 -->
+    <view class="block-title">我的核销记录</view>
+    <view wx:if="{{records.length}}" class="card">
+      <view wx:for="{{records}}" wx:for-item="r" wx:key="id" class="rec">
+        <view class="rec__left">
+          <view class="rec__name ellipsis">{{r.productName}}</view>
+          <view class="rec__meta">{{r.storeName}} · {{r.verifiedAtText}}</view>
+          <view class="rec__code">{{r.code}}</view>
+        </view>
+        <view class="rec__right">
+          <view class="rec__amount">¥{{r.faceValueText}}</view>
+          <view class="rec__status">{{r.status === 'VERIFIED' ? '已核销' : '已撤销'}}</view>
+        </view>
+      </view>
+    </view>
+    <view wx:else class="empty">
+      <view class="empty__icon">🎫</view>
+      <view class="empty__text">还没有核销记录</view>
+    </view>
+
+    <view class="holder"></view>
+  </scroll-view>
+</view>

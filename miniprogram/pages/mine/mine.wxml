@@ -1,0 +1,132 @@
+<!-- 我的：用户体系 + 权益入口 + 分包入口 -->
+<view class="page" style="{{themeStyle}}">
+  <!-- ============ 用户卡 ============ -->
+  <view class="ucard">
+    <button
+      class="ucard__avatar"
+      open-type="chooseAvatar"
+      bindchooseavatar="onChooseAvatar"
+      hover-class="none"
+    >
+      <image wx:if="{{user.avatar}}" class="ucard__img" src="{{user.avatar}}" mode="aspectFill" />
+      <view wx:else class="ucard__ph">🌶️</view>
+      <view class="ucard__camera">📷</view>
+    </button>
+
+    <view class="ucard__main">
+      <input
+        class="ucard__nick"
+        type="nickname"
+        value="{{user.nickname}}"
+        placeholder="点击设置昵称"
+        placeholder-class="ucard__ph-text"
+        maxlength="16"
+        bindblur="onNickBlur"
+      />
+      <view class="ucard__sub">
+        <text class="ucard__level">{{user.memberName || '铜签会员'}}</text>
+        <text class="ucard__points">成长值 {{user.points || 0}}</text>
+      </view>
+    </view>
+
+    <view class="ucard__save" bindtap="onSaveProfile">保存</view>
+  </view>
+
+  <!-- ============ 权益数据 ============ -->
+  <view class="stats">
+    <view class="stats__item" bindtap="goOrders">
+      <view class="stats__num">{{stats.orderCount}}</view>
+      <view class="stats__label">我的订单</view>
+    </view>
+    <view class="stats__line"></view>
+    <view class="stats__item" bindtap="goCoupon">
+      <view class="stats__num">{{stats.couponCount}}</view>
+      <view class="stats__label">优惠券</view>
+    </view>
+    <view class="stats__line"></view>
+    <view class="stats__item" bindtap="showPointsRule">
+      <view class="stats__num">{{user.points || 0}}</view>
+      <view class="stats__label">积分</view>
+    </view>
+  </view>
+
+  <!-- ============ 功能列表 ============ -->
+  <view class="card menu">
+    <view class="menu__item" bindtap="goOrders">
+      <text class="menu__icon">🧾</text>
+      <text class="menu__text">我的订单</text>
+      <view class="menu__tip" wx:if="{{stats.ongoingCount}}">{{stats.ongoingCount}} 单进行中</view>
+      <text class="menu__arrow">›</text>
+    </view>
+    <view class="menu__item" bindtap="goCoupon">
+      <text class="menu__icon">🎟️</text>
+      <text class="menu__text">优惠券中心</text>
+      <text class="menu__tip">{{stats.couponCount || 0}} 张可用</text>
+      <text class="menu__arrow">›</text>
+    </view>
+    <view class="menu__item" bindtap="goVoucher">
+      <text class="menu__icon">🎫</text>
+      <text class="menu__text">团购券核销</text>
+      <text class="menu__tip">美团券到店自助核销</text>
+      <text class="menu__arrow">›</text>
+    </view>
+    <view class="menu__item" bindtap="goStoreList">
+      <text class="menu__icon">🏪</text>
+      <text class="menu__text">选择门店</text>
+      <text class="menu__tip ellipsis">{{store ? store.name : '未选择'}}</text>
+      <text class="menu__arrow">›</text>
+    </view>
+    <view class="menu__item" bindtap="onInvoice">
+      <text class="menu__icon">🧾</text>
+      <text class="menu__text">发票抬头</text>
+      <text class="menu__tip">支持个人 / 公司</text>
+      <text class="menu__arrow">›</text>
+    </view>
+    <button
+      class="menu__item menu__item--btn"
+      open-type="getPhoneNumber"
+      bindgetphonenumber="onBindPhone"
+      hover-class="none"
+    >
+      <text class="menu__icon">📱</text>
+      <text class="menu__text">绑定手机号</text>
+      <text class="menu__tip">{{user.phoneMask || '未绑定'}}</text>
+      <text class="menu__arrow">›</text>
+    </button>
+    <view class="menu__item" bindtap="callShop">
+      <text class="menu__icon">☎️</text>
+      <text class="menu__text">联系门店</text>
+      <text class="menu__arrow">›</text>
+    </view>
+    <view class="menu__item" bindtap="openLocation">
+      <text class="menu__icon">📍</text>
+      <text class="menu__text">门店地址</text>
+      <text class="menu__tip ellipsis">{{shop.address || ''}}</text>
+      <text class="menu__arrow">›</text>
+    </view>
+    <button class="menu__item menu__item--btn" open-type="share" hover-class="none">
+      <text class="menu__icon">📣</text>
+      <text class="menu__text">分享给好友</text>
+      <text class="menu__arrow">›</text>
+    </button>
+  </view>
+
+  <view class="card menu">
+    <view class="menu__item" bindtap="showAbout">
+      <text class="menu__icon">ℹ️</text>
+      <text class="menu__text">关于我们</text>
+      <text class="menu__tip">v{{version}}</text>
+      <text class="menu__arrow">›</text>
+    </view>
+    <view class="menu__item" bindtap="resetLocal">
+      <text class="menu__icon">🧹</text>
+      <text class="menu__text">清除本地缓存</text>
+      <text class="menu__arrow">›</text>
+    </view>
+  </view>
+
+  <view class="footer">
+    <view class="footer__line">老北京麻辣串串香 · 现串现涮</view>
+    <view class="footer__sub">{{shop.openTime || ''}}</view>
+  </view>
+</view>

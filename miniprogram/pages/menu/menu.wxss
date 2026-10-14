@@ -1,0 +1,561 @@
+/* ============ 页面骨架 ============ */
+.page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  overflow: hidden;
+}
+
+/* ============ 门店信息 ============ */
+.shop {
+  background: linear-gradient(160deg, #c62828 0%, #b71c1c 60%, #9e1b1b 100%);
+  color: #fff;
+  padding: 24rpx 24rpx 20rpx;
+  flex: none;
+}
+.shop__top {
+  display: flex;
+  align-items: center;
+}
+.shop__logo {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 20rpx;
+  background: rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48rpx;
+  margin-right: 20rpx;
+  flex: none;
+}
+.shop__info {
+  flex: 1;
+  min-width: 0;
+}
+.shop__name {
+  font-size: 32rpx;
+  font-weight: 600;
+}
+.shop__notice {
+  font-size: 22rpx;
+  opacity: 0.78;
+  margin-top: 6rpx;
+}
+.shop__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20rpx;
+}
+.seg {
+  display: flex;
+  padding: 4rpx;
+  background: rgba(0, 0, 0, 0.16);
+  border-radius: 32rpx;
+}
+.seg__item {
+  height: 56rpx;
+  padding: 0 28rpx;
+  border-radius: 28rpx;
+  font-size: 26rpx;
+  display: flex;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.72);
+  transition: all 0.18s ease;
+}
+.seg__item.is-on {
+  background: #fff;
+  color: #c62828;
+  font-weight: 600;
+}
+.shop__table {
+  height: 56rpx;
+  padding: 0 24rpx;
+  border-radius: 28rpx;
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 26rpx;
+  display: flex;
+  align-items: center;
+  color: #fff;
+}
+.shop__table-arrow {
+  margin-left: 8rpx;
+  font-size: 22rpx;
+  opacity: 0.7;
+}
+
+/* ============ 主题横幅 ============ */
+.themebar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 14rpx 24rpx;
+  background: linear-gradient(90deg, var(--c-primary-weak, #fdecec), #fff);
+  border-bottom: 1rpx solid var(--c-line, #ededf0);
+}
+.themebar__badge {
+  flex: none;
+  padding: 2rpx 14rpx;
+  border-radius: 8rpx;
+  background: var(--c-accent, #ff8f1f);
+  color: #fff;
+  font-size: 21rpx;
+  font-weight: 600;
+}
+.themebar__text {
+  flex: none;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--c-primary, #c62828);
+}
+.themebar__sub {
+  flex: 1;
+  min-width: 0;
+  font-size: 23rpx;
+  color: var(--c-sub, #8a8a8e);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.shop__switch {
+  flex: none;
+  margin-left: 12rpx;
+  padding: 8rpx 18rpx;
+  border-radius: 24rpx;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 22rpx;
+  color: #fff;
+}
+.shop__type {
+  display: inline-block;
+  padding: 0 8rpx;
+  margin-right: 6rpx;
+  border-radius: 6rpx;
+  background: rgba(255, 255, 255, 0.24);
+  font-size: 20rpx;
+  font-weight: 400;
+  vertical-align: 2rpx;
+}
+.shop__dist {
+  opacity: 0.95;
+  font-weight: 600;
+}
+
+/* ============ 搜索栏 / 加菜提示 ============ */
+.searchbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin: 16rpx 24rpx 8rpx;
+  padding: 0 24rpx;
+  height: 72rpx;
+  background: #f4f4f6;
+  border-radius: 36rpx;
+}
+.searchbar__icon {
+  font-size: 26rpx;
+  opacity: 0.6;
+}
+.searchbar__input {
+  flex: 1;
+  min-width: 0;
+  font-size: 27rpx;
+  height: 72rpx;
+}
+.searchbar__ph {
+  color: #b8b8bd;
+  font-size: 26rpx;
+}
+.searchbar__clear {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  background: #dcdce2;
+  color: #fff;
+  font-size: 22rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.addtip {
+  flex: none;
+  display: flex;
+  align-items: center;
+  margin: 8rpx 24rpx 0;
+  padding: 14rpx 20rpx;
+  background: #fff3e0;
+  border-radius: 14rpx;
+  border: 1rpx solid #ffe0b2;
+}
+.addtip__text {
+  flex: 1;
+  font-size: 23rpx;
+  color: #b25a00;
+  line-height: 1.5;
+}
+.addtip__x {
+  flex: none;
+  margin-left: 16rpx;
+  font-size: 23rpx;
+  color: #c62828;
+  padding: 4rpx 16rpx;
+  border-radius: 20rpx;
+  background: #fff;
+}
+.dish__soldout {
+  font-size: 24rpx;
+  color: #b8b8bd;
+  border: 1rpx solid #e6e6ea;
+  border-radius: 24rpx;
+  padding: 4rpx 20rpx;
+}
+
+/* ============ 主体：左分类 + 右菜品 ============ */
+.body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.cats {
+  width: 184rpx;
+  height: 100%;
+  background: #f4f4f6;
+  flex: none;
+}
+.cat {
+  position: relative;
+  padding: 26rpx 12rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 26rpx;
+  color: #5c5c60;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+.cat__emoji {
+  font-size: 28rpx;
+  line-height: 1;
+  margin-bottom: 8rpx;
+  opacity: 0.85;
+}
+.cat__name {
+  text-align: center;
+  line-height: 1.3;
+}
+.cat.is-active {
+  background: #fff;
+  color: #c62828;
+  font-weight: 600;
+}
+.cat.is-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6rpx;
+  height: 36rpx;
+  border-radius: 0 6rpx 6rpx 0;
+  background: #c62828;
+}
+.cat__badge {
+  position: absolute;
+  right: 12rpx;
+  top: 16rpx;
+  min-width: 30rpx;
+  height: 30rpx;
+  padding: 0 6rpx;
+  border-radius: 15rpx;
+  background: #c62828;
+  color: #fff;
+  font-size: 20rpx;
+  line-height: 30rpx;
+  text-align: center;
+  font-weight: 500;
+}
+.cats__holder {
+  height: 160rpx;
+}
+
+.dishes {
+  flex: 1;
+  height: 100%;
+  background: #fff;
+}
+.sec__title {
+  display: flex;
+  align-items: baseline;
+  padding: 28rpx 24rpx 8rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1f1f1f;
+}
+.sec__count {
+  margin-left: 12rpx;
+  font-size: 22rpx;
+  font-weight: 400;
+  color: #b8b8bd;
+}
+
+/* ---------- 菜品卡 ---------- */
+.dish {
+  display: flex;
+  padding: 22rpx 24rpx;
+  border-bottom: 1rpx solid #f4f4f6;
+}
+.dish__img {
+  position: relative;
+  width: 168rpx;
+  height: 168rpx;
+  border-radius: 20rpx;
+  background: linear-gradient(135deg, #fff6ec, #ffe9d2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  margin-right: 20rpx;
+  overflow: hidden;
+}
+.dish__img-emoji {
+  font-size: 76rpx;
+  line-height: 1;
+}
+.dish__hot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 0 12rpx;
+  height: 32rpx;
+  line-height: 32rpx;
+  font-size: 20rpx;
+  color: #fff;
+  background: linear-gradient(135deg, #ff9f43, #f5730a);
+  border-radius: 20rpx 0 20rpx 0;
+}
+.dish__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.dish__name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1f1f1f;
+}
+.dish__desc {
+  font-size: 22rpx;
+  color: #9a9aa0;
+  margin-top: 6rpx;
+}
+.dish__tags {
+  margin-top: 10rpx;
+  height: 32rpx;
+  overflow: hidden;
+}
+.dish__bottom {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10rpx;
+}
+.dish__price {
+  color: #c62828;
+  font-weight: 600;
+  font-family: DIN, -apple-system, sans-serif;
+  display: flex;
+  align-items: baseline;
+}
+.dish__price-num {
+  font-size: 36rpx;
+}
+.dish__price-unit {
+  font-size: 22rpx;
+  color: #b8b8bd;
+  font-weight: 400;
+  margin-left: 2rpx;
+}
+.dish__add {
+  width: 46rpx;
+  height: 46rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #d32f2f, #b71c1c);
+  color: #fff;
+  font-size: 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 10rpx rgba(198, 40, 40, 0.3);
+  transition: transform 0.12s ease;
+}
+.dish__qty {
+  min-width: 44rpx;
+  text-align: center;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1f1f1f;
+  font-family: DIN, -apple-system, sans-serif;
+  margin-right: 8rpx;
+}
+.dish__qty::before {
+  content: '×';
+  font-size: 20rpx;
+  color: #b8b8bd;
+  margin-right: 2rpx;
+}
+.is-press {
+  transform: scale(0.88);
+  opacity: 0.85;
+}
+
+.list-end {
+  text-align: center;
+  color: #c8c8cd;
+  font-size: 22rpx;
+  padding: 32rpx 0 8rpx;
+}
+.dishes__holder {
+  height: 170rpx;
+}
+
+/* ============ 骨架屏 ============ */
+.skeleton {
+  display: flex;
+  padding: 28rpx 24rpx;
+}
+.skeleton__img {
+  width: 168rpx;
+  height: 168rpx;
+  border-radius: 20rpx;
+  background: #f2f2f5;
+  margin-right: 20rpx;
+  flex: none;
+  animation: shimmer 1.4s infinite ease-in-out;
+}
+.skeleton__lines {
+  flex: 1;
+  padding-top: 12rpx;
+}
+.skeleton__line {
+  height: 26rpx;
+  border-radius: 13rpx;
+  background: #f2f2f5;
+  margin-bottom: 20rpx;
+  animation: shimmer 1.4s infinite ease-in-out;
+}
+@keyframes shimmer {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ============ 底部悬浮购物车条 ============ */
+.cartbar {
+  position: fixed;
+  left: 20rpx;
+  right: 20rpx;
+  bottom: calc(20rpx + env(safe-area-inset-bottom));
+  height: 108rpx;
+  border-radius: 54rpx;
+  background: #1f1f1f;
+  display: flex;
+  align-items: center;
+  padding: 0 12rpx 0 20rpx;
+  box-shadow: 0 12rpx 32rpx rgba(0, 0, 0, 0.24);
+  z-index: 60;
+}
+.cartbar__left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.cartbar__icon {
+  position: relative;
+  width: 76rpx;
+  height: 76rpx;
+  border-radius: 50%;
+  background: #3a3a3e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 38rpx;
+  flex: none;
+  transition: all 0.2s ease;
+  margin-top: -26rpx;
+}
+.cartbar__icon.is-on {
+  background: linear-gradient(135deg, #ff9f43, #f5730a);
+  transform: scale(1.04);
+}
+.cartbar__badge {
+  position: absolute;
+  right: -6rpx;
+  top: -6rpx;
+  min-width: 34rpx;
+  height: 34rpx;
+  padding: 0 8rpx;
+  border-radius: 17rpx;
+  background: #c62828;
+  color: #fff;
+  font-size: 20rpx;
+  line-height: 34rpx;
+  text-align: center;
+  border: 2rpx solid #1f1f1f;
+}
+.cartbar__text {
+  margin-left: 18rpx;
+  min-width: 0;
+  flex: 1;
+}
+.cartbar__amount {
+  color: #fff;
+  font-size: 36rpx;
+  font-weight: 600;
+  font-family: DIN, -apple-system, sans-serif;
+  line-height: 1.15;
+}
+.cartbar__extra {
+  font-size: 20rpx;
+  color: #9a9aa0;
+  font-weight: 400;
+  margin-left: 8rpx;
+}
+.cartbar__sub {
+  font-size: 20rpx;
+  color: #9a9aa0;
+  margin-top: 2rpx;
+}
+.cartbar__empty {
+  color: #9a9aa0;
+  font-size: 26rpx;
+}
+.cartbar__btn {
+  height: 84rpx;
+  padding: 0 44rpx;
+  border-radius: 42rpx;
+  background: #3a3a3e;
+  color: #8a8a8e;
+  font-size: 30rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  transition: all 0.2s ease;
+}
+.cartbar__btn.is-on {
+  background: linear-gradient(135deg, #e53935, #b71c1c);
+  color: #fff;
+  box-shadow: 0 8rpx 20rpx rgba(183, 28, 28, 0.4);
+}

@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "点单",
+  "usingComponents": {
+    "stepper": "/components/stepper/stepper",
+    "sku-popup": "/components/sku-popup/sku-popup"
+  },
+  "enablePullDownRefresh": false,
+  "backgroundTextStyle": "dark"
+}

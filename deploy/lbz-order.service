@@ -1,0 +1,57 @@
+# ============================================================
+# systemd 单元：老北京麻辣串串香 · 点单后端
+#
+# 使用（单节点）：
+#   sudo cp deploy/lbz-order.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now lbz-order
+#
+# 集群：每台应用节点都装这个单元，Nginx upstream 指向各节点 :3000
+# ============================================================
+[Unit]
+Description=LBZ Order Service (Mini Program Backend)
+Documentation=file:///opt/lbz-order/docs/04-运维文档.md
+After=network-online.target mysql.service redis.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+# TODO: 换成实际部署路径与运行用户（不要用 root 跑生产）
+WorkingDirectory=/opt/lbz-order/server
+EnvironmentFile=/opt/lbz-order/server/.env
+ExecStart=/usr/bin/node src/index.js
+
+# ---------- 高可用 ----------
+Restart=always
+RestartSec=3
+# 优雅关闭：服务收到 SIGTERM 后会停止接新请求、等在途完成、再退出。
+# 这里的超时必须大于应用最长请求时间，否则 systemd 会 SIGKILL。
+TimeoutStopSec=30
+KillSignal=SIGTERM
+KillMode=mixed
+
+# ---------- 安全加固 ----------
+User=lbz
+Group=lbz
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+# 允许写入：日志目录、上传目录
+ReadWritePaths=/opt/lbz-order/server/logs /opt/lbz-order/server/uploads
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+
+# ---------- 资源限制 ----------
+# TODO: 按机器规格调整；LimitNOFILE 需 ≥ DB 连接池 × 实例数 + 余量
+LimitNOFILE=65535
+MemoryMax=1G
+
+# ---------- 日志 ----------
+StandardOutput=append:/opt/lbz-order/server/logs/stdout.log
+StandardError=append:/opt/lbz-order/server/logs/stderr.log
+SyslogIdentifier=lbz-order
+
+[Install]
+WantedBy=multi-user.target

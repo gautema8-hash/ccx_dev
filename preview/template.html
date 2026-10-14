@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>老北京麻辣串串香 · 点单小程序预览</title>
+<style>/*__CSS__*/</style>
+<style>
+  body { gap: 36px; padding: 12px; }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="statusbar"><span>20:03</span><span class="statusbar__right">▮▮▮ ⌾ ▰</span></div>
+  <div id="navbar-root"></div>
+  <div class="screen" id="screen"></div>
+  <div id="tabbar-root"></div>
+  <div id="sku-root"></div>
+  <div class="loading-mask" id="loading" hidden><div class="loading-box">加载中</div></div>
+  <div class="toast" id="toast"></div>
+  <div id="modal-root"></div>
+</div>
+
+<aside class="notes">
+  <h1>老北京麻辣串串香 · 点单小程序<span class="badge">预览版</span></h1>
+  <p>这不是重写的 Demo —— 视图换成 HTML，<span class="notes__k">业务代码直接跑小程序源码</span>：
+    <code>utils/cart.js</code>、<code>services/order.js</code>、<code>services/menu.js</code>、
+    <code>utils/auth.js</code>、<code>mock/menu.js</code>、<code>mock/coupon.js</code>，
+    共 9 个模块由构建脚本内联进来。</p>
+
+  <h2>先跑一遍主流程</h2>
+  <ol>
+    <li><b>点单</b>：点左侧「串串 · 荤」，右侧会自动滚到对应区块；反过来滚右侧，左侧高亮也会跟着走</li>
+    <li>点「秘制麻辣牛肉串」的 <code>+</code> → 弹辣度层 → 选 <b>特辣</b> ×2 → 加入购物车</li>
+    <li>再点同款 <code>+</code> → 选 <b>微微辣</b> ×1 —— 购物车里会出现两条不同辣度的明细</li>
+    <li>点「土豆片」的 <code>+</code>（无规格菜品）→ 直接加购，数字会跳</li>
+    <li>底部黑色购物车条 → 进购物车，换锅底 / 勾蘸料 / 改数量 / 写备注，金额实时变</li>
+    <li>去结算 → 点「优惠券」选一张 → 提交订单 → 弹出模拟支付</li>
+    <li>确认支付 → 跳订单详情：出现取餐码，<b>状态每 5 秒自动推进</b>（已支付 → 接单 → 涮煮 → 可上桌）</li>
+    <li>订单页切换「进行中 / 已完成」，已完成订单可「再来一单」把明细回填购物车</li>
+  </ol>
+
+  <h2>这里能看到什么</h2>
+  <p>· <b>同串不同辣度</b>：明细唯一键是 <code>dishId#spicyId</code>，所以「特辣×2」和「微微辣×1」是两行、各自计价</p>
+  <p>· <b>金额全整数分</b>：菜品 + 锅底 + 自取打包费 − 优惠券，不会出现 0.30000000000000004</p>
+  <p>· <b>状态机</b>：<code>UNPAID → PAID → ACCEPTED → COOKING → READY → DONE</code>，可分支 CANCELED</p>
+  <p>· <b>数据持久化</b>：购物车与订单落在 localStorage，刷新页面不丢</p>
+
+  <h2>与真机的差异</h2>
+  <p>· 长按删除改成了右上角 <code>✕</code>（桌面上不好长按）</p>
+  <p>· 「模拟支付」沿用小程序里的 <code>MOCK_PAY</code> 开关，不发起真实微信支付</p>
+  <p>· 订阅消息、拨号、打开地图为模拟提示</p>
+  <p>· 微信开发者工具才能跑的：真机预览、vConsole 调试、性能面板、分包体积审计</p>
+
+  <h2>想看真正的小程序</h2>
+  <p>装完微信开发者工具 → 导入项目 → 选工作区里的 <code>lbz-chuanchuan</code> 目录 → 编译即可。
+     AppID 先用「测试号」，真机预览需换真实 AppID。</p>
+</aside>
+
+<script>/*__MODULES__*/</script>
+<script>/*__UI__*/</script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!-- 优惠券（分包）：领券中心 + 我的券；从结算页进入时自动切到「选择券」模式 -->
+<view class="page" style="{{themeStyle}}">
+  <view class="tabs">
+    <view class="tabs__item {{tab === 'center' ? 'is-on' : ''}}" data-t="center" bindtap="onTab">领券中心</view>
+    <view class="tabs__item {{tab === 'mine' ? 'is-on' : ''}}" data-t="mine" bindtap="onTab">我的券</view>
+  </view>
+
+  <view wx:if="{{selectMode}}" class="selectbar">
+    <text>为当前订单选择一张优惠券</text>
+    <text class="selectbar__none" bindtap="onUseNone">不使用</text>
+  </view>
+
+  <!-- ============ 领券中心 ============ -->
+  <block wx:if="{{tab === 'center'}}">
+    <view class="storebar" bindtap="pickStore">
+      <text class="storebar__icon">🏪</text>
+      <text class="storebar__name ellipsis">{{store ? store.name : '请选择门店'}}</text>
+      <text class="storebar__tip">{{store ? '点击切换' : '选门店后可领券'}}</text>
+      <text class="storebar__arrow">›</text>
+    </view>
+
+    <scroll-view class="list" scroll-y enhanced show-scrollbar="{{false}}">
+      <view wx:for="{{centerList}}" wx:for-item="c" wx:key="id" class="coupon {{c.canReceive ? '' : 'is-disabled'}}">
+        <view class="coupon__left">
+          <view class="coupon__value">{{c.valueText}}</view>
+          <view class="coupon__threshold">{{c.thresholdText}}</view>
+        </view>
+        <view class="coupon__dash"></view>
+        <view class="coupon__right">
+          <view class="coupon__name">{{c.name}}</view>
+          <view class="coupon__scope">{{c.storeScopeText}} · {{c.scope}}</view>
+          <view class="coupon__expire">有效期至 {{c.expireAt}}</view>
+          <view class="coupon__left-count">已抢 {{c.issued}} 张{{c.dayLimit ? ' · 每日限领 ' + c.dayLimit + ' 张' : ''}}{{c.perUser > 1 ? ' · 每人限 ' + c.perUser + ' 张' : ''}}</view>
+        </view>
+        <view class="coupon__btn {{c.canReceive ? '' : 'is-disabled'}}" data-id="{{c.id}}" catchtap="onReceive">
+          {{c.canReceive ? '立即领取' : (c.receivedCount >= c.perUser ? '已领取' : '已领完')}}
+        </view>
+      </view>
+
+      <view wx:if="{{!loading && !centerList.length}}" class="empty">
+        <view class="empty__icon">🎟️</view>
+        <view class="empty__text">{{store ? '当前门店暂无可用优惠券' : '先选择门店再看可用券'}}</view>
+      </view>
+      <view class="holder"></view>
+    </scroll-view>
+  </block>
+
+  <!-- ============ 我的券 ============ -->
+  <block wx:else>
+    <view class="subtabs">
+      <view class="subtabs__item {{status === 'UNUSED' ? 'is-on' : ''}}" data-s="UNUSED" bindtap="onStatus">可用 {{counts.unused}}</view>
+      <view class="subtabs__item {{status === 'USED' ? 'is-on' : ''}}" data-s="USED" bindtap="onStatus">已使用</view>
+      <view class="subtabs__item {{status === 'all' ? 'is-on' : ''}}" data-s="all" bindtap="onStatus">全部</view>
+    </view>
+
+    <scroll-view class="list" scroll-y enhanced show-scrollbar="{{false}}">
+      <view wx:for="{{mineList}}" wx:for-item="c" wx:key="userCouponId" class="coupon {{c.usable ? '' : 'is-disabled'}} {{selectMode && c.usable ? 'is-selectable' : ''}}"
+            data-id="{{c.id}}" bindtap="onPickMine">
+        <view class="coupon__left">
+          <view class="coupon__value">{{c.valueText}}</view>
+          <view class="coupon__threshold">{{c.thresholdText}}</view>
+        </view>
+        <view class="coupon__dash"></view>
+        <view class="coupon__right">
+          <view class="coupon__name">{{c.name}}</view>
+          <view class="coupon__scope">{{c.storeScopeText}} · {{c.scope}}</view>
+          <view class="coupon__expire">{{c.usable ? '有效期至 ' + c.expireAt : (c.usedAt ? '使用时间 ' + c.usedAtText : '已失效')}}</view>
+          <view wx:if="{{c.inapplicableReason}}" class="coupon__reason">{{c.inapplicableReason}}</view>
+          <view wx:if="{{c.estimateDiscount}}" class="coupon__save">本单可省 ¥{{c.estimateDiscountText}}</view>
+        </view>
+        <view wx:if="{{selectMode && c.usable}}" class="coupon__pick">选择</view>
+        <view wx:elif="{{c.usable}}" class="coupon__btn" catchtap="goMenu">去使用</view>
+        <view wx:else class="coupon__stamp">{{c.usedAt ? '已使用' : '已失效'}}</view>
+      </view>
+
+      <view wx:if="{{!loading && !mineList.length}}" class="empty">
+        <view class="empty__icon">🎫</view>
+        <view class="empty__text">还没有优惠券，去领券中心看看</view>
+        <view class="empty__btn" bindtap="goCenter">去领券</view>
+      </view>
+      <view class="holder"></view>
+    </scroll-view>
+  </block>
+</view>

@@ -1,0 +1,73 @@
+{
+  "pages": [
+    "pages/menu/menu",
+    "pages/cart/cart",
+    "pages/orders/orders",
+    "pages/mine/mine",
+    "pages/confirm/confirm",
+    "pages/order-detail/order-detail",
+    "pages/store-list/store-list",
+    "pages/voucher/voucher"
+  ],
+  "subPackages": [
+    {
+      "root": "packageUser",
+      "name": "user",
+      "pages": [
+        "pages/coupon/coupon"
+      ]
+    }
+  ],
+  "preloadRule": {
+    "pages/mine/mine": {
+      "network": "all",
+      "packages": ["user"]
+    },
+    "pages/confirm/confirm": {
+      "network": "all",
+      "packages": ["user"]
+    }
+  },
+  "window": {
+    "backgroundTextStyle": "dark",
+    "navigationBarBackgroundColor": "#C62828",
+    "navigationBarTitleText": "老北京麻辣串串香",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#F5F5F7",
+    "enablePullDownRefresh": false
+  },
+  "tabBar": {
+    "color": "#8A8A8E",
+    "selectedColor": "#C62828",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/menu/menu",
+        "text": "点单"
+      },
+      {
+        "pagePath": "pages/cart/cart",
+        "text": "购物车"
+      },
+      {
+        "pagePath": "pages/orders/orders",
+        "text": "订单"
+      },
+      {
+        "pagePath": "pages/mine/mine",
+        "text": "我的"
+      }
+    ]
+  },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于为你推荐最近的门店并计算距离，方便就近点单与到店核销"
+    }
+  },
+  "requiredPrivateInfos": ["getLocation"],
+  "lazyCodeLoading": "requiredComponents",
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "debug": false
+}

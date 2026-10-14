@@ -1,0 +1,73 @@
+<!--
+  规格弹层：口味（辣度）选择 + 数量
+  串串香的核心点单交互 —— 同一串牛肉可以「微辣 2 串 + 特辣 3 串」，
+  所以辣度必须记在购物车明细行上，而不是整单上。
+-->
+<view class="sku-mask {{show ? 'is-show' : ''}}" catchtap="onClose" catchtouchmove="noop"></view>
+
+<view class="sku-panel {{show ? 'is-show' : ''}}">
+  <block wx:if="{{dish}}">
+    <view class="sku-head">
+      <view class="sku-head__emoji">{{dish.emoji}}</view>
+      <view class="sku-head__main">
+        <view class="sku-head__name">{{dish.name}}</view>
+        <view class="sku-head__desc ellipsis">{{dish.desc}}</view>
+        <view class="sku-head__price">
+          <text class="price__unit">¥</text>
+          <text class="sku-head__num">{{dish.priceText}}</text>
+          <text class="sku-head__unit">/{{dish.unit}}</text>
+        </view>
+      </view>
+      <view class="sku-head__close" catchtap="onClose">✕</view>
+    </view>
+
+    <scroll-view class="sku-body" scroll-y enhanced show-scrollbar="{{false}}">
+      <!-- 辣度（必选） -->
+      <view class="sku-group">
+        <view class="sku-group__title">
+          辣度
+          <text class="sku-group__req">必选</text>
+          <text class="sku-group__picked">{{curSpicyName}}</text>
+        </view>
+        <view class="sku-opts">
+          <view
+            wx:for="{{dish.spicyOptions}}"
+            wx:for-item="opt"
+            wx:for-index="oi"
+            wx:key="id"
+            class="sku-opt {{curSpicyId === opt.id ? 'is-on' : ''}}"
+            style="{{curSpicyId === opt.id ? 'border-color:' + opt.color + ';color:' + opt.color + ';background:' + opt.color + '12' : ''}}"
+            data-id="{{opt.id}}"
+            data-name="{{opt.name}}"
+            bindtap="onPickSpicy"
+          >
+            <text class="sku-opt__dot" style="background:{{opt.color}}"></text>{{opt.name}}
+          </view>
+        </view>
+      </view>
+
+      <!-- 数量 -->
+      <view class="sku-group">
+        <view class="sku-group__title">数量</view>
+        <view class="sku-qty">
+          <stepper value="{{curCount}}" min="{{1}}" max="{{dish.stock}}" size="large" bind:change="onCountChange" />
+          <text class="sku-qty__unit">约 {{curCount}}{{dish.unit}}</text>
+        </view>
+      </view>
+
+      <view class="sku-tip">💡 锅底与蘸料是整单选项，加入购物车后统一选择</view>
+      <view class="sku-holder"></view>
+    </scroll-view>
+
+    <view class="sku-foot safe-bottom">
+      <view class="sku-foot__sum">
+        <view class="sku-foot__label">小计</view>
+        <view class="price">
+          <text class="price__unit">¥</text>
+          <text class="sku-foot__num">{{totalText}}</text>
+        </view>
+      </view>
+      <view class="sku-foot__btn" hover-class="is-press" bindtap="onConfirm">加入购物车</view>
+    </view>
+  </block>
+</view>

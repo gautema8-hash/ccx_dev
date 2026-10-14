@@ -1,0 +1,3662 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>老北京麻辣串串香 · 点单小程序预览</title>
+<style>/* ============================================================
+   老北京麻辣串串香 · 点单小程序 预览版样式
+   设计令牌与小程序 app.wxss 完全一致，rpx→px 按 1rpx = 0.5px 换算
+   ============================================================ */
+:root {
+  --primary: #c62828;
+  --primary-dark: #9e1b1b;
+  --primary-weak: #fdecec;
+  --accent: #ff8f1f;
+  --text: #1f1f1f;
+  --sub: #8a8a8e;
+  --weak: #b8b8bd;
+  --line: #ededf0;
+  --bg: #f5f5f7;
+  --card: #fff;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+body {
+  background: radial-gradient(1200px 600px at 50% 0%, #f2f2f8 0%, #e2e2ec 60%, #d8d8e4 100%);
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============ 手机外壳 ============ */
+.phone {
+  position: relative;
+  width: 375px;
+  height: 812px;
+  background: #fff;
+  border-radius: 46px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform-origin: center center;
+  box-shadow: 0 0 0 11px #17171a, 0 0 0 13px #35353a, 0 30px 70px rgba(18, 18, 40, 0.35);
+}
+
+.statusbar {
+  height: 26px;
+  flex: none;
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 22px 0 26px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.statusbar__right {
+  letter-spacing: 1px;
+}
+
+.navbar {
+  height: 44px;
+  flex: none;
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  position: relative;
+}
+.navbar--tab {
+  background: transparent;
+}
+.navbar__back {
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  cursor: pointer;
+  border-radius: 8px;
+}
+.navbar__capsule {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #fff;
+}
+.navbar__capsule i {
+  width: 1px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.42);
+  display: block;
+}
+/* 点单页红底在门店卡上，导航栏需要同色衔接 */
+.navbar--brand {
+  background: linear-gradient(160deg, #c62828 0%, #b71c1c 100%);
+}
+
+.screen {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+  position: relative;
+}
+
+.tabbar {
+  height: 58px;
+  flex: none;
+  display: flex;
+  background: #fff;
+  border-top: 1px solid var(--line);
+}
+.tabbar.hidden {
+  display: none;
+}
+.tabbar__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--sub);
+  position: relative;
+  cursor: pointer;
+  transition: color 0.15s;
+  user-select: none;
+}
+.tabbar__item.on {
+  color: var(--primary);
+  font-weight: 600;
+}
+.tabbar__icon {
+  font-size: 19px;
+  line-height: 1;
+  filter: grayscale(1) opacity(0.55);
+  transition: filter 0.15s;
+}
+.tabbar__item.on .tabbar__icon {
+  filter: none;
+}
+.tabbar__badge {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  margin-left: 4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 10px;
+  line-height: 16px;
+  text-align: center;
+  font-weight: 600;
+}
+
+/* ============ 通用 ============ */
+.card {
+  background: var(--card);
+  border-radius: 8px;
+  margin: 10px 12px;
+  padding: 12px;
+}
+.row {
+  display: flex;
+  align-items: center;
+}
+.between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.mt {
+  margin-top: 12px;
+}
+.mt-s {
+  margin-top: 9px;
+}
+.lbl {
+  font-size: 14px;
+  font-weight: 500;
+}
+.muted {
+  font-size: 13px;
+  color: var(--sub);
+}
+.val {
+  font-size: 13px;
+  color: #5c5c60;
+  max-width: 62%;
+  text-align: right;
+}
+.ell {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ell2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.price {
+  color: var(--primary);
+  font-weight: 600;
+}
+.price__u {
+  font-size: 11px;
+  font-weight: 500;
+}
+.divider {
+  height: 1px;
+  background: var(--line);
+  margin: 10px 0;
+}
+.tag {
+  display: inline-block;
+  padding: 0 5px;
+  height: 16px;
+  line-height: 16px;
+  border-radius: 3px;
+  font-size: 10px;
+  color: var(--primary);
+  background: var(--primary-weak);
+  margin-right: 4px;
+}
+.tag--accent {
+  color: #b25a00;
+  background: #fff3e0;
+}
+
+.btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  padding: 0 24px;
+  border-radius: 21px;
+  background: linear-gradient(135deg, #d32f2f, #b71c1c);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: 0 4px 10px rgba(198, 40, 40, 0.28);
+  cursor: pointer;
+  border: none;
+  transition: transform 0.1s;
+}
+.btn-primary:active {
+  transform: scale(0.96);
+}
+.btn-primary.disabled {
+  background: #d8d8dc;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.btn-ghost {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 16px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  font-size: 13px;
+  cursor: pointer;
+  background: #fff;
+  color: var(--text);
+}
+.btn-ghost:active {
+  background: #f7f7fa;
+}
+
+/* 分段控件 */
+.seg {
+  display: flex;
+  padding: 2px;
+  background: #f2f2f5;
+  border-radius: 15px;
+}
+.seg__item {
+  height: 26px;
+  padding: 0 13px;
+  border-radius: 13px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  color: var(--sub);
+  cursor: pointer;
+  transition: all 0.16s;
+  user-select: none;
+}
+.seg__item.on {
+  background: #fff;
+  color: var(--primary);
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+}
+
+/* 步进器（对齐 components/stepper） */
+.stepper {
+  display: inline-flex;
+  align-items: center;
+}
+.stepper__btn {
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.1s;
+  border: none;
+  padding: 0;
+}
+.stepper__btn:active {
+  transform: scale(0.86);
+}
+.stepper__plus {
+  background: linear-gradient(135deg, #d32f2f, #b71c1c);
+  color: #fff;
+  box-shadow: 0 2px 5px rgba(198, 40, 40, 0.3);
+}
+.stepper__minus {
+  background: #fff;
+  color: var(--primary);
+  border: 1px solid var(--primary) !important;
+}
+.stepper__minus.off {
+  opacity: 0.3;
+}
+.stepper__num {
+  min-width: 27px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  transition: transform 0.13s;
+}
+.stepper__num.bounce {
+  transform: scale(1.18);
+}
+.stepper.lg .stepper__btn {
+  width: 28px;
+  height: 28px;
+  font-size: 20px;
+}
+.stepper.lg .stepper__num {
+  min-width: 38px;
+  font-size: 16px;
+}
+.stepper.sm .stepper__btn {
+  width: 20px;
+  height: 20px;
+  font-size: 15px;
+}
+.stepper.sm .stepper__num {
+  min-width: 22px;
+  font-size: 13px;
+}
+
+/* 滚动容器 */
+.pscroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.pscroll::-webkit-scrollbar,
+.body ::-webkit-scrollbar {
+  width: 0;
+}
+.holder {
+  height: 84px;
+}
+
+/* 底部操作栏 */
+.actionbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px 10px;
+  background: #fff;
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -3px 10px rgba(31, 31, 31, 0.05);
+}
+.actionbar__left {
+  flex: 1;
+  min-width: 0;
+}
+.actionbar__label {
+  font-size: 10px;
+  color: var(--sub);
+}
+.actionbar__amount {
+  color: var(--primary);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.15;
+}
+.actionbar__warn {
+  font-size: 10px;
+  color: var(--accent);
+}
+.actionbar__btn {
+  flex: none;
+}
+
+.empty {
+  padding: 70px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.empty__icon {
+  font-size: 48px;
+  opacity: 0.4;
+}
+.empty__text {
+  margin-top: 12px;
+  color: var(--sub);
+  font-size: 13px;
+}
+.empty__btn {
+  margin-top: 16px;
+  height: 38px;
+  padding: 0 28px;
+  border-radius: 19px;
+  background: linear-gradient(135deg, #d32f2f, #b71c1c);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* ============ 点单页 ============ */
+.shop {
+  flex: none;
+  padding: 12px 12px 10px;
+  background: linear-gradient(160deg, #c62828 0%, #b71c1c 60%, #9e1b1b 100%);
+  color: #fff;
+}
+.shop__top {
+  display: flex;
+  align-items: center;
+}
+.shop__logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-right: 10px;
+  flex: none;
+}
+.shop__info {
+  flex: 1;
+  min-width: 0;
+}
+.shop__name {
+  font-size: 16px;
+  font-weight: 600;
+}
+.shop__notice {
+  font-size: 11px;
+  opacity: 0.78;
+  margin-top: 3px;
+}
+.shop__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+.shop .seg {
+  background: rgba(0, 0, 0, 0.16);
+}
+.shop .seg__item {
+  color: rgba(255, 255, 255, 0.72);
+}
+.shop .seg__item.on {
+  background: #fff;
+  color: var(--primary);
+}
+.shop__table {
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  appearance: none;
+  font-family: inherit;
+  outline: none;
+}
+.shop__table option {
+  color: #1f1f1f;
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+}
+.cats {
+  width: 92px;
+  flex: none;
+  overflow-y: auto;
+  background: #f4f4f6;
+}
+.cat {
+  position: relative;
+  padding: 13px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 13px;
+  color: #5c5c60;
+  cursor: pointer;
+  transition: background 0.16s, color 0.16s;
+}
+.cat__emoji {
+  font-size: 14px;
+  margin-bottom: 4px;
+  opacity: 0.85;
+}
+.cat__name {
+  text-align: center;
+  line-height: 1.3;
+}
+.cat.on {
+  background: #fff;
+  color: var(--primary);
+  font-weight: 600;
+}
+.cat.on::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 18px;
+  border-radius: 0 3px 3px 0;
+  background: var(--primary);
+}
+.cat__badge {
+  position: absolute;
+  right: 6px;
+  top: 8px;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 10px;
+  line-height: 15px;
+  text-align: center;
+  font-weight: 500;
+}
+.dishes {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  background: #fff;
+  overscroll-behavior: contain;
+}
+.sec__title {
+  display: flex;
+  align-items: baseline;
+  padding: 14px 12px 4px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.sec__count {
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--weak);
+}
+.dish {
+  display: flex;
+  padding: 11px 12px;
+  border-bottom: 1px solid #f4f4f6;
+}
+.dish__img {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #fff6ec, #ffe9d2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  margin-right: 10px;
+  overflow: hidden;
+}
+.dish__img span {
+  font-size: 38px;
+}
+.dish__hot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 0 6px;
+  height: 16px;
+  line-height: 16px;
+  font-size: 10px;
+  color: #fff;
+  background: linear-gradient(135deg, #ff9f43, #f5730a);
+  border-radius: 10px 0 10px 0;
+}
+.dish__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.dish__name {
+  font-size: 15px;
+  font-weight: 600;
+}
+.dish__desc {
+  font-size: 11px;
+  color: #9a9aa0;
+  margin-top: 3px;
+}
+.dish__tags {
+  margin-top: 5px;
+  height: 16px;
+  overflow: hidden;
+}
+.dish__bottom {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 5px;
+}
+.dish__price {
+  color: var(--primary);
+  font-weight: 600;
+  display: flex;
+  align-items: baseline;
+}
+.dish__price b {
+  font-size: 18px;
+}
+.dish__price i {
+  font-size: 11px;
+  color: var(--weak);
+  font-weight: 400;
+  font-style: normal;
+  margin-left: 1px;
+}
+.dish__add {
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #d32f2f, #b71c1c);
+  color: #fff;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(198, 40, 40, 0.3);
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  line-height: 1;
+}
+.dish__add:active {
+  transform: scale(0.86);
+}
+.dish__qty {
+  min-width: 22px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+}
+.dish__qty::before {
+  content: '×';
+  font-size: 10px;
+  color: var(--weak);
+  margin-right: 1px;
+}
+.list-end {
+  text-align: center;
+  color: #c8c8cd;
+  font-size: 11px;
+  padding: 16px 0 4px;
+}
+
+/* 骨架屏 */
+.sk {
+  display: flex;
+  padding: 14px 12px;
+}
+.sk__img {
+  width: 84px;
+  height: 84px;
+  border-radius: 10px;
+  background: #f2f2f5;
+  margin-right: 10px;
+  flex: none;
+  animation: shimmer 1.3s infinite;
+}
+.sk__l {
+  height: 13px;
+  border-radius: 7px;
+  background: #f2f2f5;
+  margin-bottom: 10px;
+  animation: shimmer 1.3s infinite;
+}
+@keyframes shimmer {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* 悬浮购物车条 */
+.cartbar {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  height: 54px;
+  border-radius: 27px;
+  background: #1f1f1f;
+  display: flex;
+  align-items: center;
+  padding: 0 6px 0 10px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.24);
+  z-index: 8;
+}
+.cartbar__left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  cursor: pointer;
+}
+.cartbar__icon {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #3a3a3e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  flex: none;
+  margin-top: -13px;
+  transition: all 0.2s;
+}
+.cartbar__icon.on {
+  background: linear-gradient(135deg, #ff9f43, #f5730a);
+  transform: scale(1.04);
+}
+.cartbar__badge {
+  position: absolute;
+  right: -3px;
+  top: -3px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 10px;
+  line-height: 17px;
+  text-align: center;
+  border: 1px solid #1f1f1f;
+}
+.cartbar__text {
+  margin-left: 9px;
+  min-width: 0;
+  flex: 1;
+}
+.cartbar__amount {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.15;
+}
+.cartbar__amount em {
+  font-size: 10px;
+  color: #9a9aa0;
+  font-weight: 400;
+  font-style: normal;
+  margin-left: 4px;
+}
+.cartbar__sub {
+  font-size: 10px;
+  color: #9a9aa0;
+  margin-top: 1px;
+}
+.cartbar__empty {
+  color: #9a9aa0;
+  font-size: 13px;
+}
+.cartbar__btn {
+  height: 42px;
+  padding: 0 22px;
+  border-radius: 21px;
+  background: #3a3a3e;
+  color: #8a8a8e;
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  flex: none;
+  border: none;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.cartbar__btn.on {
+  background: linear-gradient(135deg, #e53935, #b71c1c);
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(183, 28, 28, 0.4);
+}
+
+/* ============ 规格弹层 ============ */
+.sku-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.22s, visibility 0.22s;
+  z-index: 60;
+}
+.sku-mask.on {
+  opacity: 1;
+  visibility: visible;
+}
+.sku-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 61;
+  background: #fff;
+  border-radius: 16px 16px 0 0;
+  transform: translateY(102%);
+  transition: transform 0.26s cubic-bezier(0.34, 1.2, 0.64, 1);
+  max-height: 82%;
+  display: flex;
+  flex-direction: column;
+}
+.sku-panel.on {
+  transform: translateY(0);
+}
+.sku-head {
+  position: relative;
+  display: flex;
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.sku-head__emoji {
+  width: 70px;
+  height: 70px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fff4e5, #ffe8cc);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  margin-right: 12px;
+  flex: none;
+}
+.sku-head__main {
+  flex: 1;
+  min-width: 0;
+  padding-right: 22px;
+}
+.sku-head__name {
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.sku-head__desc {
+  font-size: 11px;
+  color: var(--sub);
+  margin-bottom: 6px;
+}
+.sku-head__price {
+  color: var(--primary);
+  font-weight: 600;
+}
+.sku-head__price b {
+  font-size: 20px;
+}
+.sku-head__price i {
+  font-size: 11px;
+  color: var(--sub);
+  font-weight: 400;
+  font-style: normal;
+}
+.sku-head__close {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f2f2f5;
+  color: #9a9aa0;
+  font-size: 13px;
+  cursor: pointer;
+}
+.sku-body {
+  overflow-y: auto;
+  padding: 4px 16px 0;
+}
+.sku-group {
+  padding: 12px 0 4px;
+}
+.sku-group__title {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.sku-group__req {
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--primary);
+  background: var(--primary-weak);
+  border-radius: 3px;
+  padding: 0 4px;
+  line-height: 15px;
+}
+.sku-group__picked {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--sub);
+}
+.sku-opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.sku-opt {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 13px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  font-size: 13px;
+  background: #fafafc;
+  cursor: pointer;
+  transition: all 0.14s;
+  user-select: none;
+}
+.sku-opt.on {
+  font-weight: 600;
+  background: #fff;
+}
+.sku-opt__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+.sku-qty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0 6px;
+}
+.sku-qty__unit {
+  font-size: 12px;
+  color: var(--sub);
+}
+.sku-tip {
+  margin: 8px 0 4px;
+  padding: 8px 10px;
+  background: #fafafc;
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--sub);
+  line-height: 1.6;
+}
+.sku-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px 14px;
+  background: #fff;
+  border-top: 1px solid var(--line);
+}
+.sku-foot__label {
+  font-size: 11px;
+  color: var(--sub);
+}
+.sku-foot__num {
+  font-size: 20px;
+}
+.sku-foot__btn {
+  height: 42px;
+  padding: 0 32px;
+  border-radius: 21px;
+  background: linear-gradient(135deg, #d32f2f, #b71c1c);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(198, 40, 40, 0.28);
+  border: none;
+  font-family: inherit;
+}
+.sku-foot__btn:active {
+  transform: scale(0.95);
+}
+
+/* ============ 购物车页 ============ */
+.picker-val {
+  font-size: 14px;
+  color: var(--primary);
+  font-weight: 500;
+}
+.tip {
+  padding: 7px 9px;
+  background: #fafafc;
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--sub);
+  line-height: 1.6;
+}
+.block-title {
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 0 12px;
+  margin: 14px 0 6px;
+}
+.block-title::before {
+  content: '';
+  width: 3px;
+  height: 14px;
+  border-radius: 2px;
+  background: var(--primary);
+  margin-right: 6px;
+}
+.block-title__req {
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--primary);
+  background: var(--primary-weak);
+  border-radius: 3px;
+  padding: 0 4px;
+  line-height: 15px;
+}
+.block-title__sub {
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--weak);
+}
+.block-title__clear {
+  margin-left: auto;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--sub);
+  cursor: pointer;
+}
+.soups {
+  display: flex;
+  gap: 9px;
+  padding: 2px 12px 4px;
+  overflow-x: auto;
+}
+.soups::-webkit-scrollbar {
+  height: 0;
+}
+.soup {
+  position: relative;
+  width: 100px;
+  padding: 11px 8px 9px;
+  border-radius: 10px;
+  background: #fff;
+  border: 2px solid transparent;
+  text-align: center;
+  transition: all 0.16s;
+  flex: none;
+  cursor: pointer;
+}
+.soup.on {
+  border-color: var(--primary);
+  background: #fff8f8;
+  box-shadow: 0 4px 9px rgba(198, 40, 40, 0.12);
+}
+.soup__emoji {
+  font-size: 24px;
+  line-height: 1;
+}
+.soup__name {
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 6px;
+}
+.soup__price {
+  font-size: 12px;
+  color: var(--primary);
+  font-weight: 600;
+  margin-top: 3px;
+}
+.soup__badge {
+  position: absolute;
+  right: -1px;
+  top: -1px;
+  height: 16px;
+  line-height: 16px;
+  padding: 0 6px;
+  font-size: 10px;
+  color: #fff;
+  background: linear-gradient(135deg, #ff9f43, #f5730a);
+  border-radius: 0 10px 0 10px;
+}
+.soup.on::after {
+  content: '✓';
+  position: absolute;
+  left: 6px;
+  bottom: 5px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-size: 10px;
+  line-height: 14px;
+  text-align: center;
+}
+.dips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  padding: 12px;
+}
+.dip {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 11px;
+  border-radius: 16px;
+  background: #fafafc;
+  border: 1px solid var(--line);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.14s;
+  user-select: none;
+}
+.dip.on {
+  border-color: var(--primary);
+  background: var(--primary-weak);
+  color: var(--primary);
+  font-weight: 600;
+}
+.item {
+  display: flex;
+  padding: 12px 0;
+  border-bottom: 1px solid #f4f4f6;
+}
+.item:last-of-type {
+  border-bottom: none;
+}
+.item__img {
+  width: 60px;
+  height: 60px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #fff6ec, #ffe9d2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  flex: none;
+  margin-right: 9px;
+}
+.item__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.item__name {
+  font-size: 14px;
+  font-weight: 600;
+  padding-right: 20px;
+}
+.item__spec {
+  margin-top: 4px;
+}
+.item__spec span {
+  display: inline-block;
+  font-size: 10px;
+  color: var(--sub);
+  background: #f4f4f6;
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+.item__bottom {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 6px;
+}
+.item__price {
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 15px;
+}
+.item__price i {
+  font-size: 10px;
+  color: var(--weak);
+  font-weight: 400;
+  font-style: normal;
+}
+.item__del {
+  position: absolute;
+  right: 0;
+  top: 12px;
+  font-size: 11px;
+  color: var(--weak);
+  cursor: pointer;
+  padding: 2px 6px;
+}
+.item__name-wrap {
+  position: relative;
+}
+.items__tip {
+  text-align: center;
+  font-size: 10px;
+  color: #c8c8cd;
+  padding: 8px 0 6px;
+}
+.remark {
+  margin-top: 8px;
+  padding: 9px 10px;
+  background: #fafafc;
+  border-radius: 7px;
+  font-size: 13px;
+  line-height: 1.6;
+  min-height: 40px;
+  border: none;
+  width: 100%;
+  font-family: inherit;
+  resize: none;
+  outline: none;
+  display: block;
+}
+.remark__count {
+  text-align: right;
+  font-size: 10px;
+  color: #c8c8cd;
+  margin-top: 4px;
+}
+.amounts {
+  font-size: 13px;
+}
+.amounts .total {
+  font-size: 19px;
+}
+
+/* ============ 订单列表 ============ */
+.tabs {
+  flex: none;
+  display: flex;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+}
+.tabs__item {
+  position: relative;
+  flex: 1;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--sub);
+  cursor: pointer;
+  transition: color 0.16s;
+  user-select: none;
+}
+.tabs__item.on {
+  color: var(--primary);
+  font-weight: 600;
+}
+.tabs__item.on::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--primary);
+}
+.tabs__badge {
+  position: absolute;
+  right: 12px;
+  top: 9px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  border-radius: 7px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 9px;
+  line-height: 14px;
+  text-align: center;
+}
+.order {
+  background: #fff;
+  border-radius: 10px;
+  margin: 10px 12px;
+  padding: 12px;
+  box-shadow: 0 1px 6px rgba(31, 31, 31, 0.04);
+}
+.order__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.order__shop {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+.order__status {
+  font-size: 13px;
+  font-weight: 600;
+  margin-left: 8px;
+  flex: none;
+}
+.order__body {
+  display: flex;
+  margin-top: 11px;
+  align-items: center;
+}
+.order__thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #fff6ec, #ffe9d2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  margin-right: 5px;
+}
+.order__info {
+  flex: 1;
+  min-width: 0;
+  margin-left: 4px;
+}
+.order__names {
+  font-size: 12px;
+  color: #5c5c60;
+  line-height: 1.5;
+}
+.order__meta {
+  margin-top: 5px;
+  font-size: 11px;
+  color: var(--weak);
+}
+.order__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 9px;
+  border-top: 1px solid #f4f4f6;
+}
+.order__time {
+  font-size: 11px;
+  color: var(--weak);
+}
+.order__pay {
+  font-size: 12px;
+  color: #5c5c60;
+}
+.order__amount {
+  color: var(--primary);
+  font-size: 16px;
+  font-weight: 600;
+}
+.order__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 11px;
+}
+
+/* ============ 订单详情 ============ */
+.banner {
+  padding: 20px 16px 18px;
+  color: #fff;
+  flex: none;
+}
+.banner__status {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.banner__desc {
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: 0.86;
+}
+.banner__pickup {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.16);
+}
+.banner__pickup-label {
+  font-size: 11px;
+  opacity: 0.8;
+}
+.banner__pickup-no {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  line-height: 1.2;
+}
+.banner__pickup-tip {
+  font-size: 11px;
+  opacity: 0.8;
+}
+.tl {
+  padding-left: 4px;
+}
+.tl__item {
+  display: flex;
+  min-height: 42px;
+}
+.tl__axis {
+  width: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: none;
+}
+.tl__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #e2e2e6;
+  margin-top: 5px;
+  flex: none;
+}
+.tl__line {
+  flex: 1;
+  width: 1px;
+  background: var(--line);
+  margin-top: 2px;
+}
+.tl__item.done .tl__dot {
+  background: var(--primary);
+}
+.tl__item.done .tl__line {
+  background: #f3c9c9;
+}
+.tl__item.cur .tl__dot {
+  animation: pulse 1.6s infinite;
+}
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px rgba(198, 40, 40, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(198, 40, 40, 0.16);
+  }
+}
+.tl__main {
+  flex: 1;
+  padding-bottom: 12px;
+  margin-left: 6px;
+}
+.tl__text {
+  font-size: 14px;
+  color: var(--weak);
+}
+.tl__item.done .tl__text {
+  color: var(--text);
+  font-weight: 500;
+}
+.tl__item.cur .tl__text {
+  color: var(--primary);
+  font-weight: 600;
+}
+.tl__time {
+  font-size: 10px;
+  color: #c8c8cd;
+  margin-top: 2px;
+}
+.tl__hint {
+  font-size: 10px;
+  color: var(--accent);
+  padding-top: 4px;
+}
+.line {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+}
+.line__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, #fff6ec, #ffe9d2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex: none;
+  margin-right: 8px;
+}
+.line__left {
+  flex: 1;
+  min-width: 0;
+}
+.line__name {
+  font-size: 14px;
+}
+.line__spec {
+  display: inline-block;
+  margin-top: 3px;
+  font-size: 10px;
+  color: var(--sub);
+  background: #f4f4f6;
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+.line__qty {
+  width: 44px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--sub);
+}
+.line__amount {
+  width: 66px;
+  text-align: right;
+  font-size: 14px;
+  font-weight: 600;
+}
+.copy {
+  margin-left: 6px;
+  font-size: 11px;
+  color: var(--primary);
+  border: 1px solid #f0c8c8;
+  border-radius: 3px;
+  padding: 0 5px;
+  cursor: pointer;
+}
+
+/* ============ 我的 ============ */
+.ucard {
+  flex: none;
+  display: flex;
+  align-items: center;
+  padding: 22px 16px 26px;
+  background: linear-gradient(160deg, #c62828 0%, #b71c1c 60%, #9e1b1b 100%);
+  color: #fff;
+}
+.ucard__avatar {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  flex: none;
+}
+.ucard__camera {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--primary);
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ucard__main {
+  flex: 1;
+  min-width: 0;
+  margin-left: 13px;
+}
+.ucard__nick {
+  font-size: 18px;
+  font-weight: 600;
+  height: 26px;
+  line-height: 26px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  width: 100%;
+  outline: none;
+  font-family: inherit;
+}
+.ucard__nick::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+.ucard__sub {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+}
+.ucard__level {
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+.ucard__points {
+  font-size: 11px;
+  opacity: 0.8;
+  margin-left: 7px;
+}
+.stats {
+  display: flex;
+  align-items: center;
+  margin: -15px 12px 0;
+  padding: 14px 0;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(31, 31, 31, 0.06);
+  position: relative;
+  z-index: 2;
+}
+.stats__item {
+  flex: 1;
+  text-align: center;
+  cursor: pointer;
+}
+.stats__num {
+  font-size: 20px;
+  font-weight: 600;
+}
+.stats__label {
+  font-size: 11px;
+  color: var(--sub);
+  margin-top: 3px;
+}
+.stats__line {
+  width: 1px;
+  height: 24px;
+  background: var(--line);
+}
+.menu-list {
+  padding: 0 12px;
+}
+.menu__item {
+  display: flex;
+  align-items: center;
+  height: 52px;
+  border-bottom: 1px solid #f4f4f6;
+  cursor: pointer;
+}
+.menu__item:last-child {
+  border-bottom: none;
+}
+.menu__icon {
+  font-size: 18px;
+  width: 28px;
+  flex: none;
+}
+.menu__text {
+  font-size: 14px;
+}
+.menu__tip {
+  margin-left: auto;
+  margin-right: 6px;
+  font-size: 11px;
+  color: var(--weak);
+  max-width: 160px;
+}
+.menu__arrow {
+  color: #c8c8cd;
+  font-size: 16px;
+  flex: none;
+}
+.footer {
+  text-align: center;
+  padding: 24px 0 12px;
+}
+.footer__line {
+  font-size: 11px;
+  color: var(--weak);
+}
+.footer__sub {
+  font-size: 10px;
+  color: #c8c8cd;
+  margin-top: 4px;
+}
+
+/* ============ 提示 / 弹窗 / Loading ============ */
+.toast {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(0.94);
+  background: rgba(0, 0, 0, 0.82);
+  color: #fff;
+  font-size: 13px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.18s;
+  z-index: 200;
+  max-width: 80vw;
+  text-align: center;
+  line-height: 1.5;
+  pointer-events: none;
+}
+.toast.on {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.modal-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal {
+  width: 280px;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  animation: pop 0.18s ease;
+}
+@keyframes pop {
+  from {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+}
+.modal__title {
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 18px 18px 0;
+}
+.modal__body {
+  padding: 10px 18px 18px;
+  font-size: 13px;
+  color: #5c5c60;
+  text-align: center;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+.modal__foot {
+  display: flex;
+  border-top: 1px solid var(--line);
+}
+.modal__btn {
+  flex: 1;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  cursor: pointer;
+  color: #5c5c60;
+  border: none;
+  background: #fff;
+  font-family: inherit;
+}
+.modal__btn + .modal__btn {
+  border-left: 1px solid var(--line);
+}
+.modal__btn.primary {
+  color: var(--primary);
+  font-weight: 600;
+}
+.modal__list {
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+.modal__opt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 18px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.modal__opt:active {
+  background: #f7f7fa;
+}
+.modal__opt b {
+  color: var(--primary);
+}
+.modal__opt.dis {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.loading-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.2);
+  z-index: 180;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.loading-box {
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  font-size: 13px;
+  padding: 16px 20px;
+  border-radius: 10px;
+  min-width: 96px;
+  text-align: center;
+}
+.loading-box::before {
+  content: '◌';
+  display: block;
+  font-size: 22px;
+  margin-bottom: 6px;
+  animation: spin 1.1s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+[hidden] {
+  display: none !important;
+}
+
+/* 侧边说明 */
+.notes {
+  width: 300px;
+  max-height: 812px;
+  overflow-y: auto;
+  color: #3a3a44;
+  font-size: 12.5px;
+  line-height: 1.75;
+}
+.notes h1 {
+  font-size: 17px;
+  margin: 0 0 4px;
+}
+.notes h2 {
+  font-size: 13px;
+  margin: 18px 0 6px;
+  color: #6a6a76;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.notes p {
+  margin: 0 0 8px;
+}
+.notes ol {
+  margin: 0;
+  padding-left: 18px;
+}
+.notes li {
+  margin-bottom: 5px;
+}
+.notes code {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 3px;
+  padding: 0 4px;
+  font-size: 11.5px;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+}
+.notes .badge {
+  display: inline-block;
+  background: var(--primary);
+  color: #fff;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  margin-left: 6px;
+  vertical-align: 1px;
+}
+.notes__k {
+  color: var(--primary);
+  font-weight: 600;
+}
+@media (max-width: 900px) {
+  .notes {
+    display: none;
+  }
+}
+</style>
+<style>
+  body { gap: 36px; padding: 12px; }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="statusbar"><span>20:03</span><span class="statusbar__right">▮▮▮ ⌾ ▰</span></div>
+  <div id="navbar-root"></div>
+  <div class="screen" id="screen"></div>
+  <div id="tabbar-root"></div>
+  <div id="sku-root"></div>
+  <div class="loading-mask" id="loading" hidden><div class="loading-box">加载中</div></div>
+  <div class="toast" id="toast"></div>
+  <div id="modal-root"></div>
+</div>
+
+<aside class="notes">
+  <h1>老北京麻辣串串香 · 点单小程序<span class="badge">预览版</span></h1>
+  <p>这不是重写的 Demo —— 视图换成 HTML，<span class="notes__k">业务代码直接跑小程序源码</span>：
+    <code>utils/cart.js</code>、<code>services/order.js</code>、<code>services/menu.js</code>、
+    <code>utils/auth.js</code>、<code>mock/menu.js</code>、<code>mock/coupon.js</code>，
+    共 9 个模块由构建脚本内联进来。</p>
+
+  <h2>先跑一遍主流程</h2>
+  <ol>
+    <li><b>点单</b>：点左侧「串串 · 荤」，右侧会自动滚到对应区块；反过来滚右侧，左侧高亮也会跟着走</li>
+    <li>点「秘制麻辣牛肉串」的 <code>+</code> → 弹辣度层 → 选 <b>特辣</b> ×2 → 加入购物车</li>
+    <li>再点同款 <code>+</code> → 选 <b>微微辣</b> ×1 —— 购物车里会出现两条不同辣度的明细</li>
+    <li>点「土豆片」的 <code>+</code>（无规格菜品）→ 直接加购，数字会跳</li>
+    <li>底部黑色购物车条 → 进购物车，换锅底 / 勾蘸料 / 改数量 / 写备注，金额实时变</li>
+    <li>去结算 → 点「优惠券」选一张 → 提交订单 → 弹出模拟支付</li>
+    <li>确认支付 → 跳订单详情：出现取餐码，<b>状态每 5 秒自动推进</b>（已支付 → 接单 → 涮煮 → 可上桌）</li>
+    <li>订单页切换「进行中 / 已完成」，已完成订单可「再来一单」把明细回填购物车</li>
+  </ol>
+
+  <h2>这里能看到什么</h2>
+  <p>· <b>同串不同辣度</b>：明细唯一键是 <code>dishId#spicyId</code>，所以「特辣×2」和「微微辣×1」是两行、各自计价</p>
+  <p>· <b>金额全整数分</b>：菜品 + 锅底 + 自取打包费 − 优惠券，不会出现 0.30000000000000004</p>
+  <p>· <b>状态机</b>：<code>UNPAID → PAID → ACCEPTED → COOKING → READY → DONE</code>，可分支 CANCELED</p>
+  <p>· <b>数据持久化</b>：购物车与订单落在 localStorage，刷新页面不丢</p>
+
+  <h2>与真机的差异</h2>
+  <p>· 长按删除改成了右上角 <code>✕</code>（桌面上不好长按）</p>
+  <p>· 「模拟支付」沿用小程序里的 <code>MOCK_PAY</code> 开关，不发起真实微信支付</p>
+  <p>· 订阅消息、拨号、打开地图为模拟提示</p>
+  <p>· 微信开发者工具才能跑的：真机预览、vConsole 调试、性能面板、分包体积审计</p>
+
+  <h2>想看真正的小程序</h2>
+  <p>装完微信开发者工具 → 导入项目 → 选工作区里的 <code>lbz-chuanchuan</code> 目录 → 编译即可。
+     AppID 先用「测试号」，真机预览需换真实 AppID。</p>
+</aside>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- 1) 小程序业务模块源码 ---------- */
+  var __SRC__ = {
+    "mock/menu.js": "/**\n * 本地菜单数据（Mock）\n * 价格单位统一为「分」：300 = ¥3.00\n * 菜品 spicy=true 表示需要用户选择辣度，加购时弹出规格层\n */\n\nconst SHOP = {\n  id: 'shop_001',\n  name: '老北京麻辣串串香·簋街总店',\n  logo: '🌶️',\n  notice: '现串现涮 · 每日 11:00 开锅 · 桌边扫码即点',\n  address: '北京市东城区东直门内大街 188 号',\n  phone: '01088886666',\n  openTime: '11:00 - 次日 02:00',\n  rating: 4.8,\n  perCapita: 68,\n  tags: ['串串香', '麻辣', '夜宵'],\n  /** 堂食桌号列表（真实业务由扫码参数 tableNo 带入） */\n  tables: ['A01', 'A02', 'A03', 'B01', 'B02', 'B06', 'C08'],\n};\n\n/** 辣度（订单内每个串都可单独选，串串香的核心交互） */\nconst SPICY_OPTIONS = [\n  { id: 'sp0', name: '不辣', color: '#8A8A8E' },\n  { id: 'sp1', name: '微微辣', color: '#FF8F1F' },\n  { id: 'sp2', name: '中辣', color: '#E64A19' },\n  { id: 'sp3', name: '特辣', color: '#C62828' },\n];\n\n/** 锅底（订单级单选，必选） */\nconst SOUPS = [\n  { id: 'sg1', name: '牛油红汤锅', price: 1200, emoji: '🍲', desc: '重庆牛油 + 汉源花椒，麻辣醇厚', recommended: true },\n  { id: 'sg2', name: '番茄清汤锅', price: 1200, emoji: '🍅', desc: '番茄熬煮 4 小时，酸甜不辣，适合孩子' },\n  { id: 'sg3', name: '鸳鸯锅', price: 1800, emoji: '🥘', desc: '一半红汤一半清汤，众口不再难调', recommended: true },\n  { id: 'sg4', name: '清水锅', price: 800, emoji: '💧', desc: '矿泉水锅底，最大程度保留食材本味' },\n];\n\n/** 蘸料（订单级多选，免加价） */\nconst DIPS = [\n  { id: 'dp1', name: '蒜泥香油碟', price: 0, emoji: '🧄' },\n  { id: 'dp2', name: '干碟（辣椒面）', price: 0, emoji: '🌶️' },\n  { id: 'dp3', name: '麻酱碟', price: 0, emoji: '🥜' },\n  { id: 'dp4', name: '香辣豉油碟', price: 0, emoji: '🥢' },\n];\n\nconst CATEGORIES = [\n  { id: 'c_signature', name: '招牌必点', emoji: '🥇' },\n  { id: 'c_meat', name: '串串 · 荤', emoji: '🥩' },\n  { id: 'c_veg', name: '串串 · 素', emoji: '🥬' },\n  { id: 'c_snack', name: '特色小吃', emoji: '🍢' },\n  { id: 'c_staple', name: '主食', emoji: '🍜' },\n  { id: 'c_drink', name: '饮品', emoji: '🥤' },\n];\n\nconst DISHES = [\n  /* ---------------- 招牌必点 ---------------- */\n  { id: 'd101', categoryId: 'c_signature', name: '秘制麻辣牛肉串', emoji: '🥩', price: 300, unit: '串', spicy: true, sold: 12890, stock: 500, tags: ['招牌', '现串'], desc: '牛里脊切薄片，秘制腌料 6 小时，涮 8 秒即食' },\n  { id: 'd102', categoryId: 'c_signature', name: '爽脆小郡肝', emoji: '🍡', price: 300, unit: '串', spicy: true, sold: 9820, stock: 400, tags: ['招牌'], desc: '鸡胗改刀成串，脆嫩弹牙' },\n  { id: 'd103', categoryId: 'c_signature', name: '掌中宝', emoji: '🍗', price: 300, unit: '串', spicy: true, sold: 7610, stock: 300, tags: ['热销'], desc: '鸡爪掌心软骨，一口一个爆汁' },\n  { id: 'd104', categoryId: 'c_signature', name: '脆皮小香肠', emoji: '🌭', price: 200, unit: '串', spicy: false, sold: 6540, stock: 300, tags: ['不辣可选'], desc: '广式腊肠风，涮后外皮爆开' },\n  { id: 'd105', categoryId: 'c_signature', name: '香菜牛肉卷', emoji: '🌿', price: 300, unit: '串', spicy: true, sold: 5980, stock: 300, tags: ['招牌'], desc: '整根香菜裹进牛肉，香到上头' },\n\n  /* ---------------- 串串 · 荤 ---------------- */\n  { id: 'd201', categoryId: 'c_meat', name: '泡椒牛肉串', emoji: '🥩', price: 300, unit: '串', spicy: true, sold: 4320, stock: 400, tags: ['重口'], desc: '泡椒夹心，辣度层层递进' },\n  { id: 'd202', categoryId: 'c_meat', name: '芹菜牛肉串', emoji: '🌿', price: 300, unit: '串', spicy: true, sold: 3870, stock: 400, tags: ['清爽'], desc: '芹菜解腻，越吃越顺口' },\n  { id: 'd203', categoryId: 'c_meat', name: '鹌鹑蛋', emoji: '🥚', price: 200, unit: '串', spicy: true, sold: 5120, stock: 500, tags: ['经典'], desc: '油炸后再涮，吸汁力极强' },\n  { id: 'd204', categoryId: 'c_meat', name: '午餐肉片', emoji: '🥓', price: 250, unit: '串', spicy: true, sold: 3260, stock: 300, tags: [], desc: '厚切梅林，涮后有嚼劲' },\n  { id: 'd205', categoryId: 'c_meat', name: '毛肚（大份）', emoji: '🥬', price: 400, unit: '串', spicy: true, sold: 2980, stock: 200, tags: ['限量'], desc: '七上八下，脆到出声' },\n  { id: 'd206', categoryId: 'c_meat', name: '鸭血', emoji: '🍢', price: 200, unit: '串', spicy: true, sold: 2140, stock: 300, tags: [], desc: '嫩滑入味，红汤绝配' },\n  { id: 'd207', categoryId: 'c_meat', name: '广式腊肠', emoji: '🌭', price: 300, unit: '串', spicy: true, sold: 1890, stock: 200, tags: [], desc: '甜辣交织，北派串串的隐藏款' },\n\n  /* ---------------- 串串 · 素 ---------------- */\n  { id: 'd301', categoryId: 'c_veg', name: '土豆片', emoji: '🥔', price: 150, unit: '串', spicy: true, sold: 8760, stock: 600, tags: ['必点'], desc: '切 3mm 薄片，涮 30 秒粉糯' },\n  { id: 'd302', categoryId: 'c_veg', name: '藕片', emoji: '🍥', price: 150, unit: '串', spicy: true, sold: 7210, stock: 600, tags: ['必点'], desc: '脆藕吸辣，越辣越想吃' },\n  { id: 'd303', categoryId: 'c_veg', name: '香菇', emoji: '🍄', price: 200, unit: '串', spicy: true, sold: 4650, stock: 400, tags: [], desc: '厚菇肉厚，自带鲜味' },\n  { id: 'd304', categoryId: 'c_veg', name: '娃娃菜', emoji: '🥬', price: 120, unit: '串', spicy: true, sold: 6120, stock: 600, tags: ['解辣'], desc: '吸满红油汤汁，一口爆汁' },\n  { id: 'd305', categoryId: 'c_veg', name: '千张', emoji: '🍢', price: 150, unit: '串', spicy: true, sold: 3980, stock: 500, tags: [], desc: '豆香浓，涮久不烂' },\n  { id: 'd306', categoryId: 'c_veg', name: '玉米小段', emoji: '🌽', price: 180, unit: '串', spicy: true, sold: 2760, stock: 300, tags: ['甜'], desc: '水果玉米，甜辣平衡' },\n  { id: 'd307', categoryId: 'c_veg', name: '黑木耳', emoji: '🍄', price: 180, unit: '串', spicy: true, sold: 2430, stock: 300, tags: [], desc: '东北秋耳，脆爽弹牙' },\n\n  /* ---------------- 特色小吃 ---------------- */\n  { id: 'd401', categoryId: 'c_snack', name: '红糖冰粉', emoji: '🍧', price: 800, unit: '份', spicy: false, sold: 4320, stock: 200, tags: ['解辣神器'], desc: '手搓冰粉 + 老红糖 + 山楂花生碎' },\n  { id: 'd402', categoryId: 'c_snack', name: '现炸小酥肉', emoji: '🍖', price: 1800, unit: '份', spicy: false, sold: 3120, stock: 150, tags: ['热销'], desc: '现裹现炸，椒盐 + 干碟双蘸' },\n  { id: 'd403', categoryId: 'c_snack', name: '酸辣粉', emoji: '🍜', price: 1200, unit: '份', spicy: true, sold: 2340, stock: 150, tags: [], desc: '手工红薯粉，酸香打底' },\n  { id: 'd404', categoryId: 'c_snack', name: '红糖糍粑', emoji: '🍡', price: 1000, unit: '份', spicy: false, sold: 1980, stock: 150, tags: [], desc: '外脆里糯，黄豆粉裹满' },\n\n  /* ---------------- 主食 ---------------- */\n  { id: 'd501', categoryId: 'c_staple', name: '手工宽面', emoji: '🍜', price: 500, unit: '份', spicy: false, sold: 2140, stock: 200, tags: [], desc: '涮完串串下面条，汤底一滴不浪费' },\n  { id: 'd502', categoryId: 'c_staple', name: '蛋炒饭', emoji: '🍚', price: 1200, unit: '份', spicy: false, sold: 1760, stock: 150, tags: [], desc: '隔夜米现炒，粒粒分明' },\n  { id: 'd503', categoryId: 'c_staple', name: '手工馄饨', emoji: '🥟', price: 1000, unit: '份', spicy: false, sold: 1320, stock: 150, tags: [], desc: '现包鲜肉馄饨，8 只装' },\n\n  /* ---------------- 饮品 ---------------- */\n  { id: 'd601', categoryId: 'c_drink', name: '冰镇酸梅汤', emoji: '🥤', price: 600, unit: '扎', spicy: false, sold: 5670, stock: 300, tags: ['解辣'], desc: '自熬乌梅 + 桂花，冰镇 4 小时' },\n  { id: 'd602', categoryId: 'c_drink', name: '北冰洋汽水', emoji: '🧊', price: 800, unit: '瓶', spicy: false, sold: 4210, stock: 300, tags: ['京味'], desc: '老北京味道，配辣最对' },\n  { id: 'd603', categoryId: 'c_drink', name: '唯怡豆奶', emoji: '🥛', price: 600, unit: '瓶', spicy: false, sold: 3120, stock: 300, tags: [], desc: '串串香官方 CP，解辣首选' },\n  { id: 'd604', categoryId: 'c_drink', name: '鲜榨西瓜汁', emoji: '🍉', price: 1200, unit: '杯', spicy: false, sold: 1890, stock: 200, tags: [], desc: '现榨不加糖，半杯都是果肉' },\n];\n\nmodule.exports = { SHOP, SPICY_OPTIONS, SOUPS, DIPS, CATEGORIES, DISHES };\n",
+    "mock/coupon.js": "/** 优惠券 Mock：新客券 / 满减券 / 锅底券 */\nconst COUPONS = [\n  { id: 'cp1', name: '新客立减券', type: 'CASH', value: 500, threshold: 0, scope: '全场通用', expireAt: '2026-12-31', usable: true },\n  { id: 'cp2', name: '满 50 减 10', type: 'CASH', value: 1000, threshold: 5000, scope: '全场通用（不含锅底）', expireAt: '2026-12-31', usable: true },\n  { id: 'cp3', name: '锅底免费券', type: 'SOUP', value: 1800, threshold: 0, scope: '限锅底', expireAt: '2026-12-31', usable: true },\n];\n\n/** 计算某张券在当前订单金额下的实际抵扣（分） */\nfunction calcDiscount(coupon, summary) {\n  if (!coupon) return 0;\n  const base = coupon.type === 'SOUP' ? summary.soupFee : summary.goodsAmount + summary.soupFee;\n  if (summary.goodsAmount + summary.soupFee < coupon.threshold) return 0;\n  return Math.min(coupon.value, base);\n}\n\nmodule.exports = { COUPONS, calcDiscount };\n",
+    "utils/config.js": "/**\n * 环境与开关配置\n *\n * 三种环境切换只改这里：\n *   本地联调  → BASE_URL = 'http://127.0.0.1:3000/miniapp/v1'（开发者工具需勾「不校验合法域名」）\n *   测试环境  → 换成测试域名（HTTPS）\n *   生产环境  → 换成生产域名（HTTPS + 后台配置 request 合法域名）\n */\nconst ENV = 'preview'; // local | staging | prod\n\nconst ENDPOINTS = {\n  preview: 'http://127.0.0.1:3000/miniapp/v1',\n  local: 'http://127.0.0.1:3000/miniapp/v1',\n  staging: 'https://api-test.lbz-chuanchuan.cn/miniapp/v1',\n  prod: 'https://api.lbz-chuanchuan.cn/miniapp/v1',\n};\n\nmodule.exports = {\n  ENV,\n  /** 后端网关地址 */\n  BASE_URL: ENDPOINTS[ENV] || ENDPOINTS.local,\n\n  /** true = 走本地内置菜单/订单数据（无后端时演示用）；接后端后必须为 false */\n  USE_MOCK: true   /* 预览版构建时强制离线 */,\n\n  /**\n   * true = 支付走「模拟收银台」（本地弹窗）\n   * false = 走服务端 prepay + wx.requestPayment\n   * 说明：服务端 PAY_MODE=mock 时 prepay 会返回 mock:true，客户端据此自动走模拟结算，\n   *      所以这里保持 false，由服务端决定行为，避免两端开关不一致导致的对不上。\n   */\n  MOCK_PAY: true   /* 预览版构建时强制本地收银台 */,\n\n  /** 客户端版本，上报与灰度用 */\n  VERSION: '1.0.0',\n\n  /** 网络 */\n  TIMEOUT: 12000,\n  /** 幂等请求失败自动重试次数（仅 GET 或显式 idempotent 的请求） */\n  RETRY: 1,\n\n  /** 订阅消息模板 ID（在小程序后台「订阅消息」申请后填入） */\n  TMPL: {\n    ORDER_PAID: 'REPLACE_WITH_TMPL_ID_ORDER_PAID',\n    ORDER_READY: 'REPLACE_WITH_TMPL_ID_ORDER_READY',\n  },\n\n  /** 客户电话 */\n  SERVICE_PHONE: '01088886666',\n};\n",
+    "utils/util.js": "/** 通用工具函数 */\n\n/** 分 → 元字符串，保留两位小数。300 => '3.00' */\nfunction fen2yuan(fen) {\n  const n = Number(fen) || 0;\n  return (n / 100).toFixed(2);\n}\n\n/** 元 → 分，避免浮点误差 */\nfunction yuan2fen(yuan) {\n  return Math.round((Number(yuan) || 0) * 100);\n}\n\n/** 金额格式化：超 1 万走「万」 */\nfunction formatAmount(fen) {\n  const y = fen2yuan(fen);\n  return y;\n}\n\n/** 补零 */\nfunction pad(n) {\n  return n < 10 ? '0' + n : String(n);\n}\n\n/** 时间戳 → 'MM-dd HH:mm' / 'HH:mm' */\nfunction formatTime(ts, withDate) {\n  const d = new Date(ts);\n  const t = `${pad(d.getHours())}:${pad(d.getMinutes())}`;\n  return withDate ? `${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${t}` : t;\n}\n\n/** 时间戳 → 'YYYY-MM-dd HH:mm:ss' */\nfunction formatFull(ts) {\n  const d = new Date(ts);\n  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(\n    d.getHours()\n  )}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;\n}\n\n/** 相对时间：刚刚 / 3 分钟前 */\nfunction fromNow(ts) {\n  const diff = Date.now() - ts;\n  if (diff < 60 * 1000) return '刚刚';\n  if (diff < 3600 * 1000) return Math.floor(diff / 60000) + ' 分钟前';\n  if (diff < 24 * 3600 * 1000) return Math.floor(diff / 3600000) + ' 小时前';\n  return formatTime(ts, true);\n}\n\n/** 订单号：LBZ + yyyyMMddHHmmss + 3 位随机 */\nfunction genOrderNo() {\n  const d = new Date();\n  const rand = Math.floor(Math.random() * 900 + 100);\n  return (\n    'LBZ' +\n    d.getFullYear() +\n    pad(d.getMonth() + 1) +\n    pad(d.getDate()) +\n    pad(d.getHours()) +\n    pad(d.getMinutes()) +\n    pad(d.getSeconds()) +\n    rand\n  );\n}\n\n/** 本地唯一 ID */\nfunction uid(prefix) {\n  return (\n    (prefix || 'id') +\n    '_' +\n    Date.now().toString(36) +\n    Math.random().toString(36).slice(2, 7)\n  );\n}\n\n/** 取餐号：A01 ~ A99 循环 */\nfunction genPickupNo() {\n  const n = (Number(wx.getStorageSync('lbz_pickup_seq')) || 0) + 1;\n  wx.setStorageSync('lbz_pickup_seq', n % 99);\n  return 'A' + pad(n % 99 === 0 ? 99 : n);\n}\n\n/** 节流（用于 scroll 高频事件） */\nfunction throttle(fn, wait) {\n  let last = 0;\n  return function (...args) {\n    const now = Date.now();\n    if (now - last < wait) return;\n    last = now;\n    return fn.apply(this, args);\n  };\n}\n\n/** 统一错误提示 */\nfunction toast(title, icon) {\n  wx.showToast({ title: title || '操作失败', icon: icon || 'none', duration: 1800 });\n}\n\n/** 确认弹窗（Promise 化） */\nfunction confirm(content, title) {\n  return new Promise((resolve) => {\n    wx.showModal({\n      title: title || '提示',\n      content,\n      confirmColor: '#C62828',\n      success: (res) => resolve(!!res.confirm),\n      fail: () => resolve(false),\n    });\n  });\n}\n\nmodule.exports = {\n  fen2yuan,\n  yuan2fen,\n  formatAmount,\n  formatTime,\n  formatFull,\n  fromNow,\n  genOrderNo,\n  genPickupNo,\n  uid,\n  throttle,\n  toast,\n  confirm,\n  pad,\n};\n",
+    "utils/request.js": "/**\n * 统一网络层（交付级）\n *   · 自动带 token（Authorization: Bearer xxx）\n *   · 401 → 静默重登 → 重放原请求（全局去重，同一时刻只重登一次）\n *   · 幂等请求失败自动重试（默认 1 次，指数退避）；非幂等请求绝不自动重试\n *   · 并发去重：同一 URL+参数在飞行中复用同一个 Promise\n *   · 统一错误结构 { code, message, detail, requestId, biz }\n *   · 离线时快速失败并给出可读提示，不让页面白等\n */\nconst config = require('./config');\n\nconst TOKEN_KEY = 'lbz_token';\n\nfunction getToken() {\n  return wx.getStorageSync(TOKEN_KEY) || '';\n}\nfunction setToken(token) {\n  wx.setStorageSync(TOKEN_KEY, token || '');\n}\nfunction clearToken() {\n  wx.removeStorageSync(TOKEN_KEY);\n}\n\n/** 网络状态由 app.js 维护，避免每次请求都同步调 wx.getNetworkType */\nlet networkOnline = true;\nfunction setNetworkOnline(v) {\n  networkOnline = !!v;\n}\n\nfunction buildError(msg, code, extra) {\n  return Object.assign({ code: code, message: msg }, extra || {});\n}\n\n/** 底层请求（不含 401 重登与重试） */\nfunction raw(options) {\n  return new Promise((resolve, reject) => {\n    if (!networkOnline && !options.force) {\n      reject(buildError('当前网络不可用，请检查网络后重试', -2, { offline: true }));\n      return;\n    }\n    const header = Object.assign(\n      {\n        'Content-Type': 'application/json',\n        'X-Client-Version': config.VERSION,\n        'X-Env': config.ENV,\n      },\n      options.header || {}\n    );\n    const token = getToken();\n    if (token && !options.noAuth) header.Authorization = 'Bearer ' + token;\n\n    wx.request({\n      url: config.BASE_URL + options.url,\n      method: options.method || 'GET',\n      data: options.data || {},\n      header,\n      timeout: options.timeout || config.TIMEOUT,\n      success(res) {\n        const statusCode = res.statusCode;\n        const body = res.data || {};\n        const requestId = (res.header && (res.header['X-Request-Id'] || res.header['x-request-id'])) || '';\n\n        if (statusCode >= 200 && statusCode < 300) {\n          if (body && typeof body.code !== 'undefined' && body.code !== 0) {\n            reject(\n              buildError(body.message || '操作失败', body.code, { detail: body.detail, requestId, biz: true })\n            );\n            return;\n          }\n          resolve({ data: body && typeof body.data !== 'undefined' ? body.data : body, requestId });\n          return;\n        }\n        if (statusCode === 401) {\n          clearToken();\n          reject(buildError(body.message || '登录态已过期', 401, { requestId }));\n          return;\n        }\n        if (statusCode === 429) {\n          reject(buildError(body.message || '操作太频繁，请稍后重试', 42900, { requestId }));\n          return;\n        }\n        if (statusCode === 503) {\n          reject(buildError(body.message || '服务繁忙，请稍后重试', 50300, { requestId }));\n          return;\n        }\n        reject(buildError(body.message || '请求失败(' + statusCode + ')', statusCode, { detail: body, requestId }));\n      },\n      fail(err) {\n        const msg = String((err && err.errMsg) || '');\n        if (msg.indexOf('timeout') > -1) {\n          reject(buildError('网络较慢，请求超时，请重试', -1, { timeout: true }));\n        } else {\n          reject(buildError('网络异常，请检查网络后重试', -1, { detail: err }));\n        }\n      },\n    });\n  });\n}\n\n/* ------------------------------ 401 重登（全局去重） ------------------------------ */\nlet refreshTask = null;\n\nfunction reLogin() {\n  if (!refreshTask) {\n    const auth = require('./auth');\n    refreshTask = auth\n      .silentLogin(true)\n      .then((user) => {\n        refreshTask = null;\n        return user;\n      })\n      .catch((err) => {\n        refreshTask = null;\n        throw err;\n      });\n  }\n  return refreshTask;\n}\n\nconst sleep = (ms) => new Promise((r) => setTimeout(r, ms));\n\n/** 业务请求 */\nfunction request(options) {\n  if (config.USE_MOCK) {\n    return Promise.reject(buildError('[MOCK] ' + options.url + ' 未接入真实后端', 0));\n  }\n  const idempotent = (options.method || 'GET') === 'GET' || options.idempotent === true;\n  const maxRetry = idempotent ? (options.retry === undefined ? config.RETRY : options.retry) : 0;\n\n  const run = (opts, n) =>\n    raw(opts).then(\n      (r) => r.data,\n      (err) => {\n        /* 401：重登后重放一次 */\n        if (err && err.code === 401 && !opts.__retried) {\n          return reLogin().then(() => run(Object.assign({}, opts, { __retried: true }), 0));\n        }\n        /* 幂等请求：网络层错误（非业务错误）可退避重试 */\n        if (n < maxRetry && err && !err.biz && !err.offline) {\n          return sleep(200 * (n + 1)).then(() => run(opts, n + 1));\n        }\n        throw err;\n      }\n    );\n\n  return run(options, 0);\n}\n\n/** 并发去重：同一请求在飞行中复用同一个 Promise */\nconst inflight = {};\n\nfunction requestOnce(options) {\n  const key = (options.method || 'GET') + ' ' + options.url + JSON.stringify(options.data || {});\n  if (inflight[key]) return inflight[key];\n  const p = request(options).then(\n    (r) => {\n      delete inflight[key];\n      return r;\n    },\n    (e) => {\n      delete inflight[key];\n      throw e;\n    }\n  );\n  inflight[key] = p;\n  return p;\n}\n\n/** 全局错误提示（页面不必各自写 toast） */\nfunction toastError(err, fallback) {\n  const msg = (err && err.message) || fallback || '操作失败，请稍后重试';\n  wx.showToast({ title: msg, icon: 'none', duration: 2200 });\n}\n\nmodule.exports = {\n  request,\n  requestOnce,\n  raw,\n  getToken,\n  setToken,\n  clearToken,\n  setNetworkOnline,\n  toastError,\n};\n",
+    "utils/auth.js": "/**\n * 登录与用户体系\n *\n * 线上链路（USE_MOCK=false）：\n *   wx.login() -> code\n *     -> POST /auth/wechat-login { code, scene }\n *     -> 服务端 code2session 换 openid/session_key，签发 JWT（access 7 天 + refresh 30 天）\n *     -> 客户端 setToken(access_token)\n *\n * 静默登录：首次进入小程序就调用，用户无感知，只拿 openid 建档（下单不需要授权任何隐私接口）。\n * 头像昵称：在「我的」页由用户主动填写（chooseAvatar + nickname input），头像压缩后 base64 上传。\n * 手机号：需企业主体 + 已开通「手机号快速验证」。\n */\nconst config = require('./config');\nconst { request, setToken, clearToken, getToken } = require('./request');\n\nconst USER_KEY = 'lbz_user';\nconst USER_KEY_TTL = 30 * 24 * 3600 * 1000;\nconst REFRESH_KEY = 'lbz_refresh_token';\n\n/** 包装 wx.login 为 Promise */\nfunction wxLogin() {\n  return new Promise((resolve, reject) => {\n    wx.login({\n      timeout: 8000,\n      success: (res) => (res.code ? resolve(res.code) : reject(new Error('wx.login 无 code'))),\n      fail: (err) => reject(err),\n    });\n  });\n}\n\nfunction localUser() {\n  const cached = wx.getStorageSync(USER_KEY);\n  if (cached && cached.ts && Date.now() - cached.ts < USER_KEY_TTL) return cached.user;\n  return null;\n}\n\nfunction saveUser(user) {\n  wx.setStorageSync(USER_KEY, { user, ts: Date.now() });\n}\n\n/**\n * 静默登录；本地已有 token 且未强制刷新时直接复用\n * @param {boolean} force 强制重新登录\n */\nfunction silentLogin(force) {\n  if (!force) {\n    const cached = localUser();\n    if (cached && getToken()) return Promise.resolve(cached);\n  }\n\n  if (config.USE_MOCK) {\n    const user = {\n      id: 0,\n      openid: 'mock_openid_' + (wx.getStorageSync('lbz_mock_openid') || seedOpenid()),\n      unionid: '',\n      nickname: '串串香食客',\n      avatar: '',\n      phoneMask: '',\n      memberLevel: 1,\n      memberName: '铜签会员',\n      points: 120,\n      registerAt: Date.now(),\n    };\n    setToken('mock_token_' + Date.now());\n    saveUser(user);\n    return Promise.resolve(user);\n  }\n\n  return wxLogin().then((code) =>\n    request({\n      url: '/auth/wechat-login',\n      method: 'POST',\n      noAuth: true,\n      idempotent: true,\n      data: { code, scene: 'miniapp' },\n    }).then((data) => {\n      setToken(data.access_token);\n      if (data.refresh_token) wx.setStorageSync(REFRESH_KEY, data.refresh_token);\n      const user = data.user || {};\n      saveUser(user);\n      return user;\n    })\n  );\n}\n\nfunction seedOpenid() {\n  const id = 'seed_' + Math.random().toString(36).slice(2, 10);\n  wx.setStorageSync('lbz_mock_openid', id);\n  return id;\n}\n\n/** 用 refresh_token 换新 access_token（access 过期但 refresh 未过期时用户无感） */\nfunction refreshToken() {\n  const rt = wx.getStorageSync(REFRESH_KEY);\n  if (!rt) return Promise.reject(new Error('无 refresh_token'));\n  return request({ url: '/auth/refresh', method: 'POST', noAuth: true, data: { refresh_token: rt } }).then((data) => {\n    setToken(data.access_token);\n    saveUser(data.user || {});\n    return data.user;\n  });\n}\n\n/**\n * 更新头像昵称\n * @param {{avatar?:string, nickname?:string}} payload\n */\nfunction updateProfile(payload) {\n  if (config.USE_MOCK) {\n    const user = Object.assign({}, localUser() || {}, payload);\n    saveUser(user);\n    return Promise.resolve(user);\n  }\n  const body = {};\n  if (payload.nickname) body.nickname = payload.nickname;\n\n  const uploadThenSave = payload.avatar\n    ? uploadAvatar(payload.avatar).then((url) => {\n        if (url) body.avatar = url;\n      })\n    : Promise.resolve();\n\n  return uploadThenSave\n    .then(() => {\n      if (!Object.keys(body).length) return localUser() || {};\n      return request({ url: '/user/profile', method: 'PUT', data: body });\n    })\n    .then((user) => {\n      const merged = Object.assign({}, localUser() || {}, user);\n      saveUser(merged);\n      return merged;\n    });\n}\n\n/**\n * 头像上传：先压缩再转 base64，服务端落盘后返回可访问 URL\n * 用 base64 而不是 multipart，是为了避开小程序端 multipart 的编码坑（少一个依赖、少一类线上问题）\n */\nfunction uploadAvatar(filePath) {\n  const compress = () =>\n    new Promise((resolve) => {\n      if (!wx.compressImage) return resolve(filePath);\n      wx.compressImage({\n        src: filePath,\n        quality: 60,\n        success: (r) => resolve(r.tempFilePath || filePath),\n        fail: () => resolve(filePath),\n      });\n    });\n\n  return compress().then(\n    (src) =>\n      new Promise((resolve, reject) => {\n        wx.getFileSystemManager().readFile({\n          filePath: src,\n          encoding: 'base64',\n          success: (r) => {\n            const m = String(src).match(/\\.(\\w+)$/);\n            request({\n              url: '/user/avatar',\n              method: 'POST',\n              data: { base64: r.data, ext: m ? m[1].toLowerCase() : 'jpg' },\n              timeout: 20000,\n            }).then(\n              (res) => resolve(res && res.url),\n              (e) => reject(e)\n            );\n          },\n          fail: (e) => reject(e),\n        });\n      })\n  );\n}\n\n/** 绑定手机号（getPhoneNumber 回调后调用） */\nfunction bindPhone(detail) {\n  if (config.USE_MOCK) return Promise.resolve({ phoneMask: '138****0000' });\n  return request({\n    url: '/user/phone',\n    method: 'POST',\n    data: { encryptedData: detail.encryptedData, iv: detail.iv, code: detail.code },\n  }).then((r) => {\n    const user = Object.assign({}, localUser() || {}, { phoneMask: r.phoneMask });\n    saveUser(user);\n    return r;\n  });\n}\n\n/** 用户统计（订单数/券数/积分） */\nfunction fetchStats() {\n  if (config.USE_MOCK) {\n    return Promise.resolve({ orderCount: 0, ongoingCount: 0, couponCount: 3, points: 120, memberName: '铜签会员' });\n  }\n  return request({ url: '/user/stats', method: 'GET' });\n}\n\n/** 我的优惠券 */\nfunction fetchCoupons(status) {\n  if (config.USE_MOCK) {\n    const mockCoupon = require('../mock/coupon');\n    return Promise.resolve(mockCoupon.COUPONS.map((c) => Object.assign({}, c, { usable: true })));\n  }\n  return request({ url: '/user/coupons', method: 'GET', data: { status: status || 'UNUSED' } });\n}\n\n/** 校验登录态：进入需登录页面时调用 */\nfunction checkSession() {\n  return new Promise((resolve) => {\n    wx.checkSession({\n      success: () => resolve(true),\n      fail: () =>\n        silentLogin(true).then(\n          () => resolve(true),\n          () => resolve(false)\n        ),\n    });\n  });\n}\n\nfunction logout() {\n  if (!config.USE_MOCK) {\n    request({ url: '/auth/logout', method: 'POST' }).catch(() => {});\n  }\n  clearToken();\n  wx.removeStorageSync(USER_KEY);\n  wx.removeStorageSync(REFRESH_KEY);\n}\n\nmodule.exports = {\n  ensureLogin: silentLogin,\n  silentLogin,\n  refreshToken,\n  updateProfile,\n  bindPhone,\n  fetchStats,\n  fetchCoupons,\n  checkSession,\n  logout,\n  localUser,\n};\n",
+    "utils/cart.js": "/**\n * 购物车（本地状态中心）\n *\n * 设计要点：\n * 1. 单一数据源 + 发布订阅：任何页面改动购物车，其余页面通过 subscribe 自动同步，避免手工传参。\n * 2. 本地持久化：落地到 wx.setStorageSync，杀进程重进不丢购物车。\n * 3. 同一菜品不同「辣度」算两条明细，行唯一键 key = dishId#spicyId。\n * 4. 金额一律用「分」做整数运算，杜绝浮点误差。\n */\nconst { fen2yuan } = require('./util');\n\nconst KEY = 'lbz_cart_v1';\nconst listeners = [];\nlet state = null;\n\nfunction blank() {\n  return {\n    version: 1,\n    items: [], // { key, dishId, name, emoji, price, unit, count, spicyId, spicyName, desc }\n    soup: null, // { id, name, price }  锅底（订单级必选）\n    dips: [], // [{ id, name }]        蘸料（订单级多选，免费）\n    diningType: 'dinein', // dinein 堂食 | takeout 自取\n    tableNo: '',\n    peopleCount: 2,\n    remark: '',\n    /** 打包费（分）。由服务端 /menu 下发后写入，避免客户端写死导致展示金额与实付不符 */\n    packFee: 100,\n    /** 最近一次选择的规格，用于快捷加购时的默认值 */\n    lastSpec: {}, // { [dishId]: spicyId }\n  };\n}\n\nfunction get() {\n  if (!state) {\n    const cached = wx.getStorageSync(KEY);\n    state = cached && cached.version === 1 ? cached : blank();\n  }\n  return state;\n}\n\nfunction persist() {\n  wx.setStorageSync(KEY, state);\n  notify();\n}\n\nfunction notify() {\n  const summary = getSummary();\n  listeners.forEach((fn) => {\n    try {\n      fn(summary);\n    } catch (e) {\n      console.error('[cart] listener error', e);\n    }\n  });\n}\n\nfunction subscribe(fn) {\n  listeners.push(fn);\n  try {\n    fn(getSummary());\n  } catch (e) {}\n  return () => {\n    const i = listeners.indexOf(fn);\n    if (i > -1) listeners.splice(i, 1);\n  };\n}\n\nfunction makeKey(dishId, spicyId) {\n  return dishId + '#' + (spicyId || 'none');\n}\n\n/* ------------------------------ 明细操作 ------------------------------ */\n\n/**\n * 加入购物车\n * @param {object} dish  菜品对象（含 id/name/price/unit/emoji/desc）\n * @param {{spicyId?:string, spicyName?:string}} spec\n * @param {number} count\n */\nfunction add(dish, spec, count) {\n  const s = get();\n  const spicyId = (spec && spec.spicyId) || '';\n  const spicyName = (spec && spec.spicyName) || '';\n  const key = makeKey(dish.id, spicyId);\n  // 上限取「库存」与 99 的较小值：规格弹层反复加购也要挡住超卖\n  const stock = Number(dish.stock);\n  const cap = Math.min(99, stock > 0 ? stock : 99);\n  const addNum = Math.max(1, Number(count) || 1);\n  const exist = s.items.find((i) => i.key === key);\n  if (exist) {\n    if (exist.count >= cap) return key;\n    exist.count = Math.min(cap, exist.count + addNum);\n  } else {\n    s.items.push({\n      key,\n      dishId: dish.id,\n      name: dish.name,\n      emoji: dish.emoji || '🍢',\n      price: dish.price,\n      unit: dish.unit || '份',\n      count: Math.min(cap, addNum),\n      spicyId,\n      spicyName,\n      desc: dish.desc || '',\n    });\n  }\n  if (spicyId) s.lastSpec[dish.id] = spicyId;\n  persist();\n  return key;\n}\n\n/** 直接设置某行数量，count<=0 自动移除 */\nfunction setCount(key, count) {\n  const s = get();\n  const idx = s.items.findIndex((i) => i.key === key);\n  if (idx === -1) return;\n  if (count <= 0) {\n    s.items.splice(idx, 1);\n  } else {\n    s.items[idx].count = Math.min(99, count);\n  }\n  persist();\n}\n\nfunction remove(key) {\n  setCount(key, 0);\n}\n\n/**\n * 按菜品维度扣减数量（从最后加入的明细往前扣）\n * 用于点单列表页「无规格菜品」的步进器减号\n */\nfunction reduceDish(dishId, n) {\n  const s = get();\n  let left = n;\n  for (let i = s.items.length - 1; i >= 0 && left > 0; i--) {\n    const it = s.items[i];\n    if (it.dishId !== dishId) continue;\n    const cut = Math.min(it.count, left);\n    it.count -= cut;\n    left -= cut;\n    if (it.count <= 0) s.items.splice(i, 1);\n  }\n  persist();\n}\n\nfunction clear(full) {\n  const s = get();\n  const keep = {\n    soup: s.soup,\n    dips: s.dips,\n    diningType: s.diningType,\n    tableNo: s.tableNo,\n    peopleCount: s.peopleCount,\n    remark: s.remark,\n    lastSpec: s.lastSpec,\n  };\n  state = blank();\n  if (!full) Object.assign(state, keep);\n  persist();\n}\n\nfunction clearAll() {\n  clear(true);\n}\n\n/* ------------------------------ 订单级选项 ------------------------------ */\n\nfunction setSoup(soup) {\n  get().soup = soup ? { id: soup.id, name: soup.name, price: soup.price } : null;\n  persist();\n}\n\nfunction toggleDip(dip) {\n  const s = get();\n  const i = s.dips.findIndex((d) => d.id === dip.id);\n  if (i > -1) s.dips.splice(i, 1);\n  else s.dips.push({ id: dip.id, name: dip.name });\n  persist();\n}\n\nfunction setDiningType(type) {\n  get().diningType = type;\n  if (type === 'takeout') get().tableNo = '';\n  persist();\n}\n\nfunction setTableNo(no) {\n  get().tableNo = (no || '').slice(0, 10);\n  persist();\n}\n\nfunction setPeopleCount(n) {\n  get().peopleCount = Math.max(1, Math.min(20, Number(n) || 1));\n  persist();\n}\n\nfunction setRemark(text) {\n  get().remark = (text || '').slice(0, 100);\n  persist();\n}\n\n/**\n * 按「当前门店的菜单」校正购物车\n *\n * 切换门店后购物车里仍是上一家店的价格与本店可能已停售的菜品，\n * 不校正就会出现「页面显示 ¥20、提交后实付 ¥22」，或下单时报「本店已停售」。\n *\n * @param {object} dishMap { dishId: {price, name, stock} }\n * @returns {{removed:number, changed:number, capped:number}}\n */\nfunction reprice(dishMap) {\n  if (!dishMap || !Object.keys(dishMap).length) return { removed: 0, changed: 0, capped: 0 };\n  const s = get();\n  let removed = 0;\n  let changed = 0;\n  let capped = 0;\n  s.items = s.items.filter((i) => {\n    const d = dishMap[i.dishId];\n    /* 本店不卖 / 已售罄 → 移出 */\n    if (!d || Number(d.stock) <= 0) {\n      removed++;\n      return false;\n    }\n    if (Number(i.price) !== Number(d.price)) {\n      i.price = Number(d.price);\n      changed++;\n    }\n    if (d.name) i.name = d.name;\n    const cap = Math.min(99, Number(d.stock) || 99);\n    if (i.count > cap) {\n      i.count = cap;\n      capped++;\n    }\n    return true;\n  });\n  persist();\n  return { removed, changed, capped };\n}\n\n/** 由服务端 /menu 下发后调用：打包费以服务端为准（只在合法正整数时才覆盖默认值） */\nfunction setPackFee(fen) {\n  const n = Number(fen);\n  if (Number.isFinite(n) && n >= 0 && n <= 100000) {\n    get().packFee = Math.trunc(n);\n    persist();\n  }\n}\n\n/* ------------------------------ 查询 ------------------------------ */\n\n/** 某菜品在购物车中的总数量（跨辣度聚合），用于列表页角标 */\nfunction getDishCount(dishId) {\n  return get()\n    .items.filter((i) => i.dishId === dishId)\n    .reduce((sum, i) => sum + i.count, 0);\n}\n\n/** 该菜品最近一次选的辣度，用作弹层默认值 */\nfunction getLastSpec(dishId) {\n  return get().lastSpec[dishId] || '';\n}\n\n/** 批量构造「dishId -> count」映射，点单列表一次 setData 就够 */\nfunction getCountMap() {\n  const map = {};\n  get().items.forEach((i) => {\n    map[i.dishId] = (map[i.dishId] || 0) + i.count;\n  });\n  return map;\n}\n\n/**\n * 金额汇总\n * goods   菜品小计\n * soupFee 锅底费\n * packFee 打包费（仅自取）\n * total   应付\n */\nfunction getSummary() {\n  const s = get();\n  let goods = 0;\n  let count = 0;\n  s.items.forEach((i) => {\n    goods += i.price * i.count;\n    count += i.count;\n  });\n  const soupFee = s.soup ? s.soup.price : 0;\n  const packFee = s.diningType === 'takeout' && count > 0 ? s.packFee : 0;\n  const total = goods + soupFee + packFee;\n  return {\n    count,\n    kinds: s.items.length,\n    goodsAmount: goods,\n    soupFee,\n    packFee,\n    total,\n    totalText: fen2yuan(total),\n    goodsText: fen2yuan(goods),\n    soupFeeText: fen2yuan(soupFee),\n    packFeeText: fen2yuan(packFee),\n    /** 是否满足下单条件：有菜品 + 已选锅底 + 堂食需有桌号 */\n    canSubmit:\n      s.items.length > 0 &&\n      !!s.soup &&\n      (s.diningType === 'takeout' || !!s.tableNo),\n  };\n}\n\n/** 生成下单明细快照（提交订单后即使用户再改购物车也不受影响） */\nfunction toOrderItems() {\n  const s = get();\n  return s.items.map((i) => ({\n    key: i.key,\n    dishId: i.dishId,\n    name: i.name,\n    emoji: i.emoji,\n    price: i.price,\n    unit: i.unit,\n    count: i.count,\n    spicyId: i.spicyId,\n    spicyName: i.spicyName,\n    specText: i.spicyName ? i.spicyName : '默认口味',\n    amount: i.price * i.count,\n  }));\n}\n\nmodule.exports = {\n  get,\n  subscribe,\n  add,\n  setCount,\n  remove,\n  reduceDish,\n  clear,\n  clearAll,\n  setSoup,\n  toggleDip,\n  setDiningType,\n  setTableNo,\n  setPeopleCount,\n  setRemark,\n  setPackFee,\n  reprice,\n  getDishCount,\n  getLastSpec,\n  getCountMap,\n  getSummary,\n  toOrderItems,\n  makeKey,\n};\n",
+    "services/menu.js": "/**\n * 菜单服务层\n * - 页面只依赖这一层，不直接碰 mock / 网络\n * - 内置 60s 内存缓存（挂在 App.globalData.menuCache），避免切 tab 重复请求\n * - 价格在服务层统一补 priceText，页面模板零计算\n * - 辣度字典以**服务端返回的**为准（真实后端下不能再依赖本地 mock）\n */\nconst config = require('../utils/config');\nconst { request } = require('../utils/request');\nconst mock = require('../mock/menu');\nconst cart = require('../utils/cart');\n\nconst CACHE_TTL = 60 * 1000;\n\n/** 本地兜底字典：仅在服务端未返回时使用 */\nconst FALLBACK_SPICY = mock.SPICY_OPTIONS;\n\nfunction decorateDish(dish, spicyOptions) {\n  return Object.assign({}, dish, {\n    priceText: (dish.price / 100).toFixed(2),\n    spicyOptions: dish.spicy ? spicyOptions : [],\n    /** 售罄：列表置灰、不可加购 */\n    soldOut: dish.soldOut === true || Number(dish.stock) <= 0,\n  });\n}\n\nconst withPrice = (x) => Object.assign({}, x, { priceText: (x.price / 100).toFixed(2) });\n\n/** 全量菜单：门店 + 分类（内含菜品）+ 锅底 + 蘸料 + 辣度字典（连锁：按门店出菜单与库存） */\nfunction getMenu(force, storeId) {\n  const app = getApp();\n  const cached = app && app.globalData.menuCache;\n  /* 缓存按门店隔离：换门店必须重新拉，否则会串菜单 */\n  const sameStore = cached && cached.storeId === (storeId || '');\n  if (!force && cached && sameStore && Date.now() - cached.ts < CACHE_TTL) {\n    return Promise.resolve(cached.data);\n  }\n\n  const task = config.USE_MOCK\n    ? new Promise((resolve) => {\n        setTimeout(() => {\n          const spicyOptions = FALLBACK_SPICY;\n          resolve({\n            shop: mock.SHOP,\n            categories: mock.CATEGORIES.map((c) =>\n              Object.assign({}, c, {\n                dishes: mock.DISHES.filter((d) => d.categoryId === c.id).map((d) => decorateDish(d, spicyOptions)),\n              })\n            ),\n            soups: mock.SOUPS.map(withPrice),\n            dips: mock.DIPS.map(withPrice),\n            spicyOptions,\n            totalDishes: mock.DISHES.length,\n            store: Object.assign({}, mock.SHOP, { type: 'DIRECT', typeText: '直营店' }),\n            brand: { name: '老北京麻辣烫串串香（集团）' },\n          });\n        }, 180);\n      })\n    : request({ url: '/menu', method: 'GET', data: { storeId: storeId || '' }, idempotent: true }).then((data) => {\n        const spicyOptions =\n          Array.isArray(data.spicyOptions) && data.spicyOptions.length ? data.spicyOptions : FALLBACK_SPICY;\n        return {\n          shop: data.shop || {},\n          store: data.store || data.shop || {},\n          brand: data.brand || {},\n          categories: (data.categories || []).map((c) =>\n            Object.assign({}, c, {\n              dishes: (c.dishes || []).map((d) => decorateDish(d, spicyOptions)),\n            })\n          ),\n          soups: (data.soups || []).map(withPrice),\n          dips: (data.dips || []).map(withPrice),\n          spicyOptions,\n          totalDishes: data.totalDishes || 0,\n        };\n      });\n\n  return task.then((data) => {\n    if (app) app.globalData.menuCache = { ts: Date.now(), storeId: storeId || '', data };\n    /* 打包费以服务端下发的为准，避免客户端写死导致「页面显示与实付不一致」 */\n    if (data && data.packFee !== undefined) cart.setPackFee(data.packFee);\n    return data;\n  });\n}\n\n/** 清缓存（下拉刷新 / 商家改价后） */\nfunction clearCache() {\n  const app = getApp();\n  if (app) app.globalData.menuCache = null;\n}\n\n/** 菜品详情（分享落地页用） */\nfunction getDish(id) {\n  return getMenu().then((menu) => {\n    let found = null;\n    menu.categories.forEach((c) => {\n      c.dishes.forEach((d) => {\n        if (d.id === id) found = d;\n      });\n    });\n    return found;\n  });\n}\n\n/**\n * 本地搜索：菜单已在内存里，直接过滤最快（无需网络往返）\n * 命中「菜名 / 描述 / 标签」\n */\nfunction searchMenu(menu, keyword) {\n  const kw = String(keyword || '').trim().toLowerCase();\n  if (!kw || !menu) return null;\n  const hits = [];\n  menu.categories.forEach((c) => {\n    c.dishes.forEach((d) => {\n      const hay = (d.name + ' ' + (d.desc || '') + ' ' + (d.tags || []).join(' ')).toLowerCase();\n      if (hay.indexOf(kw) > -1) hits.push(d);\n    });\n  });\n  return hits;\n}\n\nmodule.exports = { getMenu, getDish, clearCache, searchMenu, SPICY_OPTIONS: FALLBACK_SPICY };\n",
+    "services/order.js": "/**\n * 订单服务层 + 订单状态机\n *\n * 状态流转：UNPAID → PAID → ACCEPTED → COOKING → READY → DONE，可分支 CANCELED\n *\n * 双模运行：\n *   USE_MOCK = false（默认，对接后端）：所有请求走 /miniapp/v1，视图模型统一由 decorate() 产出\n *   USE_MOCK = true （离线演示/预览版）：走本地 Storage，状态按支付后秒数推导\n *\n * 交付级要点：\n *   · 下单带 Idempotency-Key，网络重试不会产生第二笔订单\n *   · 支付走服务端 prepay；服务端 PAY_MODE=mock 时自动降级为本地收银台并回调 /mock-pay，\n *     两种模式下「结算」都是服务端那一份代码\n *   · 所有金额以服务端为准，客户端传的 amount 仅用于展示预览\n */\nconst config = require('../utils/config');\nconst { request } = require('../utils/request');\nconst { genOrderNo, genPickupNo, uid, fen2yuan } = require('../utils/util');\n\nconst ORDER_KEY = 'lbz_orders_v1';\n\nconst STATUS = {\n  UNPAID: 'UNPAID',\n  PAID: 'PAID',\n  ACCEPTED: 'ACCEPTED',\n  COOKING: 'COOKING',\n  READY: 'READY',\n  DONE: 'DONE',\n  CANCELED: 'CANCELED',\n};\n\nconst STATUS_META = {\n  UNPAID: { text: '待付款', desc: '请在 15 分钟内完成支付，超时自动取消', step: 0, color: '#C62828' },\n  PAID: { text: '待接单', desc: '支付成功，等待商家接单', step: 1, color: '#FF8F1F' },\n  ACCEPTED: { text: '商家已接单', desc: '后厨正在备菜，马上开涮', step: 2, color: '#FF8F1F' },\n  COOKING: { text: '涮煮中', desc: '锅底已上桌，串串正在翻滚', step: 3, color: '#C62828' },\n  READY: { text: '已上桌 / 可取餐', desc: '请核对菜品，尽情享用', step: 4, color: '#1B8A3E' },\n  DONE: { text: '已完成', desc: '感谢光临老北京麻辣串串香', step: 5, color: '#8A8A8E' },\n  CANCELED: { text: '已取消', desc: '订单已取消，如有疑问请联系门店', step: -1, color: '#8A8A8E' },\n};\n\nconst TIMELINE_STEPS = [\n  { key: STATUS.PAID, text: '支付成功' },\n  { key: STATUS.ACCEPTED, text: '商家接单' },\n  { key: STATUS.COOKING, text: '开始涮煮' },\n  { key: STATUS.READY, text: '已上桌 / 可取餐' },\n  { key: STATUS.DONE, text: '订单完成' },\n];\n\n/** Mock 模式的状态推进时间表（秒） */\nconst MOCK_SCHEDULE = [\n  { at: 0, status: STATUS.PAID },\n  { at: 12, status: STATUS.ACCEPTED },\n  { at: 40, status: STATUS.COOKING },\n  { at: 95, status: STATUS.READY },\n];\n\nconst FILTERS = [\n  { key: 'all', name: '全部' },\n  { key: 'ongoing', name: '进行中' },\n  { key: 'done', name: '已完成' },\n];\n\n/* ============================ Mock 本地存储 ============================ */\nfunction readAll() {\n  return wx.getStorageSync(ORDER_KEY) || [];\n}\nfunction writeAll(list) {\n  wx.setStorageSync(ORDER_KEY, list);\n}\n\nfunction isOngoing(status) {\n  return status !== STATUS.DONE && status !== STATUS.CANCELED;\n}\n\nfunction fmt(ts) {\n  if (!ts) return '';\n  const d = new Date(ts);\n  const p = (n) => (n < 10 ? '0' + n : n);\n  return p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());\n}\n\nfunction buildStatusText(status, diningType) {\n  if (status === STATUS.READY) return diningType === 'takeout' ? '可取餐' : '已上桌';\n  return STATUS_META[status] ? STATUS_META[status].text : '';\n}\n\nfunction buildMockTimeline(order) {\n  const step = STATUS_META[order.status] ? STATUS_META[order.status].step : -1;\n  const curIdx = step - 1;\n  const base = order.payTime || order.createTime;\n  const offsets = [0, 12, 40, 95, 140];\n  return TIMELINE_STEPS.map((s, i) => ({\n    key: s.key,\n    text: s.key === STATUS.READY ? buildStatusText(STATUS.READY, order.diningType) : s.text,\n    time: i <= curIdx ? base + offsets[i] * 1000 : 0,\n    timeText: i <= curIdx ? fmt(base + offsets[i] * 1000) : '',\n    done: i <= curIdx,\n    current: i === curIdx,\n  }));\n}\n\n/** 用 mock 时间表推导当前状态 */\nfunction advanceMock(order) {\n  if (!order.isMock || !order.payTime || order.status === STATUS.CANCELED) return false;\n  if (order.status === STATUS.DONE) return false;\n  const elapsed = (Date.now() - order.payTime) / 1000;\n  let next = order.status;\n  MOCK_SCHEDULE.forEach((s) => {\n    if (elapsed >= s.at) next = s.status;\n  });\n  if (next === order.status) return false;\n  order.status = next;\n  order.statusText = buildStatusText(next, order.diningType);\n  order.timeline = buildMockTimeline(order);\n  return true;\n}\n\n/* ============================ 视图模型 ============================ */\n/**\n * 订单 → 页面视图模型\n * 服务端返回的是领域模型（与本地模型同形），展示字段统一在这里补，\n * 两种模式下页面拿到的结构完全一致。\n */\nfunction decorate(order) {\n  if (!order) return null;\n  const meta = STATUS_META[order.status] || STATUS_META.UNPAID;\n  const items = (order.items || []).map((i) =>\n    Object.assign({}, i, {\n      priceText: fen2yuan(i.price),\n      amountText: fen2yuan(i.amount),\n    })\n  );\n  const itemCount = items.reduce((sum, i) => sum + i.count, 0);\n  const summaryText = items.map((i) => i.name + '×' + i.count).join('、');\n  const amount = order.amount || {};\n  const createTime = Number(order.createTime) || 0;\n\n  return Object.assign({}, order, {\n    items,\n    itemCount,\n    summaryText,\n    /** 列表卡片只展示前 4 个缩略图，在服务层切好，WXML 里就不用 wx:for + wx:if 混用 */\n    thumbItems: items.slice(0, 4),\n    statusText: order.statusText || meta.text,\n    statusDesc: meta.desc,\n    statusColor: meta.color,\n    canCancel: order.status === STATUS.UNPAID,\n    canPay: order.status === STATUS.UNPAID,\n    canReorder: order.status === STATUS.DONE || order.status === STATUS.CANCELED,\n    canFinish:\n      order.status === STATUS.READY || order.status === STATUS.COOKING || order.status === STATUS.ACCEPTED,\n    /** 新增：催单 / 退款 / 评价 / 加菜 */\n    canUrge: [STATUS.PAID, STATUS.ACCEPTED, STATUS.COOKING].indexOf(order.status) > -1,\n    canRefund: order.status === STATUS.PAID || order.status === STATUS.ACCEPTED,\n    canRate: order.status === STATUS.DONE && !order.rated,\n    canAddDish:\n      order.status === STATUS.PAID ||\n      order.status === STATUS.ACCEPTED ||\n      order.status === STATUS.COOKING ||\n      order.status === STATUS.READY,\n    createTimeText: fmt(createTime),\n    createDateText: createTime\n      ? new Date(createTime).getMonth() + 1 + '月' + new Date(createTime).getDate() + '日 ' + fmt(createTime)\n      : '',\n    amount: {\n      goods: amount.goods || 0,\n      soupFee: amount.soupFee || 0,\n      packFee: amount.packFee || 0,\n      discount: amount.discount || 0,\n      pay: amount.pay || 0,\n      payText: fen2yuan(amount.pay),\n      goodsText: fen2yuan(amount.goods),\n      soupFeeText: fen2yuan(amount.soupFee),\n      packFeeText: fen2yuan(amount.packFee),\n      discountText: fen2yuan(amount.discount),\n    },\n    soupText: order.soup ? order.soup.name + '（¥' + fen2yuan(order.soup.price) + '）' : '未选择',\n    dipsText: (order.dips || []).length ? order.dips.map((d) => d.name).join('、') : '未选择',\n    diningTypeText: order.diningType === 'takeout' ? '到店自取' : '堂食',\n    timeline: order.timeline || [],\n  });\n}\n\nconst decorateList = (list) => (Array.isArray(list) ? list.map(decorate) : []);\n\n/* ============================ 对外 API ============================ */\n\n/**\n * 创建订单\n * @param {object} payload { items, soup, dips, diningType, tableNo, peopleCount, remark, coupon, parentOrderId }\n */\nfunction createOrder(payload) {\n  if (!config.USE_MOCK) {\n    /* 幂等键：同一次下单的用户操作在重试时复用同一个 key，服务端据此回放而非新建 */\n    const idemKey =\n      'idem_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);\n    return request({\n      url: '/orders',\n      method: 'POST',\n      idempotent: true,\n      header: { 'Idempotency-Key': idemKey },\n      data: payload,\n    }).then(decorate);\n  }\n\n  const now = Date.now();\n  const order = {\n    id: uid('O'),\n    orderNo: genOrderNo(),\n    pickupNo: genPickupNo(),\n    shopId: 'shop_001',\n    shopName: '老北京麻辣串串香·簋街总店',\n    status: STATUS.UNPAID,\n    statusText: STATUS_META.UNPAID.text,\n    diningType: payload.diningType,\n    tableNo: payload.tableNo || '',\n    peopleCount: payload.peopleCount || 1,\n    items: payload.items,\n    soup: payload.soup,\n    dips: payload.dips || [],\n    remark: payload.remark || '',\n    coupon: payload.coupon || null,\n    amount: payload.amount,\n    createTime: now,\n    payTime: 0,\n    updateTime: now,\n    timeline: buildMockTimeline({ status: STATUS.UNPAID, createTime: now }),\n    isMock: true,\n  };\n  const list = readAll();\n  list.unshift(order);\n  writeAll(list);\n  return Promise.resolve(decorate(order));\n}\n\n/**\n * 支付\n * 真实模式：prepay → (服务端 mock 则本地收银台 + /mock-pay) | (真实则 wx.requestPayment)\n */\nfunction payOrder(orderId) {\n  if (config.USE_MOCK) return mockPay(orderId);\n\n  return request({ url: '/orders/' + orderId + '/prepay', method: 'POST', idempotent: true })\n    .then((pre) => {\n      if (pre && pre.alreadyPaid) return null;\n      if (pre && pre.mock) return mockCashier(orderId, pre);\n      return wxPay(pre);\n    })\n    .then(() => getOrder(orderId));\n}\n\n/** 真实微信支付 */\nfunction wxPay(params) {\n  return new Promise((resolve, reject) => {\n    wx.requestPayment({\n      timeStamp: params.timeStamp,\n      nonceStr: params.nonceStr,\n      package: params.package,\n      signType: params.signType || 'RSA',\n      paySign: params.paySign,\n      success: () => resolve(),\n      fail: (err) => {\n        const msg = String((err && err.errMsg) || '');\n        if (msg.indexOf('cancel') > -1) reject({ code: 'CANCEL', message: '已取消支付' });\n        else reject({ code: 'PAY_FAIL', message: '支付失败，请重试', detail: err });\n      },\n    });\n  });\n}\n\n/** 服务端处于 mock 支付模式时的本地收银台 */\nfunction mockCashier(orderId, pre) {\n  return new Promise((resolve) => {\n    wx.showModal({\n      title: '模拟支付',\n      content: '应付 ¥' + (pre.amountText || (pre.amount / 100).toFixed(2)) + '\\n（服务端 PAY_MODE=mock，未接入商户号）',\n      confirmText: '确认支付',\n      cancelText: '取消',\n      confirmColor: '#C62828',\n      success: (r) => resolve(!!r.confirm),\n      fail: () => resolve(false),\n    });\n  }).then((ok) => {\n    if (!ok) throw { code: 'CANCEL', message: '已取消支付' };\n    return request({ url: '/orders/' + orderId + '/mock-pay', method: 'POST', idempotent: true });\n  });\n}\n\n/** Mock 模式下本地模拟支付 */\nfunction mockPay(orderId) {\n  const list = readAll();\n  const idx = list.findIndex((o) => o.id === orderId);\n  if (idx === -1) return Promise.reject({ message: '订单不存在' });\n  const cur = list[idx].status;\n  if (cur === STATUS.CANCELED) return Promise.reject({ code: 'ORDER_CANCELED', message: '订单已取消，无法支付' });\n  if (cur !== STATUS.UNPAID) return Promise.resolve(decorate(list[idx]));\n\n  list[idx].status = STATUS.PAID;\n  list[idx].payTime = Date.now();\n  list[idx].updateTime = Date.now();\n  list[idx].statusText = STATUS_META.PAID.text;\n  list[idx].timeline = buildMockTimeline(list[idx]);\n  writeAll(list);\n  requestSubscribeMessage(list[idx]);\n  return Promise.resolve(decorate(list[idx]));\n}\n\nfunction cancelOrder(orderId, reason) {\n  if (!config.USE_MOCK) {\n    return request({ url: '/orders/' + orderId + '/cancel', method: 'POST', data: { reason } }).then(decorate);\n  }\n  const list = readAll();\n  const idx = list.findIndex((o) => o.id === orderId);\n  if (idx === -1) return Promise.reject({ message: '订单不存在' });\n  list[idx].status = STATUS.CANCELED;\n  list[idx].statusText = STATUS_META.CANCELED.text;\n  list[idx].cancelReason = reason || '用户主动取消';\n  list[idx].updateTime = Date.now();\n  list[idx].timeline = buildMockTimeline(list[idx]);\n  writeAll(list);\n  return Promise.resolve(decorate(list[idx]));\n}\n\nfunction finishOrder(orderId) {\n  if (!config.USE_MOCK) {\n    return request({ url: '/orders/' + orderId + '/finish', method: 'POST', idempotent: true }).then(decorate);\n  }\n  const list = readAll();\n  const idx = list.findIndex((o) => o.id === orderId);\n  if (idx === -1) return Promise.reject({ message: '订单不存在' });\n  list[idx].status = STATUS.DONE;\n  list[idx].statusText = STATUS_META.DONE.text;\n  list[idx].finishTime = Date.now();\n  list[idx].updateTime = Date.now();\n  list[idx].timeline = buildMockTimeline(list[idx]);\n  writeAll(list);\n  return Promise.resolve(decorate(list[idx]));\n}\n\n/** 催单 */\nfunction urgeOrder(orderId) {\n  if (!config.USE_MOCK) {\n    return request({ url: '/orders/' + orderId + '/urge', method: 'POST' });\n  }\n  return Promise.resolve({ ok: true, urgeCount: 1 });\n}\n\n/** 申请退款 */\nfunction applyRefund(orderId, reason) {\n  if (!config.USE_MOCK) {\n    return request({ url: '/orders/' + orderId + '/refund', method: 'POST', data: { reason } });\n  }\n  return Promise.resolve({ ok: true });\n}\n\n/** 评价 */\nfunction submitFeedback(orderId, score, content) {\n  if (!config.USE_MOCK) {\n    return request({ url: '/orders/' + orderId + '/feedback', method: 'POST', data: { score, content } });\n  }\n  const list = readAll();\n  const idx = list.findIndex((o) => o.id === orderId);\n  if (idx > -1) {\n    list[idx].rated = true;\n    writeAll(list);\n  }\n  return Promise.resolve({ ok: true });\n}\n\n/** 主动查单补偿（支付结果不明时用） */\nfunction queryPay(orderId) {\n  if (!config.USE_MOCK) {\n    return request({ url: '/orders/' + orderId + '/query-pay', method: 'POST', idempotent: true });\n  }\n  return Promise.resolve({ paid: false, mock: true });\n}\n\n/** 订单列表：filter = all | ongoing | done */\nfunction listOrders(filter, page) {\n  if (!config.USE_MOCK) {\n    return request({\n      url: '/orders',\n      data: { filter: filter || 'all', page: page || 1, size: 10 },\n    }).then(decorateList);\n  }\n  let list = readAll();\n  let changed = false;\n  list.forEach((o) => {\n    if (advanceMock(o)) changed = true;\n  });\n  if (changed) writeAll(list);\n  if (filter === 'ongoing') list = list.filter((o) => isOngoing(o.status));\n  if (filter === 'done') list = list.filter((o) => !isOngoing(o.status));\n  return Promise.resolve(decorateList(list));\n}\n\nfunction getOrder(id) {\n  if (!config.USE_MOCK) {\n    return request({ url: '/orders/' + id, method: 'GET' }).then(decorate);\n  }\n  const found = readAll().find((o) => o.id === id);\n  if (!found) return Promise.reject({ message: '订单不存在' });\n  return Promise.resolve(decorate(found));\n}\n\n/** Mock 模式下详情页轮询用：推进状态并返回最新订单 */\nfunction refreshStatus(orderId) {\n  if (!config.USE_MOCK) return null;\n  const list = readAll();\n  const idx = list.findIndex((o) => o.id === orderId);\n  if (idx === -1) return null;\n  if (advanceMock(list[idx])) {\n    list[idx].updateTime = Date.now();\n    writeAll(list);\n  }\n  return decorate(list[idx]);\n}\n\n/** 把历史订单的明细回填到购物车（再来一单） */\nfunction reorder(orderId) {\n  const cart = require('../utils/cart');\n  return getOrder(orderId).then((order) => {\n    (order.items || []).forEach((i) => {\n      cart.add(\n        { id: i.dishId, name: i.name, emoji: i.emoji, price: i.price, unit: i.unit, desc: '' },\n        { spicyId: i.spicyId, spicyName: i.spicyName },\n        i.count\n      );\n    });\n    if (order.soup) cart.setSoup(order.soup);\n    cart.setDiningType(order.diningType);\n    if (order.tableNo) cart.setTableNo(order.tableNo);\n    return order;\n  });\n}\n\n/**\n * 订阅消息：下单后是用户授权意愿最高的时刻\n * 一次最多 3 个模板；用户勾选「总是保持以上选择」后不再弹窗\n */\nfunction requestSubscribeMessage(order) {\n  const tmplIds = [config.TMPL.ORDER_PAID, config.TMPL.ORDER_READY].filter(\n    (id) => id && id.indexOf('REPLACE_WITH') === -1\n  );\n  if (!tmplIds.length || !wx.requestSubscribeMessage) return;\n  wx.requestSubscribeMessage({\n    tmplIds,\n    success: (res) => {\n      const accepted = tmplIds.filter((id) => res[id] === 'accept');\n      console.log('[subscribe] accepted:', accepted.join(','), 'order:', order.orderNo);\n    },\n    fail: (e) => console.warn('[subscribe] fail', e),\n  });\n}\n\nmodule.exports = {\n  STATUS,\n  STATUS_META,\n  TIMELINE_STEPS,\n  FILTERS,\n  createOrder,\n  payOrder,\n  cancelOrder,\n  finishOrder,\n  urgeOrder,\n  applyRefund,\n  submitFeedback,\n  queryPay,\n  listOrders,\n  getOrder,\n  reorder,\n  refreshStatus,\n  isOngoing,\n  decorate,\n  requestSubscribeMessage,\n};\n"
+  };
+
+  /* ---------- 2) wx / getApp 浏览器桩 ---------- */
+  var LS = 'lbzpv:';
+  window.wx = {
+    getStorageSync: function (k) {
+      try { var v = localStorage.getItem(LS + k); return v == null ? '' : JSON.parse(v); }
+      catch (e) { return ''; }
+    },
+    setStorageSync: function (k, v) {
+      try { localStorage.setItem(LS + k, JSON.stringify(v)); } catch (e) {}
+    },
+    removeStorageSync: function (k) {
+      try { localStorage.removeItem(LS + k); } catch (e) {}
+    },
+    getWindowInfo: function () { return { statusBarHeight: 20, windowWidth: 375, windowHeight: 812 }; },
+    getSystemInfoSync: function () { return { statusBarHeight: 20, windowWidth: 375, windowHeight: 812 }; },
+    nextTick: function (fn) { setTimeout(fn, 0); },
+    onError: function () {},
+
+    showToast: function (o) { window.__UI && window.__UI.toast((o && o.title) || ''); },
+    hideToast: function () {},
+    showLoading: function (o) { window.__UI && window.__UI.loading(o && o.title); },
+    hideLoading: function () { window.__UI && window.__UI.loadingHide(); },
+    showModal: function (o) {
+      if (window.__UI) window.__UI.modal(o, o.success, o.complete);
+      else { o.success && o.success({ confirm: true }); o.complete && o.complete({ confirm: true }); }
+    },
+
+    requestSubscribeMessage: function (o) { o && o.fail && o.fail({ errMsg: 'preview' }); },
+    requestPayment: function (o) { o && o.fail && o.fail({ errMsg: 'requestPayment:fail' }); },
+    /* 预览版没有真实微信登录，但 auth 的 USE_MOCK 分支并不使用 code 的值 */
+    login: function (o) { o && o.success && o.success({ code: 'preview_code_' + Date.now() }); },
+    checkSession: function (o) { o && o.success && o.success({}); },
+    vibrateShort: function () {},
+    setTabBarBadge: function () {},
+    removeTabBarBadge: function () {},
+    makePhoneCall: function () { window.__UI && window.__UI.toast('已模拟拨号 010-8888 6666'); },
+    openLocation: function () { window.__UI && window.__UI.toast('已模拟打开地图：东直门内大街 188 号'); },
+    setClipboardData: function (o) {
+      try { navigator.clipboard.writeText(o.data); } catch (e) {}
+      o && o.success && o.success({});
+    },
+    uploadFile: function (o) { o && o.fail && o.fail({ errMsg: 'preview' }); },
+    env: { USER_DATA_PATH: '/preview' },
+    /* 预览版没有文件系统：让 auth.updateProfile 回落到「原样使用 dataURL」分支 */
+    getFileSystemManager: function () {
+      return { copyFileSync: function () { throw new Error('preview: no fs'); } };
+    },
+  };
+
+  var __app__ = {
+    globalData: {
+      userInfo: null,
+      shop: null,
+      menuCache: null,
+      systemInfo: null,
+      statusBarHeight: 20,
+      launchTs: Date.now(),
+    },
+  };
+  window.getApp = function () { return __app__; };
+
+  /* ---------- 3) 极简 CommonJS 加载器 ---------- */
+  var cache = {};
+
+  function dirname(p) {
+    var i = p.lastIndexOf('/');
+    return i < 0 ? '' : p.slice(0, i);
+  }
+
+  function resolve(from, spec) {
+    if (spec.charAt(0) !== '.') return spec;
+    var parts = dirname(from).split('/').filter(Boolean);
+    spec.split('/').forEach(function (seg) {
+      if (seg === '.' || seg === '') return;
+      if (seg === '..') parts.pop();
+      else parts.push(seg);
+    });
+    var p = parts.join('/');
+    if (!/\.js$/.test(p)) p += '.js';
+    return p;
+  }
+
+  function load(key) {
+    if (cache[key]) return cache[key].exports;
+    var src = __SRC__[key];
+    if (src == null) throw new Error('[preview] 模块未内联: ' + key);
+    var mod = { exports: {} };
+    cache[key] = mod;
+    var localRequire = function (spec) { return load(resolve(key, spec)); };
+    var fn = new Function(
+      'require', 'module', 'exports', '__filename', '__dirname',
+      src + '\n//# sourceURL=' + key
+    );
+    fn(localRequire, mod, mod.exports, key, dirname(key));
+    return mod.exports;
+  }
+
+  window.__require = function (spec) { return load(resolve('', spec)); };
+  window.__MODULE_LIST__ = Object.keys(__SRC__);
+})();
+</script>
+<script>/* ============================================================
+   老北京麻辣串串香 · 点单小程序 预览版视图层
+   ------------------------------------------------------------
+   业务代码全部复用小程序源码（由构建脚本内联）：
+     utils/cart.js     购物车状态中心（发布订阅 + 持久化）
+     utils/auth.js     静默登录 / 用户资料
+     utils/util.js     分元换算 / 时间格式化
+     services/menu.js  菜单 + 缓存
+     services/order.js 订单 + 状态机
+     mock/menu.js      6 分类 / 30 菜品 / 4 锅底 / 4 蘸料 / 4 档辣度
+     mock/coupon.js    优惠券 + 抵扣计算
+   本文件只负责把 WXML/WXSS 翻译成 HTML/CSS 与事件绑定。
+   ============================================================ */
+(function () {
+  'use strict';
+
+  const MENU_SVC = __require('services/menu.js');
+  const CART = __require('utils/cart.js');
+  const ORDER = __require('services/order.js');
+  const AUTH = __require('utils/auth.js');
+  const MOCK_COUPON = __require('mock/coupon.js');
+  const UTIL = __require('utils/util.js');
+
+  /* ---------------------------------------------------------- 状态 */
+  const S = {
+    screen: 'menu',
+    loading: true,
+    menu: null,
+    dishMap: {},
+    dishCategory: {},
+    activeCat: '',
+    lockSync: false,
+    sectionTops: [],
+
+    countMap: {},
+    catCount: {},
+    cartSummary: { count: 0, kinds: 0, totalText: '0.00', soupFee: 0, soupFeeText: '0.00' },
+
+    diningType: 'dinein',
+    tableNo: '',
+    tables: [],
+
+    skuShow: false,
+    skuDish: null,
+    skuSpicy: '',
+    skuCount: 1,
+
+    cartItems: [],
+    dipChecked: {},
+
+    coupons: [],
+    coupon: null,
+    discountText: '0.00',
+    payText: '0.00',
+    usableCount: 0,
+    submitting: false,
+
+    orders: [],
+    ordersFilter: 'all',
+    ordersCounts: {},
+
+    order: null,
+    polling: false,
+
+    user: {},
+    stats: { orderCount: 0, ongoingCount: 0, couponCount: 0 },
+  };
+
+  const TITLES = {
+    menu: '点单',
+    cart: '购物车',
+    confirm: '确认订单',
+    orders: '我的订单',
+    'order-detail': '订单详情',
+    mine: '我的',
+  };
+  const TABS = [
+    { key: 'menu', icon: '🍢', text: '点单' },
+    { key: 'cart', icon: '🛒', text: '购物车' },
+    { key: 'orders', icon: '🧾', text: '订单' },
+    { key: 'mine', icon: '👤', text: '我的' },
+  ];
+
+  /* ---------------------------------------------------------- 工具 */
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.prototype.slice.call((r || document).querySelectorAll(s));
+  const esc = (s) =>
+    String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+    }[c]));
+  const fen = (n) => (Number(n || 0) / 100).toFixed(2);
+
+  /* ---------------------------------------------------------- UI 基础件 */
+  const UI = {
+    _tt: null,
+    toast(title) {
+      const el = $('#toast');
+      el.textContent = title;
+      el.classList.add('on');
+      clearTimeout(this._tt);
+      this._tt = setTimeout(() => el.classList.remove('on'), 1700);
+    },
+
+    _pending: null,
+    modal(opt, success, complete) {
+      const root = $('#modal-root');
+      const showCancel = opt.showCancel !== false;
+      root.innerHTML = `
+        <div class="modal-mask">
+          <div class="modal">
+            <div class="modal__title">${esc(opt.title || '提示')}</div>
+            <div class="modal__body">${esc(opt.content || '')}</div>
+            <div class="modal__foot">
+              ${showCancel ? `<button class="modal__btn" data-r="0">${esc(opt.cancelText || '取消')}</button>` : ''}
+              <button class="modal__btn primary" data-r="1">${esc(opt.confirmText || '确定')}</button>
+            </div>
+          </div>
+        </div>`;
+      const close = (ok) => {
+        root.innerHTML = '';
+        if (success) success({ confirm: ok, cancel: !ok });
+        if (complete) complete({ confirm: ok, cancel: !ok });
+      };
+      $$('.modal__btn', root).forEach((b) =>
+        b.addEventListener('click', () => close(b.dataset.r === '1'))
+      );
+    },
+
+    /** 自定义列表弹窗（优惠券选择） */
+    picker(title, options, onPick) {
+      const root = $('#modal-root');
+      root.innerHTML = `
+        <div class="modal-mask">
+          <div class="modal">
+            <div class="modal__title">${esc(title)}</div>
+            <div class="modal__list">
+              ${options
+                .map(
+                  (o, i) =>
+                    `<div class="modal__opt ${o.disabled ? 'dis' : ''}" data-i="${i}">
+                       <span>${esc(o.label)}</span><b>${esc(o.right || '')}</b>
+                     </div>`
+                )
+                .join('')}
+            </div>
+            <div class="modal__foot">
+              <button class="modal__btn" data-r="0">取消</button>
+            </div>
+          </div>
+        </div>`;
+      $$('.modal__opt', root).forEach((el) =>
+        el.addEventListener('click', () => {
+          const o = options[Number(el.dataset.i)];
+          if (o.disabled) {
+            UI.toast('未达到使用门槛');
+            return;
+          }
+          root.innerHTML = '';
+          onPick(o, Number(el.dataset.i));
+        })
+      );
+      $$('.modal__btn', root).forEach((b) =>
+        b.addEventListener('click', () => (root.innerHTML = ''))
+      );
+    },
+
+    loading(title) {
+      const el = $('#loading');
+      $('.loading-box', el).textContent = title || '加载中';
+      el.hidden = false;
+    },
+    loadingHide() {
+      $('#loading').hidden = true;
+    },
+  };
+  window.__UI = UI;
+
+  /* ---------------------------------------------------------- 渲染骨架 */
+  function navbarHtml() {
+    const isTab = ['menu', 'cart', 'orders', 'mine'].indexOf(S.screen) > -1;
+    const canBack = S.screen === 'confirm' || S.screen === 'order-detail';
+    return `
+      <div class="navbar ${S.screen === 'menu' ? 'navbar--brand' : ''}">
+        ${canBack ? '<div class="navbar__back" onclick="A.back()">‹</div>' : ''}
+        ${esc(TITLES[S.screen] || '')}
+        <div class="navbar__capsule">•••<i></i>⊙</div>
+      </div>`;
+  }
+
+  function tabbarHtml() {
+    const isTab = ['menu', 'cart', 'orders', 'mine'].indexOf(S.screen) > -1;
+    const count = S.cartSummary.count;
+    return `<nav class="tabbar ${isTab ? '' : 'hidden'}">
+      ${TABS.map(
+        (t) => `
+        <div class="tabbar__item ${S.screen === t.key ? 'on' : ''}" onclick="A.goTab('${t.key}')">
+          <div class="tabbar__icon">${t.icon}</div>
+          <div>${t.text}</div>
+          ${t.key === 'cart' && count ? `<div class="tabbar__badge">${count > 99 ? '99+' : count}</div>` : ''}
+        </div>`
+      ).join('')}
+    </nav>`;
+  }
+
+  function render() {
+    $('#navbar-root').innerHTML = navbarHtml();
+    const keep = $('#pscroll') ? $('#pscroll').scrollTop : 0;
+    const map = {
+      menu: screenMenu,
+      cart: screenCart,
+      confirm: screenConfirm,
+      orders: screenOrders,
+      'order-detail': screenOrderDetail,
+      mine: screenMine,
+    };
+    $('#screen').innerHTML = (map[S.screen] || screenMenu)();
+    $('#tabbar-root').innerHTML = tabbarHtml();
+    const sc = $('#pscroll');
+    if (sc && keep) sc.scrollTop = keep;
+    if (S.screen === 'menu') requestAnimationFrame(measureSections);
+  }
+
+  /* ---------------------------------------------------------- 规格弹层 */
+  function stepperHtml(o) {
+    const show = o.value > o.min || o.min > 0;
+    return `<div class="stepper ${o.size || ''}">
+      ${show
+        ? `<button class="stepper__btn stepper__minus ${o.value <= o.min ? 'off' : ''}" onclick="A.${o.act}('${o.id}',-1)">−</button>
+           <div class="stepper__num" id="${o.numId || ''}">${o.value}</div>`
+        : ''}
+      <button class="stepper__btn stepper__plus" onclick="A.${o.act}('${o.id}',1)">+</button>
+    </div>`;
+  }
+
+  function renderSku() {
+    const d = S.skuDish;
+    const root = $('#sku-root');
+    if (!d) {
+      root.innerHTML = '';
+      return;
+    }
+    const opts = d.spicyOptions || [];
+    const total = ((d.price * S.skuCount) / 100).toFixed(2);
+    root.innerHTML = `
+      <div class="sku-mask ${S.skuShow ? 'on' : ''}" onclick="A.skuClose()"></div>
+      <div class="sku-panel ${S.skuShow ? 'on' : ''}">
+        <div class="sku-head">
+          <div class="sku-head__emoji">${d.emoji}</div>
+          <div class="sku-head__main">
+            <div class="sku-head__name">${esc(d.name)}</div>
+            <div class="sku-head__desc ell">${esc(d.desc)}</div>
+            <div class="sku-head__price"><span class="price__u">¥</span><b>${d.priceText}</b><i>/${d.unit}</i></div>
+          </div>
+          <div class="sku-head__close" onclick="A.skuClose()">✕</div>
+        </div>
+        <div class="sku-body">
+          <div class="sku-group">
+            <div class="sku-group__title">辣度<span class="sku-group__req">必选</span>
+              <span class="sku-group__picked">${esc(UTIL ? '' : '')}${esc(
+      (opts.find((o) => o.id === S.skuSpicy) || {}).name || ''
+    )}</span>
+            </div>
+            <div class="sku-opts">
+              ${opts
+                .map(
+                  (o) => `
+                <div class="sku-opt ${S.skuSpicy === o.id ? 'on' : ''}"
+                     style="${S.skuSpicy === o.id ? `border-color:${o.color};color:${o.color};background:${o.color}12` : ''}"
+                     onclick="A.skuPick('${o.id}')">
+                  <span class="sku-opt__dot" style="background:${o.color}"></span>${esc(o.name)}
+                </div>`
+                )
+                .join('')}
+            </div>
+          </div>
+          <div class="sku-group">
+            <div class="sku-group__title">数量</div>
+            <div class="sku-qty">
+              ${stepperHtml({ value: S.skuCount, min: 1, max: d.stock, size: 'lg', act: 'skuCount', id: 'x' })}
+              <span class="sku-qty__unit">约 ${S.skuCount}${esc(d.unit)}</span>
+            </div>
+          </div>
+          <div class="sku-tip">💡 锅底与蘸料是整单选项，加入购物车后统一选择</div>
+        </div>
+        <div class="sku-foot">
+          <div>
+            <div class="sku-foot__label">小计</div>
+            <div class="price"><span class="price__u">¥</span><span class="sku-foot__num">${total}</span></div>
+          </div>
+          <button class="sku-foot__btn" onclick="A.skuConfirm()">加入购物车</button>
+        </div>
+      </div>`;
+  }
+
+  /* ---------------------------------------------------------- 页面：点单 */
+  function dishControl(d, n) {
+    if (d.spicy) {
+      return `${n ? `<div class="dish__qty">${n}</div>` : ''}
+              <button class="dish__add" onclick="A.addDish('${d.id}')">+</button>`;
+    }
+    return stepperHtml({ value: n, min: 0, max: d.stock, size: 'sm', act: 'dishStep', id: d.id });
+  }
+
+  function dishRow(d, n) {
+    return `<div class="dish">
+      <div class="dish__img"><span>${d.emoji}</span>${d.sold > 5000 ? '<div class="dish__hot">热销</div>' : ''}</div>
+      <div class="dish__main">
+        <div class="dish__name ell">${esc(d.name)}</div>
+        <div class="dish__desc ell">${esc(d.desc)}</div>
+        <div class="dish__tags">
+          ${d.tags.map((t) => `<span class="tag">${esc(t)}</span>`).join('')}
+          ${d.spicy ? '<span class="tag tag--accent">可选辣度</span>' : ''}
+        </div>
+        <div class="dish__bottom">
+          <div class="dish__price"><span class="price__u">¥</span><b>${d.priceText}</b><i>/${esc(d.unit)}</i></div>
+          <div id="ctl-${d.id}">${dishControl(d, n)}</div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function cartbarHtml() {
+    const c = S.cartSummary;
+    return `<div class="cartbar">
+      <div class="cartbar__left" onclick="A.goTab('cart')">
+        <div class="cartbar__icon ${c.count ? 'on' : ''}">🛒${
+      c.count ? `<div class="cartbar__badge">${c.count > 99 ? '99+' : c.count}</div>` : ''
+    }</div>
+        <div class="cartbar__text">
+          ${
+            c.count
+              ? `<div class="cartbar__amount"><span class="price__u">¥</span>${c.totalText}${
+                  c.soupFee ? `<em>含锅底 ¥${c.soupFeeText}</em>` : ''
+                }</div>
+                 <div class="cartbar__sub">已选 ${c.count} 件 · ${c.kinds} 种</div>`
+              : '<div class="cartbar__empty">还没选串，点「+」开始吧</div>'
+          }
+        </div>
+      </div>
+      <button class="cartbar__btn ${c.count ? 'on' : ''}" onclick="A.goTab('cart')">${c.count ? '去结算' : '选好了'}</button>
+    </div>`;
+  }
+
+  function screenMenu() {
+    if (S.loading || !S.menu) {
+      return `<div class="body" style="background:#fff">
+        ${[1, 2, 3]
+          .map(
+            () => `<div class="sk">
+              <div class="sk__img"></div>
+              <div style="flex:1;padding-top:6px">
+                <div class="sk__l" style="width:60%"></div>
+                <div class="sk__l" style="width:90%"></div>
+                <div class="sk__l" style="width:35%"></div>
+              </div>
+            </div>`
+          )
+          .join('')}
+      </div>`;
+    }
+    const m = S.menu;
+    const shop = m.shop;
+    return `
+      <div class="shop">
+        <div class="shop__top">
+          <div class="shop__logo">${shop.logo}</div>
+          <div class="shop__info">
+            <div class="shop__name ell">${esc(shop.name)}</div>
+            <div class="shop__notice ell">${esc(shop.notice)}</div>
+          </div>
+        </div>
+        <div class="shop__bottom">
+          <div class="seg">
+            <div class="seg__item ${S.diningType === 'dinein' ? 'on' : ''}" onclick="A.setDining('dinein')">堂食</div>
+            <div class="seg__item ${S.diningType === 'takeout' ? 'on' : ''}" onclick="A.setDining('takeout')">到店自取</div>
+          </div>
+          ${
+            S.diningType === 'dinein'
+              ? `<select class="shop__table" onchange="A.setTable(this.value)">
+                   ${S.tables.map((t) => `<option ${t === S.tableNo ? 'selected' : ''}>${esc(t)}</option>`).join('')}
+                 </select>`
+              : '<span style="font-size:11px;opacity:.8">自取免排队 · 打包费 ¥1.00</span>'
+          }
+        </div>
+      </div>
+      <div class="body">
+        <div class="cats" id="cats">
+          ${m.categories
+            .map(
+              (cat) => `
+            <div class="cat ${S.activeCat === cat.id ? 'on' : ''}" id="cat-${cat.id}" onclick="A.tapCat('${cat.id}')">
+              <div class="cat__emoji">${cat.emoji}</div>
+              <div class="cat__name">${esc(cat.name)}</div>
+              ${S.catCount[cat.id] ? `<div class="cat__badge">${S.catCount[cat.id]}</div>` : ''}
+            </div>`
+            )
+            .join('')}
+        </div>
+        <div class="dishes" id="dishes" onscroll="A.onDishScroll()">
+          ${m.categories
+            .map(
+              (cat) => `
+            <div id="sec-${cat.id}">
+              <div class="sec__title">${esc(cat.name)}<span class="sec__count">${cat.dishes.length} 款</span></div>
+              ${cat.dishes.map((d) => dishRow(d, S.countMap[d.id] || 0)).join('')}
+            </div>`
+            )
+            .join('')}
+          <div class="list-end">— 共 ${m.totalDishes} 款菜品，已到底部 —</div>
+          <div style="height:76px"></div>
+        </div>
+      </div>
+      ${cartbarHtml()}`;
+  }
+
+  /* ---------------------------------------------------------- 页面：购物车 */
+  function screenCart() {
+    const st = CART.get();
+    if (!st.items.length) {
+      return `<div class="empty">
+        <div class="empty__icon">🛒</div>
+        <div class="empty__text">购物车还是空的</div>
+        <div class="empty__btn" onclick="A.goTab('menu')">去选串串</div>
+      </div>`;
+    }
+    const sum = S.cartSummary;
+    const soups = (S.menu && S.menu.soups) || [];
+    const dips = (S.menu && S.menu.dips) || [];
+    const dipsText = st.dips.map((d) => d.name).join('、');
+
+    return `
+    <div class="pscroll" id="pscroll">
+      <div class="card">
+        <div class="between">
+          <div class="lbl">就餐方式</div>
+          <div class="seg">
+            <div class="seg__item ${st.diningType === 'dinein' ? 'on' : ''}" onclick="A.setDining('dinein')">堂食</div>
+            <div class="seg__item ${st.diningType === 'takeout' ? 'on' : ''}" onclick="A.setDining('takeout')">到店自取</div>
+          </div>
+        </div>
+        ${
+          st.diningType === 'dinein'
+            ? `<div class="between mt">
+                 <div class="lbl">桌号</div>
+                 <select class="shop__table" style="background:#fafafc;color:#c62828;border:1px solid #ededf0" onchange="A.setTable(this.value)">
+                   ${S.tables.map((t) => `<option ${t === st.tableNo ? 'selected' : ''}>${esc(t)}</option>`).join('')}
+                 </select>
+               </div>`
+            : ''
+        }
+        <div class="between mt">
+          <div class="lbl">就餐人数</div>
+          ${stepperHtml({ value: st.peopleCount, min: 1, max: 20, size: 'sm', act: 'people', id: 'x' })}
+        </div>
+        ${st.diningType === 'takeout' ? '<div class="tip mt">自取订单会增加 ¥1.00 打包费，到店后凭取餐码取餐</div>' : ''}
+      </div>
+
+      <div class="block-title">选锅底<span class="block-title__req">必选 1 项</span></div>
+      <div class="soups">
+        ${soups
+          .map(
+            (s) => `
+          <div class="soup ${st.soup && st.soup.id === s.id ? 'on' : ''}" onclick="A.pickSoup('${s.id}')">
+            ${s.recommended ? '<div class="soup__badge">推荐</div>' : ''}
+            <div class="soup__emoji">${s.emoji}</div>
+            <div class="soup__name ell">${esc(s.name)}</div>
+            <div class="soup__price">¥${s.priceText}</div>
+          </div>`
+          )
+          .join('')}
+      </div>
+
+      <div class="block-title">选蘸料<span class="block-title__sub">可多选 · 免费</span></div>
+      <div class="card dips">
+        ${dips
+          .map(
+            (d) => `
+          <div class="dip ${S.dipChecked[d.id] ? 'on' : ''}" onclick="A.toggleDip('${d.id}','${esc(d.name)}')">
+            ${d.emoji}${esc(d.name)}${S.dipChecked[d.id] ? ' ✓' : ''}
+          </div>`
+          )
+          .join('')}
+      </div>
+
+      <div class="block-title">已选明细
+        <span class="block-title__sub">${sum.count} 件 / ${st.items.length} 种</span>
+        <span class="block-title__clear" onclick="A.clearItems()">清空</span>
+      </div>
+      <div class="card">
+        ${S.cartItems
+          .map(
+            (it) => `
+          <div class="item">
+            <div class="item__img">${it.emoji}</div>
+            <div class="item__main">
+              <div class="item__name-wrap">
+                <div class="item__name ell">${esc(it.name)}</div>
+                <div class="item__del" onclick="A.delItem('${it.key}')">✕</div>
+              </div>
+              <div class="item__spec"><span>${it.spicyName ? '🌶 ' + esc(it.spicyName) : '默认口味'}</span></div>
+              <div class="item__bottom">
+                <div class="item__price"><span class="price__u">¥</span>${it.priceText}<i>/${esc(it.unit)}</i></div>
+                ${stepperHtml({ value: it.count, min: 0, max: 99, size: 'sm', act: 'itemStep', id: it.key })}
+              </div>
+            </div>
+          </div>`
+          )
+          .join('')}
+        <div class="items__tip">在小程序里是「长按删除」，预览版为了好点改成了右上角 ✕</div>
+      </div>
+
+      <div class="card">
+        <div class="lbl">口味备注</div>
+        <textarea class="remark" id="remark" maxlength="100" placeholder="例如：牛肉串涮久一点 / 不要香菜 / 少放油"
+          onchange="A.remarkChange(this.value)">${esc(st.remark)}</textarea>
+        <div class="remark__count">${(st.remark || '').length}/100</div>
+      </div>
+
+      <div class="card amounts">
+        <div class="between"><span class="muted">菜品小计</span><span>¥${sum.goodsText}</span></div>
+        <div class="between mt-s"><span class="muted">锅底${st.soup ? '（' + esc(st.soup.name) + '）' : ''}</span><span>¥${sum.soupFeeText}</span></div>
+        ${sum.packFee ? `<div class="between mt-s"><span class="muted">打包费</span><span>¥${sum.packFeeText}</span></div>` : ''}
+        <div class="divider"></div>
+        <div class="between"><span class="lbl">合计</span>
+          <span class="price total"><span class="price__u">¥</span>${sum.totalText}</span></div>
+      </div>
+      <div class="holder"></div>
+    </div>
+
+    <div class="actionbar">
+      <div class="actionbar__left">
+        <div class="actionbar__label">合计</div>
+        <div class="actionbar__amount"><span class="price__u">¥</span>${sum.totalText}</div>
+        ${!sum.canSubmit ? `<div class="actionbar__warn">${esc(blockReason(sum, st))}</div>` : ''}
+      </div>
+      <button class="btn-primary actionbar__btn ${sum.canSubmit ? '' : 'disabled'}" onclick="A.goConfirm()">
+        去结算(${sum.count})
+      </button>
+    </div>`;
+  }
+
+  function blockReason(sum, st) {
+    if (!st.items.length) return '请先选择菜品';
+    if (!st.soup) return '请选择锅底';
+    if (st.diningType === 'dinein' && !st.tableNo) return '请选择桌号';
+    return '';
+  }
+
+  /* ---------------------------------------------------------- 页面：结算 */
+  function screenConfirm() {
+    const st = CART.get();
+    const sum = S.cartSummary;
+    const items = CART.toOrderItems();
+    return `
+    <div class="pscroll" id="pscroll">
+      <div class="card">
+        <div class="between"><span class="lbl">就餐方式</span>
+          <span class="val">${st.diningType === 'takeout' ? '到店自取' : '堂食'}${st.tableNo ? ' · ' + esc(st.tableNo) : ''}</span></div>
+        <div class="between mt-s"><span class="lbl">就餐人数</span><span class="val">${st.peopleCount} 人</span></div>
+        <div class="between mt-s"><span class="lbl">锅底</span><span class="val">${st.soup ? esc(st.soup.name) : '未选择'}</span></div>
+        <div class="between mt-s"><span class="lbl">蘸料</span>
+          <span class="val ell">${st.dips.length ? esc(st.dips.map((d) => d.name).join('、')) : '未选择'}</span></div>
+      </div>
+
+      <div class="block-title">订单明细<span class="block-title__sub">共 ${sum.count} 件</span></div>
+      <div class="card">
+        ${items
+          .map(
+            (l) => `
+          <div class="line">
+            <div class="line__left">
+              <div class="line__name ell">${esc(l.name)}</div>
+              ${l.spicyName ? `<div class="line__spec">🌶 ${esc(l.spicyName)}</div>` : ''}
+            </div>
+            <div class="line__qty">×${l.count}</div>
+            <div class="line__amount">¥${fen(l.amount)}</div>
+          </div>`
+          )
+          .join('')}
+      </div>
+
+      <div class="block-title">优惠</div>
+      <div class="card">
+        <div class="between" style="cursor:pointer" onclick="A.pickCoupon()">
+          <span class="lbl">优惠券</span>
+          <span class="row">
+            ${
+              S.coupon
+                ? `<span class="price">-¥${S.discountText} · ${esc(S.coupon.name)}</span>`
+                : `<span class="muted">${S.usableCount ? S.usableCount + ' 张可用' : '暂无可用'}</span>`
+            }
+            <span style="color:#c8c8cd;font-size:15px;margin-left:6px">›</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="block-title">口味备注</div>
+      <div class="card"><div style="font-size:13px;color:#5c5c60;line-height:1.6">${esc(st.remark || '无')}</div></div>
+
+      <div class="card amounts">
+        <div class="between"><span class="muted">菜品小计</span><span>¥${sum.goodsText}</span></div>
+        <div class="between mt-s"><span class="muted">锅底</span><span>¥${sum.soupFeeText}</span></div>
+        ${sum.packFee ? `<div class="between mt-s"><span class="muted">打包费</span><span>¥${sum.packFeeText}</span></div>` : ''}
+        ${Number(S.discountText) ? `<div class="between mt-s"><span class="muted">优惠券抵扣</span><span class="price">-¥${S.discountText}</span></div>` : ''}
+        <div class="divider"></div>
+        <div class="between"><span class="lbl">应付金额</span>
+          <span class="price total"><span class="price__u">¥</span>${S.payText}</span></div>
+      </div>
+      <div style="padding:4px 16px 0;font-size:10.5px;color:#b8b8bd;line-height:1.6">
+        下单即表示同意《点单服务协议》，请在 15 分钟内完成支付
+      </div>
+      <div class="holder"></div>
+    </div>
+
+    <div class="actionbar">
+      <div class="actionbar__left">
+        <div class="actionbar__label">实付</div>
+        <div class="actionbar__amount"><span class="price__u">¥</span>${S.payText}</div>
+      </div>
+      <button class="btn-primary actionbar__btn ${S.submitting ? 'disabled' : ''}" onclick="A.submitOrder()">
+        ${S.submitting ? '提交中…' : '提交订单'}
+      </button>
+    </div>`;
+  }
+
+  /* ---------------------------------------------------------- 页面：订单列表 */
+  function screenOrders() {
+    const list = S.orders;
+    const body = list.length
+      ? list
+          .map(
+            (o) => `
+        <div class="order">
+          <div class="order__head">
+            <div class="order__shop ell">${esc(o.shopName)}</div>
+            <div class="order__status" style="color:${o.statusColor}">${esc(o.statusText)}</div>
+          </div>
+          <div class="order__body" onclick="A.openDetail('${o.id}')">
+            ${o.items.slice(0, 4).map((i) => `<div class="order__thumb">${i.emoji}</div>`).join('')}
+            <div class="order__info">
+              <div class="order__names ell2">${esc(o.summaryText)}</div>
+              <div class="order__meta">${esc(o.diningTypeText)}${o.tableNo ? ' · ' + esc(o.tableNo) : ''} · ${o.itemCount} 件</div>
+            </div>
+          </div>
+          <div class="order__foot">
+            <div class="order__time">${esc(o.createDateText)}</div>
+            <div class="order__pay">实付 <span class="order__amount">¥${o.amount.payText}</span></div>
+          </div>
+          <div class="order__actions">
+            ${o.canCancel ? `<button class="btn-ghost" onclick="A.cancelOrder('${o.id}')">取消订单</button>` : ''}
+            ${o.canPay ? `<button class="btn-primary" style="height:32px;font-size:13px;padding:0 16px" onclick="A.payOrder('${o.id}')">去支付</button>` : ''}
+            ${o.canReorder ? `<button class="btn-ghost" onclick="A.reorder('${o.id}')">再来一单</button>` : ''}
+            ${!o.canCancel && !o.canPay ? `<button class="btn-ghost" onclick="A.openDetail('${o.id}')">查看详情</button>` : ''}
+          </div>
+        </div>`
+          )
+          .join('') + '<div class="list-end">— 没有更多订单了 —</div>'
+      : S.loading
+      ? '<div style="text-align:center;padding:80px 0;color:#b8b8bd;font-size:13px">加载中…</div>'
+      : `<div class="empty">
+           <div class="empty__icon">🧾</div>
+           <div class="empty__text">还没有订单，先去选几串吧</div>
+           <div class="empty__btn" onclick="A.goTab('menu')">去点单</div>
+         </div>`;
+
+    return `
+    <div class="tabs">
+      ${ORDER.FILTERS.map(
+        (f) => `
+        <div class="tabs__item ${S.ordersFilter === f.key ? 'on' : ''}" onclick="A.setFilter('${f.key}')">
+          ${f.name}
+          ${S.ordersCounts[f.key] ? `<div class="tabs__badge">${S.ordersCounts[f.key]}</div>` : ''}
+        </div>`
+      ).join('')}
+    </div>
+    <div class="pscroll" id="pscroll">${body}<div style="height:16px"></div></div>`;
+  }
+
+  /* ---------------------------------------------------------- 页面：订单详情 */
+  function screenOrderDetail() {
+    const o = S.order;
+    if (!o) return '<div style="text-align:center;padding:80px 0;color:#b8b8bd;font-size:13px">加载中…</div>';
+    const showPickup = o.status !== 'UNPAID' && o.status !== 'CANCELED';
+    return `
+    <div class="pscroll" id="pscroll">
+      <div class="banner" style="background:linear-gradient(150deg,${o.statusColor},${o.statusColor}cc)">
+        <div class="banner__status">${esc(o.statusText)}</div>
+        <div class="banner__desc">${esc(o.statusDesc)}</div>
+        ${
+          showPickup
+            ? `<div class="banner__pickup">
+                 <div class="banner__pickup-label">${o.diningType === 'takeout' ? '取餐码' : '桌号'}</div>
+                 <div class="banner__pickup-no">${esc(o.diningType === 'takeout' ? o.pickupNo : o.tableNo)}</div>
+                 <div class="banner__pickup-tip">${o.diningType === 'takeout' ? '请到取餐口报号取餐' : '菜品将送至该桌，请留意上菜'}</div>
+               </div>`
+            : ''
+        }
+      </div>
+
+      ${
+        o.timeline.length
+          ? `<div class="card">
+               <div class="block-title" style="padding:0;margin:0 0 10px">订单进度</div>
+               <div class="tl">
+                 ${o.timeline
+                   .map(
+                     (s, i) => `
+                   <div class="tl__item ${s.done ? 'done' : ''} ${s.current ? 'cur' : ''}">
+                     <div class="tl__axis">
+                       <div class="tl__dot"></div>
+                       ${i < o.timeline.length - 1 ? '<div class="tl__line"></div>' : ''}
+                     </div>
+                     <div class="tl__main">
+                       <div class="tl__text">${esc(s.text)}</div>
+                       <div class="tl__time">${esc(s.timeText || '等待中')}</div>
+                     </div>
+                   </div>`
+                   )
+                   .join('')}
+               </div>
+               ${S.polling ? '<div class="tl__hint">● 状态实时刷新中（每 5 秒）</div>' : ''}
+             </div>`
+          : ''
+      }
+
+      <div class="card">
+        <div class="between"><span class="lbl">就餐方式</span>
+          <span class="val">${esc(o.diningTypeText)}${o.tableNo ? ' · ' + esc(o.tableNo) : ''}</span></div>
+        <div class="between mt-s"><span class="lbl">就餐人数</span><span class="val">${o.peopleCount} 人</span></div>
+        <div class="between mt-s"><span class="lbl">锅底</span><span class="val">${esc(o.soupText)}</span></div>
+        <div class="between mt-s"><span class="lbl">蘸料</span><span class="val ell">${esc(o.dipsText)}</span></div>
+        <div class="between mt-s"><span class="lbl">口味备注</span><span class="val ell">${esc(o.remark || '无')}</span></div>
+      </div>
+
+      <div class="block-title">菜品明细<span class="block-title__sub">共 ${o.itemCount} 件</span></div>
+      <div class="card">
+        ${o.items
+          .map(
+            (l) => `
+          <div class="line">
+            <div class="line__icon">${l.emoji}</div>
+            <div class="line__left">
+              <div class="line__name ell">${esc(l.name)}</div>
+              ${l.spicyName ? `<div class="line__spec">🌶 ${esc(l.spicyName)}</div>` : ''}
+            </div>
+            <div class="line__qty">×${l.count}</div>
+            <div class="line__amount">¥${l.amountText}</div>
+          </div>`
+          )
+          .join('')}
+        <div class="divider"></div>
+        <div class="between"><span class="muted">菜品小计</span><span>¥${o.amount.goodsText}</span></div>
+        <div class="between mt-s"><span class="muted">锅底</span><span>¥${o.amount.soupFeeText}</span></div>
+        ${o.amount.packFee ? `<div class="between mt-s"><span class="muted">打包费</span><span>¥${o.amount.packFeeText}</span></div>` : ''}
+        ${o.amount.discount ? `<div class="between mt-s"><span class="muted">优惠券抵扣</span><span class="price">-¥${o.amount.discountText}</span></div>` : ''}
+        <div class="divider"></div>
+        <div class="between"><span class="lbl">实付金额</span>
+          <span class="price total"><span class="price__u">¥</span>${o.amount.payText}</span></div>
+      </div>
+
+      <div class="card">
+        <div class="between"><span class="muted">订单号</span>
+          <span class="row"><span class="val">${esc(o.orderNo)}</span>
+            <span class="copy" onclick="A.copyOrderNo()">复制</span></span></div>
+        <div class="between mt-s"><span class="muted">下单时间</span><span class="val">${esc(o.createDateText)}</span></div>
+        <div class="between mt-s"><span class="muted">门店</span><span class="val ell">${esc(o.shopName)}</span></div>
+      </div>
+      <div class="holder"></div>
+    </div>
+
+    <div class="actionbar">
+      <button class="btn-ghost" onclick="A.callShop()">联系门店</button>
+      ${o.canCancel ? `<button class="btn-ghost" onclick="A.cancelOrder('${o.id}')">取消订单</button>` : ''}
+      ${o.canReorder ? `<button class="btn-ghost" onclick="A.reorder('${o.id}')">再来一单</button>` : ''}
+      ${o.canFinish ? `<button class="btn-ghost" onclick="A.finishOrder('${o.id}')">确认完成</button>` : ''}
+      ${
+        o.canPay
+          ? `<button class="btn-primary" style="flex:1" onclick="A.payOrder('${o.id}')">立即支付 ¥${o.amount.payText}</button>`
+          : ''
+      }
+    </div>`;
+  }
+
+  /* ---------------------------------------------------------- 页面：我的 */
+  function screenMine() {
+    const u = S.user || {};
+    const shop = (S.menu && S.menu.shop) || {};
+    return `
+    <div class="ucard">
+      <div class="ucard__avatar" onclick="A.pickAvatar()">
+        ${u.avatar ? `<img src="${esc(u.avatar)}" style="width:64px;height:64px;border-radius:50%;object-fit:cover">` : '🌶️'}
+        <div class="ucard__camera">📷</div>
+      </div>
+      <div class="ucard__main">
+        <input class="ucard__nick" id="nick" value="${esc(u.nickname || '')}" placeholder="点击设置昵称" maxlength="16">
+        <div class="ucard__sub">
+          <span class="ucard__level">${esc(u.memberName || '铜签会员')}</span>
+          <span class="ucard__points">成长值 ${u.points || 0}</span>
+        </div>
+      </div>
+      <button class="btn-primary" style="height:30px;font-size:12px;padding:0 14px" onclick="A.saveProfile()">保存</button>
+    </div>
+
+    <div class="stats">
+      <div class="stats__item" onclick="A.goTab('orders')">
+        <div class="stats__num">${S.stats.orderCount}</div>
+        <div class="stats__label">我的订单</div>
+      </div>
+      <div class="stats__line"></div>
+      <div class="stats__item" onclick="A.pickCoupon(true)">
+        <div class="stats__num">${S.stats.couponCount}</div>
+        <div class="stats__label">优惠券</div>
+      </div>
+      <div class="stats__line"></div>
+      <div class="stats__item" onclick="A.pointsRule()">
+        <div class="stats__num">${u.points || 0}</div>
+        <div class="stats__label">积分</div>
+      </div>
+    </div>
+
+    <div class="pscroll" id="pscroll">
+      <div class="card">
+        <div class="menu-list">
+          <div class="menu__item" onclick="A.goTab('orders')">
+            <span class="menu__icon">🧾</span><span class="menu__text">我的订单</span>
+            ${S.stats.ongoingCount ? `<span class="menu__tip">${S.stats.ongoingCount} 单进行中</span>` : ''}
+            <span class="menu__arrow">›</span>
+          </div>
+          <div class="menu__item" onclick="A.pickCoupon(true)">
+            <span class="menu__icon">🎟️</span><span class="menu__text">优惠券中心</span>
+            <span class="menu__arrow">›</span>
+          </div>
+          <div class="menu__item" onclick="A.callShop()">
+            <span class="menu__icon">☎️</span><span class="menu__text">联系门店</span>
+            <span class="menu__arrow">›</span>
+          </div>
+          <div class="menu__item" onclick="A.openLocation()">
+            <span class="menu__icon">📍</span><span class="menu__text">门店地址</span>
+            <span class="menu__tip ell">${esc(shop.address || '')}</span>
+            <span class="menu__arrow">›</span>
+          </div>
+          <div class="menu__item" onclick="A.share()">
+            <span class="menu__icon">📣</span><span class="menu__text">分享给好友</span>
+            <span class="menu__arrow">›</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="menu-list">
+          <div class="menu__item" onclick="A.about()">
+            <span class="menu__icon">ℹ️</span><span class="menu__text">关于我们</span>
+            <span class="menu__tip">v1.0.0</span><span class="menu__arrow">›</span>
+          </div>
+          <div class="menu__item" onclick="A.resetLocal()">
+            <span class="menu__icon">🧹</span><span class="menu__text">清除本地缓存</span>
+            <span class="menu__arrow">›</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div class="footer__line">老北京麻辣串串香 · 现串现涮</div>
+        <div class="footer__sub">${esc(shop.openTime || '')}</div>
+      </div>
+      <div class="holder" style="height:20px"></div>
+    </div>`;
+  }
+
+  /* ---------------------------------------------------------- 联动测量 */
+  function measureSections() {
+    const cats = (S.menu && S.menu.categories) || [];
+    const box = $('#dishes');
+    if (!cats.length || !box) return;
+    const base = box.getBoundingClientRect().top - box.scrollTop;
+    S.sectionTops = cats.map((c) => {
+      const el = document.getElementById('sec-' + c.id);
+      return { id: c.id, top: el ? el.getBoundingClientRect().top - base : 0 };
+    });
+  }
+
+  let scrollTicking = false;
+  function onDishScroll() {
+    if (scrollTicking) return;
+    scrollTicking = true;
+    requestAnimationFrame(() => {
+      scrollTicking = false;
+      if (S.lockSync) return;
+      const box = $('#dishes');
+      if (!box || !S.sectionTops.length) return;
+      const st = box.scrollTop;
+      let active = S.sectionTops[0].id;
+      S.sectionTops.forEach((s) => {
+        if (st + 3 >= s.top) active = s.id;
+      });
+      if (active === S.activeCat) return;
+      S.activeCat = active;
+      $$('.cat').forEach((el) => el.classList.toggle('on', el.id === 'cat-' + active));
+      const cur = document.getElementById('cat-' + active);
+      const catsBox = $('#cats');
+      if (cur && catsBox) {
+        const top = cur.offsetTop;
+        if (top < catsBox.scrollTop || top + cur.offsetHeight > catsBox.scrollTop + catsBox.clientHeight) {
+          catsBox.scrollTop = top - catsBox.clientHeight / 2 + cur.offsetHeight / 2;
+        }
+      }
+    });
+  }
+
+  function tapCat(id) {
+    S.activeCat = id;
+    S.lockSync = true;
+    $$('.cat').forEach((el) => el.classList.toggle('on', el.id === 'cat-' + id));
+    const sec = document.getElementById('sec-' + id);
+    const box = $('#dishes');
+    if (sec && box) box.scrollTo({ top: sec.offsetTop - 0, behavior: 'smooth' });
+    const cur = document.getElementById('cat-' + id);
+    const catsBox = $('#cats');
+    if (cur && catsBox) {
+      catsBox.scrollTo({ top: cur.offsetTop - catsBox.clientHeight / 2 + cur.offsetHeight / 2, behavior: 'smooth' });
+    }
+    clearTimeout(S._lock);
+    S._lock = setTimeout(() => {
+      S.lockSync = false;
+    }, 460);
+  }
+
+  /* ---------------------------------------------------------- 购物车同步 */
+  function syncCart() {
+    const st = CART.get();
+    S.cartSummary = CART.getSummary();
+    S.countMap = {};
+    S.catCount = {};
+    st.items.forEach((i) => {
+      S.countMap[i.dishId] = (S.countMap[i.dishId] || 0) + i.count;
+      const cid = S.dishCategory[i.dishId];
+      if (cid) S.catCount[cid] = (S.catCount[cid] || 0) + i.count;
+    });
+    S.diningType = st.diningType;
+    S.tableNo = st.tableNo;
+    S.cartItems = st.items.map((i) => Object.assign({}, i, { priceText: fen(i.price) }));
+    S.dipChecked = {};
+    st.dips.forEach((d) => {
+      S.dipChecked[d.id] = true;
+    });
+
+    if (S.screen === 'menu' && S.menu) syncMenuDom();
+    else if (S.screen === 'cart') render();
+    else $('#tabbar-root').innerHTML = tabbarHtml();
+    if (S.screen === 'menu') $('#tabbar-root').innerHTML = tabbarHtml();
+  }
+
+  function syncMenuDom() {
+    const bar = $('.cartbar');
+    if (bar) bar.outerHTML = cartbarHtml();
+    S.menu.categories.forEach((cat) => {
+      const el = document.getElementById('cat-' + cat.id);
+      if (el) {
+        let b = el.querySelector('.cat__badge');
+        const n = S.catCount[cat.id];
+        if (n) {
+          if (!b) {
+            b = document.createElement('div');
+            b.className = 'cat__badge';
+            el.appendChild(b);
+          }
+          b.textContent = n;
+        } else if (b) {
+          b.remove();
+        }
+      }
+      cat.dishes.forEach((d) => {
+        const holder = document.getElementById('ctl-' + d.id);
+        if (holder) holder.innerHTML = dishControl(d, S.countMap[d.id] || 0);
+      });
+    });
+  }
+
+  /* ---------------------------------------------------------- 结算金额 */
+  function recalcCoupon() {
+    const sum = CART.getSummary();
+    const base = sum.goodsAmount + sum.soupFee;
+    const usable = S.coupons.filter((c) => base >= c.threshold);
+    // 券失效则自动摘掉
+    if (S.coupon && (!S.coupons.some((c) => c.id === S.coupon.id) || base < S.coupon.threshold)) {
+      S.coupon = null;
+    }
+    const discount = MOCK_COUPON.calcDiscount(S.coupon, sum);
+    S.discountText = fen(discount);
+    S.usableCount = usable.length;
+    S.payText = fen(Math.max(0, sum.total - discount));
+  }
+
+  /* ---------------------------------------------------------- Actions */
+  const A = {
+    /* --- 导航 --- */
+    goTab(key) {
+      if (key === 'cart' && !S.cartSummary.count) {
+        UI.toast('还没选串，点「+」开始吧');
+        return;
+      }
+      S.screen = key;
+      if (key === 'orders') A.loadOrders();
+      if (key === 'mine') A.loadStats();
+      if (key === 'cart') recalcCoupon();
+      render();
+    },
+    back() {
+      if (S.screen === 'order-detail') S.screen = S.fromScreen || 'orders';
+      else if (S.screen === 'confirm') S.screen = 'cart';
+      if (S.screen === 'orders') A.loadOrders();
+      render();
+    },
+
+    /* --- 点单页 --- */
+    tapCat,
+    onDishScroll,
+    setDining(v) {
+      CART.setDiningType(v);
+      if (v === 'dinein' && !CART.get().tableNo && S.tables.length) CART.setTableNo(S.tables[0]);
+      render();
+    },
+    setTable(v) {
+      CART.setTableNo(v);
+      render();
+    },
+    addDish(id) {
+      const d = S.dishMap[id];
+      if (!d) return;
+      if (d.spicy) {
+        const opts = d.spicyOptions || [];
+        const last = CART.getLastSpec(d.id);
+        S.skuDish = d;
+        S.skuSpicy = opts.some((o) => o.id === last) ? last : (opts[1] || opts[0] || {}).id;
+        S.skuCount = 1;
+        S.skuShow = true;
+        renderSku();
+        return;
+      }
+      CART.add(d, null, 1);
+      UI.toast('已加入：' + d.name);
+    },
+    dishStep(id, delta) {
+      const d = S.dishMap[id];
+      if (!d) return;
+      const cur = CART.getDishCount(id);
+      const next = cur + delta;
+      if (next > d.stock) {
+        UI.toast('已达可点上限');
+        return;
+      }
+      if (delta > 0) CART.add(d, null, delta);
+      else CART.reduceDish(id, Math.min(-delta, cur));
+    },
+
+    /* --- 规格弹层 --- */
+    skuPick(id) {
+      S.skuSpicy = id;
+      renderSku();
+    },
+    skuCount(delta) {
+      S.skuCount = Math.max(1, Math.min(S.skuDish.stock, S.skuCount + delta));
+      renderSku();
+    },
+    skuClose() {
+      S.skuShow = false;
+      renderSku();
+    },
+    skuConfirm() {
+      const d = S.skuDish;
+      const opt = (d.spicyOptions || []).find((o) => o.id === S.skuSpicy);
+      if (!opt) {
+        UI.toast('请选择辣度');
+        return;
+      }
+      CART.add(d, { spicyId: opt.id, spicyName: opt.name }, S.skuCount);
+      S.skuShow = false;
+      renderSku();
+      UI.toast(`${d.name} · ${opt.name} ×${S.skuCount}`);
+    },
+
+    /* --- 购物车 --- */
+    pickSoup(id) {
+      const s = ((S.menu && S.menu.soups) || []).find((x) => x.id === id);
+      if (s) CART.setSoup(s);
+    },
+    toggleDip(id, name) {
+      CART.toggleDip({ id, name });
+    },
+    itemStep(key, delta) {
+      const it = CART.get().items.find((i) => i.key === key);
+      if (!it) return;
+      CART.setCount(key, it.count + delta);
+    },
+    delItem(key) {
+      const it = CART.get().items.find((i) => i.key === key);
+      UI.modal({ title: '提示', content: `确定删除「${it ? it.name : ''}」吗？` }, (r) => {
+        if (r.confirm) CART.remove(key);
+      });
+    },
+    clearItems() {
+      UI.modal({ title: '提示', content: '确定清空购物车全部菜品吗？' }, (r) => {
+        if (r.confirm) {
+          CART.clear(false);
+          UI.toast('已清空');
+        }
+      });
+    },
+    people(delta) {
+      CART.setPeopleCount(CART.get().peopleCount + delta);
+      render();
+    },
+    remarkChange(v) {
+      CART.setRemark(v);
+      const c = $('.remark__count');
+      if (c) c.textContent = (v || '').length + '/100';
+    },
+    goConfirm() {
+      const sum = CART.getSummary();
+      if (!sum.canSubmit) {
+        UI.toast(blockReason(sum, CART.get()) || '请完善订单信息');
+        return;
+      }
+      recalcCoupon();
+      S.screen = 'confirm';
+      render();
+    },
+
+    /* --- 优惠券 --- */
+    pickCoupon(browseOnly) {
+      const sum = CART.getSummary();
+      const base = sum.goodsAmount + sum.soupFee;
+      const opts = [{ label: '不使用优惠券', right: '', disabled: false, coupon: null }].concat(
+        S.coupons.map((c) => ({
+          label: `${c.name}（${c.threshold ? '满 ' + fen(c.threshold) : '无门槛'}）${c.scope ? ' · ' + c.scope : ''}`,
+          right: base >= c.threshold ? '-¥' + fen(Math.min(c.value, base)) : '不可用',
+          disabled: base < c.threshold,
+          coupon: c,
+        }))
+      );
+      UI.picker('选择优惠券', opts, (o) => {
+        if (browseOnly) {
+          UI.toast(o.coupon ? '已选择，去点单页下单可用' : '已关闭');
+          return;
+        }
+        S.coupon = o.coupon;
+        recalcCoupon();
+        render();
+      });
+    },
+
+    /* --- 提交与支付 --- */
+    submitOrder() {
+      if (S.submitting) return;
+      const st = CART.get();
+      const sum = CART.getSummary();
+      const discount = Math.round(Number(S.discountText) * 100);
+      S.submitting = true;
+      render();
+      UI.loading('提交中');
+
+      ORDER.createOrder({
+        items: CART.toOrderItems(),
+        soup: st.soup,
+        dips: st.dips,
+        diningType: st.diningType,
+        tableNo: st.tableNo,
+        peopleCount: st.peopleCount,
+        remark: st.remark,
+        coupon: S.coupon,
+        amount: {
+          goods: sum.goodsAmount,
+          soupFee: sum.soupFee,
+          packFee: sum.packFee,
+          discount,
+          pay: Math.max(0, sum.total - discount),
+        },
+      })
+        .then((order) => {
+          UI.loadingHide();
+          A._payFlow(order);
+        })
+        .catch((e) => {
+          UI.loadingHide();
+          S.submitting = false;
+          render();
+          UI.toast((e && e.message) || '提交订单失败');
+        });
+    },
+
+    _payFlow(order) {
+      UI.modal(
+        {
+          title: '模拟支付',
+          content: `应付 ¥${fen(order.amount.pay)}\n（当前为本地 Mock，未接入商户号）`,
+          confirmText: '确认支付',
+          cancelText: '取消',
+        },
+        (r) => {
+          if (r.confirm) A._doPay(order);
+          else A._afterUnpaid(order, '你取消了支付');
+        }
+      );
+    },
+
+    _doPay(order) {
+      UI.loading('支付中');
+      ORDER.payOrder(order.id)
+        .then((paid) => {
+          UI.loadingHide();
+          CART.clear(false);
+          S.submitting = false;
+          UI.toast('支付成功');
+          S.fromScreen = 'menu';
+          setTimeout(() => A.openDetail(paid.id), 500);
+        })
+        .catch((e) => {
+          UI.loadingHide();
+          S.submitting = false;
+          render();
+          if (e && e.code === 'CANCEL') return A._afterUnpaid(order, '你取消了支付');
+          UI.toast((e && e.message) || '支付失败');
+        });
+    },
+
+    _afterUnpaid(order, reason) {
+      S.submitting = false;
+      render();
+      UI.modal(
+        {
+          title: '订单已生成',
+          content: `${reason}，订单已保存 15 分钟，可在「订单」中继续支付`,
+          showCancel: false,
+          confirmText: '查看订单',
+        },
+        () => A.openDetail(order.id)
+      );
+    },
+
+    /* --- 订单 --- */
+    loadOrders() {
+      S.loading = true;
+      return ORDER.listOrders(S.ordersFilter).then((list) => {
+        S.orders = list;
+        S.loading = false;
+        S.ordersCounts =
+          S.ordersFilter === 'all'
+            ? { ongoing: list.filter((o) => ORDER.isOngoing(o.status)).length }
+            : {};
+        if (S.screen === 'orders') render();
+      });
+    },
+    setFilter(key) {
+      S.ordersFilter = key;
+      A.loadOrders().then(render);
+    },
+    openDetail(id) {
+      if (S.screen !== 'order-detail') S.fromScreen = S.screen;
+      S.screen = 'order-detail';
+      S.order = null;
+      render();
+      ORDER.getOrder(id).then((o) => {
+        S.order = o;
+        render();
+        A._syncPoll(o);
+      });
+      if (S.detailTimer) {
+        clearInterval(S.detailTimer);
+        S.detailTimer = null;
+      }
+    },
+    _syncPoll(o) {
+      const need = ORDER.isOngoing(o.status) && o.status !== ORDER.STATUS.UNPAID;
+      if (need && !S.detailTimer) {
+        S.polling = true;
+        S.detailTimer = setInterval(() => {
+          const fresh = ORDER.refreshStatus(o.id);
+          if (!fresh) return;
+          S.order = fresh;
+          if (S.screen === 'order-detail') render();
+          if (!ORDER.isOngoing(fresh.status)) {
+            clearInterval(S.detailTimer);
+            S.detailTimer = null;
+            S.polling = false;
+          }
+        }, 5000);
+      } else if (!need && S.detailTimer) {
+        clearInterval(S.detailTimer);
+        S.detailTimer = null;
+        S.polling = false;
+      }
+    },
+    payOrder(id) {
+      UI.modal(
+        { title: '模拟支付', content: '确认支付这笔订单？', confirmText: '确认支付' },
+        (r) => {
+          if (!r.confirm) return;
+          UI.loading('支付中');
+          ORDER.payOrder(id)
+            .then(() => {
+              UI.loadingHide();
+              UI.toast('支付成功');
+              A.refreshCurrent();
+            })
+            .catch((e) => {
+              UI.loadingHide();
+              UI.toast((e && e.message) || '支付失败');
+            });
+        }
+      );
+    },
+    cancelOrder(id) {
+      UI.modal({ title: '提示', content: '确定取消这笔订单吗？' }, (r) => {
+        if (!r.confirm) return;
+        ORDER.cancelOrder(id, '用户主动取消')
+          .then(() => {
+            UI.toast('已取消');
+            A.refreshCurrent();
+          })
+          .catch(() => UI.toast('取消失败'));
+      });
+    },
+    finishOrder(id) {
+      ORDER.finishOrder(id).then((o) => {
+        S.order = o;
+        render();
+        UI.toast('已确认完成');
+      });
+    },
+    reorder(id) {
+      ORDER.reorder(id).then(() => {
+        UI.toast('已加入购物车');
+        setTimeout(() => A.goTab('cart'), 400);
+      });
+    },
+    refreshCurrent() {
+      if (S.screen === 'orders') {
+        A.loadOrders();
+      } else if (S.screen === 'order-detail' && S.order) {
+        ORDER.getOrder(S.order.id).then((o) => {
+          S.order = o;
+          render();
+          A._syncPoll(o);
+        });
+      } else {
+        render();
+      }
+    },
+    copyOrderNo() {
+      const no = S.order && S.order.orderNo;
+      if (!no) return;
+      try {
+        navigator.clipboard.writeText(no);
+      } catch (e) {}
+      UI.toast('订单号已复制：' + no);
+    },
+    callShop() {
+      UI.toast('已模拟拨打 010-8888 6666');
+    },
+
+    /* --- 我的 --- */
+    loadStats() {
+      return ORDER.listOrders('all').then((list) => {
+        S.stats = {
+          orderCount: list.length,
+          ongoingCount: list.filter((o) => ORDER.isOngoing(o.status)).length,
+          couponCount: S.coupons.length,
+        };
+        if (S.screen === 'mine') render();
+      });
+    },
+    pickAvatar() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = () => {
+        const f = input.files && input.files[0];
+        if (!f) return;
+        const fr = new FileReader();
+        fr.onload = () => {
+          AUTH.updateProfile({ avatar: fr.result }).then((u) => {
+            S.user = u;
+            render();
+            UI.toast('头像已更新');
+          });
+        };
+        fr.readAsDataURL(f);
+      };
+      input.click();
+    },
+    saveProfile() {
+      const nick = ($('#nick') && $('#nick').value.trim()) || '';
+      if (!nick) {
+        UI.toast('先填一个昵称');
+        return;
+      }
+      AUTH.updateProfile({ nickname: nick }).then((u) => {
+        S.user = u;
+        render();
+        UI.toast('已保存');
+      });
+    },
+    pointsRule() {
+      UI.modal({
+        title: '积分说明',
+        content: '消费 1 元累计 1 积分，100 积分可抵 1 元。积分在订单完成后 1 分钟到账。',
+        showCancel: false,
+      });
+    },
+    about() {
+      UI.modal({
+        title: '关于我们',
+        content: '老北京麻辣串串香 · 点单小程序 v1.0.0\n\n现串现涮，人均约 ¥68\n营业时间：11:00 - 次日 02:00',
+        showCancel: false,
+      });
+    },
+    openLocation() {
+      UI.toast('已模拟打开地图：东直门内大街 188 号');
+    },
+    share() {
+      UI.toast('已模拟转发给好友（小程序内为原生转发面板）');
+    },
+    resetLocal() {
+      UI.modal({ title: '提示', content: '将清空本地购物车、订单记录与登录态，确定继续？' }, (r) => {
+        if (!r.confirm) return;
+        CART.clearAll();
+        wx.removeStorageSync('lbz_orders_v1');
+        wx.removeStorageSync('lbz_pickup_seq');
+        AUTH.logout();
+        S.orders = [];
+        S.order = null;
+        S.stats = { orderCount: 0, ongoingCount: 0, couponCount: S.coupons.length };
+        render();
+        UI.toast('已清空本地数据');
+      });
+    },
+  };
+  window.A = A;
+
+  /* ---------------------------------------------------------- 启动 */
+  function boot() {
+    // 1) 登录（复用 utils/auth.js 的静默登录）
+    AUTH.ensureLogin()
+      .then((u) => {
+        S.user = u;
+      })
+      .catch(() => {});
+
+    // 2) 优惠券（复用 mock/coupon.js）
+    S.coupons = MOCK_COUPON.COUPONS;
+
+    // 3) 购物车订阅（先订阅一次拿到初始态）
+    CART.subscribe(() => syncCart());
+
+    // 4) 菜单（复用 services/menu.js，含 60s 内存缓存）
+    MENU_SVC.getMenu()
+      .then((menu) => {
+        menu.categories.forEach((c) =>
+          c.dishes.forEach((d) => {
+            S.dishMap[d.id] = d;
+            S.dishCategory[d.id] = c.id;
+          })
+        );
+        S.menu = menu;
+        S.tables = menu.shop.tables || [];
+        S.loading = false;
+        const st = CART.get();
+        if (!st.soup && menu.soups.length) CART.setSoup(menu.soups[0]);
+        if (st.diningType === 'dinein' && !st.tableNo && S.tables.length) CART.setTableNo(S.tables[0]);
+        S.activeCat = menu.categories[0].id;
+        syncCart();
+        render();
+        A.loadStats();
+      })
+      .catch((e) => {
+        S.loading = false;
+        render();
+        UI.toast('菜单加载失败：' + ((e && e.message) || e));
+      });
+
+    render();
+    setTimeout(() => A.loadOrders(), 0);
+  }
+
+  /* 自适应缩放：保证在预览面板里能完整看到手机 */
+  function fit() {
+    const el = $('.phone');
+    if (!el) return;
+    const s = Math.min(1, (window.innerHeight - 24) / 812, (window.innerWidth - 380) / 375);
+    el.style.transform = s < 1 ? `scale(${Math.max(0.62, s)})` : 'none';
+  }
+  window.addEventListener('resize', fit);
+
+  document.addEventListener('DOMContentLoaded', () => {
+    fit();
+    boot();
+  });
+  if (document.readyState !== 'loading') {
+    fit();
+    boot();
+  }
+})();
+</script>
+</body>
+</html>

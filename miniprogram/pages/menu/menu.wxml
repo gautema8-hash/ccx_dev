@@ -1,0 +1,229 @@
+<!-- 点单主页：左分类 + 右菜品双向联动 + 底部悬浮购物车条（连锁：按门店出菜单与主题） -->
+<view class="page" style="{{themeStyle}}">
+  <!-- ============ 门店信息 + 就餐方式 ============ -->
+  <view class="shop">
+    <view class="shop__top" bindtap="goStoreList">
+      <view class="shop__logo">{{shop.logo || '🌶️'}}</view>
+      <view class="shop__info">
+        <view class="shop__name ellipsis">
+          <text wx:if="{{storeType === 'FRANCHISE'}}" class="shop__type">加盟</text>
+          {{shop.name || '加载中…'}}
+        </view>
+        <view class="shop__notice ellipsis">
+          <text wx:if="{{distanceText}}" class="shop__dist">{{distanceText}} · </text>{{shop.notice || ''}}
+        </view>
+      </view>
+      <view class="shop__switch">切换门店 ›</view>
+    </view>
+    <view class="shop__bottom">
+      <view class="seg">
+        <view
+          class="seg__item {{diningType === 'dinein' ? 'is-on' : ''}}"
+          data-v="dinein"
+          bindtap="onDiningTap"
+        >堂食</view>
+        <view
+          class="seg__item {{diningType === 'takeout' ? 'is-on' : ''}}"
+          data-v="takeout"
+          bindtap="onDiningTap"
+        >到店自取</view>
+      </view>
+      <picker
+        wx:if="{{diningType === 'dinein'}}"
+        mode="selector"
+        range="{{tables}}"
+        value="{{tableIndex}}"
+        bindchange="onTableChange"
+      >
+        <view class="shop__table">🪑 {{tableNo}} <text class="shop__table-arrow">▾</text></view>
+      </picker>
+    </view>
+  </view>
+
+  <!-- ============ 主题横幅（活动日 / 节假日 / 会员日） ============ -->
+  <view wx:if="{{themeBadge || themeBannerText}}" class="themebar">
+    <text wx:if="{{themeBadge}}" class="themebar__badge">{{themeBadge}}</text>
+    <text class="themebar__text">{{themeBannerText}}</text>
+    <text class="themebar__sub">{{themeBannerSub}}</text>
+  </view>
+
+  <!-- ============ 搜索 / 加菜提示 ============ -->
+  <view class="searchbar">
+    <text class="searchbar__icon">🔍</text>
+    <input
+      class="searchbar__input"
+      value="{{keyword}}"
+      placeholder="搜索菜品，如「牛肉」「冰粉」"
+      placeholder-class="searchbar__ph"
+      confirm-type="search"
+      bindinput="onSearchInput"
+    />
+    <text wx:if="{{keyword}}" class="searchbar__clear" bindtap="onClearSearch">✕</text>
+  </view>
+
+  <view wx:if="{{addDishTip}}" class="addtip">
+    <text class="addtip__text">🍽 正在为 {{addDishTip}}，下单后会挂在该订单下</text>
+    <text class="addtip__x" bindtap="onCancelAddDish">取消</text>
+  </view>
+
+  <!-- ============ 分类 + 菜品 ============ -->
+  <view class="body">
+    <scroll-view
+      wx:if="{{!keyword}}"
+      class="cats"
+      scroll-y
+      scroll-into-view="{{catScrollInto}}"
+      scroll-with-animation
+      enhanced
+      show-scrollbar="{{false}}"
+    >
+      <view
+        wx:for="{{categories}}"
+        wx:for-item="cat"
+        wx:key="id"
+        id="cat-{{cat.id}}"
+        class="cat {{activeCat === cat.id ? 'is-active' : ''}}"
+        data-id="{{cat.id}}"
+        bindtap="onCatTap"
+      >
+        <view class="cat__emoji">{{cat.emoji}}</view>
+        <view class="cat__name">{{cat.name}}</view>
+        <view wx:if="{{catCount[cat.id]}}" class="cat__badge">{{catCount[cat.id]}}</view>
+      </view>
+      <view class="cats__holder"></view>
+    </scroll-view>
+
+    <scroll-view
+      class="dishes"
+      scroll-y
+      scroll-into-view="{{dishScrollInto}}"
+      scroll-with-animation
+      enhanced
+      show-scrollbar="{{false}}"
+      bindscroll="onDishScroll"
+    >
+      <block wx:if="{{loading}}">
+        <view class="skeleton" wx:for="{{[1,2,3,4]}}" wx:key="*this">
+          <view class="skeleton__img"></view>
+          <view class="skeleton__lines">
+            <view class="skeleton__line" style="width:60%"></view>
+            <view class="skeleton__line" style="width:90%"></view>
+            <view class="skeleton__line" style="width:35%"></view>
+          </view>
+        </view>
+      </block>
+
+      <block wx:else>
+        <view
+          wx:for="{{viewCategories}}"
+          wx:for-item="cat"
+          wx:key="id"
+          id="sec-{{cat.id}}"
+          class="sec"
+        >
+          <view class="sec__title">
+            {{cat.name}}
+            <text class="sec__count">{{cat.dishes.length}} 款</text>
+          </view>
+
+          <view
+            wx:for="{{cat.dishes}}"
+            wx:for-item="dish"
+            wx:key="id"
+            class="dish"
+          >
+            <view class="dish__img">
+              <text class="dish__img-emoji">{{dish.emoji}}</text>
+              <view wx:if="{{dish.sold > 5000}}" class="dish__hot">热销</view>
+            </view>
+
+            <view class="dish__main">
+              <view class="dish__name ellipsis">{{dish.name}}</view>
+              <view class="dish__desc ellipsis">{{dish.desc}}</view>
+              <view class="dish__tags">
+                <text
+                  wx:for="{{dish.tags}}"
+                  wx:for-item="tag"
+                  wx:key="*this"
+                  class="tag"
+                >{{tag}}</text>
+                <text wx:if="{{dish.spicy}}" class="tag tag--accent">可选辣度</text>
+              </view>
+
+              <view class="dish__bottom">
+                <view class="dish__price">
+                  <text class="price__unit">¥</text>
+                  <text class="dish__price-num">{{dish.priceText}}</text>
+                  <text class="dish__price-unit">/{{dish.unit}}</text>
+                </view>
+
+                <!-- 售罄：置灰不可点 -->
+                <view wx:if="{{dish.soldOut}}" class="dish__soldout">已售罄</view>
+                <!-- 需选辣度的菜：数量只读 + 加号进规格层 -->
+                <block wx:elif="{{dish.spicy}}">
+                  <view wx:if="{{countMap[dish.id]}}" class="dish__qty">{{countMap[dish.id]}}</view>
+                  <view
+                    class="dish__add"
+                    hover-class="is-press"
+                    data-id="{{dish.id}}"
+                    bindtap="onAddDish"
+                  >+</view>
+                </block>
+                <!-- 无规格的菜：直接加减 -->
+                <stepper
+                  wx:else
+                  size="small"
+                  value="{{countMap[dish.id] || 0}}"
+                  min="{{0}}"
+                  max="{{dish.stock}}"
+                  data-id="{{dish.id}}"
+                  bind:change="onDishStepperChange"
+                />
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <view wx:if="{{!keyword}}" class="list-end">— 共 {{totalDishes}} 款菜品，已到底部 —</view>
+        <view wx:else class="list-end">— 共 {{searchCount}} 款匹配「{{keyword}}」 —</view>
+      </block>
+
+      <view class="dishes__holder"></view>
+    </scroll-view>
+  </view>
+
+  <!-- ============ 底部悬浮购物车条 ============ -->
+  <view class="cartbar">
+    <view class="cartbar__left" bindtap="goCart">
+      <view class="cartbar__icon {{cart.count ? 'is-on' : ''}}">
+        🛒
+        <view wx:if="{{cart.count}}" class="cartbar__badge">{{cart.count > 99 ? '99+' : cart.count}}</view>
+      </view>
+      <view class="cartbar__text">
+        <block wx:if="{{cart.count}}">
+          <view class="cartbar__amount">
+            <text class="price__unit">¥</text>{{cart.totalText}}
+            <text wx:if="{{cart.soupFee}}" class="cartbar__extra">（含锅底 ¥{{cart.soupFeeText}}）</text>
+          </view>
+          <view class="cartbar__sub">已选 {{cart.count}} 件 · {{cart.kinds}} 种</view>
+        </block>
+        <view wx:else class="cartbar__empty">还没选串，点「+」开始吧</view>
+      </view>
+    </view>
+    <view
+      class="cartbar__btn {{cart.count ? 'is-on' : ''}}"
+      hover-class="is-press"
+      bindtap="goCart"
+    >{{cart.count ? '去结算' : '选好了'}}</view>
+  </view>
+
+  <!-- ============ 规格弹层 ============ -->
+  <sku-popup
+    show="{{skuShow}}"
+    dish="{{skuDish}}"
+    initial-spicy="{{skuSpicy}}"
+    initial-count="{{skuCount}}"
+    bind:confirm="onSkuConfirm"
+    bind:close="onSkuClose"
+  />
+</view>

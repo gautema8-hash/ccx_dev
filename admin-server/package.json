@@ -1,0 +1,17 @@
+{
+  "name": "lbz-admin-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "老北京麻辣串串香 · 管理系统后端（员工鉴权 / RBAC / 运营 API）",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "ioredis": "^5.4.1",
+    "mysql2": "^3.11.3"
+  }
+}

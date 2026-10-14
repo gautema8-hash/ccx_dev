@@ -1,0 +1,97 @@
+<!-- 确认订单：信息复核 → 优惠券 → 提交 → 支付 -->
+<view class="page" style="{{themeStyle}}">
+  <!-- ============ 就餐信息 ============ -->
+  <view class="card">
+    <view class="row--between">
+      <text class="lbl">就餐方式</text>
+      <text class="val">{{diningTypeText}}{{tableNo ? ' · ' + tableNo : ''}}</text>
+    </view>
+    <view class="row--between mt-s">
+      <text class="lbl">就餐人数</text>
+      <text class="val">{{peopleCount}} 人</text>
+    </view>
+    <view class="row--between mt-s">
+      <text class="lbl">锅底</text>
+      <text class="val">{{soupName}}</text>
+    </view>
+    <view class="row--between mt-s">
+      <text class="lbl">蘸料</text>
+      <text class="val ellipsis">{{dipsText}}</text>
+    </view>
+  </view>
+
+  <!-- ============ 明细 ============ -->
+  <view class="block-title">订单明细 <text class="sub">共 {{count}} 件</text></view>
+  <view class="card">
+    <view wx:for="{{items}}" wx:for-item="line" wx:key="key" class="line">
+      <view class="line__left">
+        <view class="line__name ellipsis">{{line.name}}</view>
+        <view class="line__spec" wx:if="{{line.spicyName}}">🌶 {{line.spicyName}}</view>
+      </view>
+      <view class="line__qty">×{{line.count}}</view>
+      <view class="line__amount">¥{{line.amountText}}</view>
+    </view>
+  </view>
+
+  <!-- ============ 优惠券 ============ -->
+  <view class="block-title">优惠</view>
+  <view class="card">
+    <view class="row--between" id="coupon-row" bindtap="goCoupon">
+      <text class="lbl">优惠券</text>
+      <view class="row">
+        <text wx:if="{{coupon}}" class="coupon-on">-¥{{discountText}} · {{coupon.name}}</text>
+        <text wx:else class="muted">{{usableCount ? usableCount + ' 张可用' : '暂无可用'}}</text>
+        <text class="arrow">›</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ============ 备注 ============ -->
+  <view class="block-title">口味备注</view>
+  <view class="card">
+    <view class="remark">{{remark || '无'}}</view>
+  </view>
+
+  <!-- ============ 金额 ============ -->
+  <view class="card amounts">
+    <view class="row--between">
+      <text class="muted">菜品小计</text>
+      <text>¥{{summary.goodsText}}</text>
+    </view>
+    <view class="row--between mt-s">
+      <text class="muted">锅底</text>
+      <text>¥{{summary.soupFeeText}}</text>
+    </view>
+    <view wx:if="{{summary.packFee}}" class="row--between mt-s">
+      <text class="muted">打包费</text>
+      <text>¥{{summary.packFeeText}}</text>
+    </view>
+    <view wx:if="{{discount}}" class="row--between mt-s">
+      <text class="muted">优惠券抵扣</text>
+      <text class="coupon-on">-¥{{discountText}}</text>
+    </view>
+    <view class="divider"></view>
+    <view class="row--between">
+      <text class="lbl">应付金额</text>
+      <text class="price total"><text class="price__unit">¥</text>{{payText}}</text>
+    </view>
+  </view>
+
+  <view class="tips">
+    下单即表示同意《点单服务协议》，请在 15 分钟内完成支付
+  </view>
+
+  <view class="holder"></view>
+</view>
+
+<view class="action-bar">
+  <view class="bar__left">
+    <view class="bar__label">实付</view>
+    <view class="bar__amount"><text class="price__unit">¥</text>{{payText}}</view>
+  </view>
+  <view
+    class="btn-primary bar__btn {{submitting ? 'is-disabled' : ''}}"
+    hover-class="is-press"
+    bindtap="onSubmit"
+  >{{submitting ? '提交中…' : '提交订单'}}</view>
+</view>

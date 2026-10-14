@@ -1,0 +1,177 @@
+<!-- 购物车：整单选项（锅底/蘸料/就餐信息）+ 明细增减 + 金额汇总 -->
+<view class="page" style="{{themeStyle}}">
+  <block wx:if="{{items.length}}">
+    <!-- ============ 就餐信息 ============ -->
+    <view class="card">
+      <view class="row--between">
+        <view class="lbl">就餐方式</view>
+        <view class="seg">
+          <view
+            class="seg__item {{diningType === 'dinein' ? 'is-on' : ''}}"
+            data-v="dinein"
+            bindtap="onDiningTap"
+          >堂食</view>
+          <view
+            class="seg__item {{diningType === 'takeout' ? 'is-on' : ''}}"
+            data-v="takeout"
+            bindtap="onDiningTap"
+          >到店自取</view>
+        </view>
+      </view>
+
+      <view wx:if="{{diningType === 'dinein'}}" class="row--between mt">
+        <view class="lbl">桌号</view>
+        <picker mode="selector" range="{{tables}}" value="{{tableIndex}}" bindchange="onTableChange">
+          <view class="picker-val">🪑 {{tableNo || '请选择桌号'}} <text class="arrow">▾</text></view>
+        </picker>
+      </view>
+
+      <view class="row--between mt">
+        <view class="lbl">就餐人数</view>
+        <stepper value="{{peopleCount}}" min="{{1}}" max="{{20}}" size="small" bind:change="onPeopleChange" />
+      </view>
+
+      <view wx:if="{{diningType === 'takeout'}}" class="tip mt">
+        自取订单会增加 ¥1.00 打包费，到店后凭取餐码取餐
+      </view>
+    </view>
+
+    <!-- ============ 锅底（必选） ============ -->
+    <view class="block-title">选锅底 <text class="block-title__req">必选 1 项</text></view>
+    <scroll-view class="soups" scroll-x enhanced show-scrollbar="{{false}}">
+      <view class="soups__inner">
+        <view
+          wx:for="{{soups}}"
+          wx:for-item="soup"
+          wx:key="id"
+          class="soup {{soup.id === soupId ? 'is-on' : ''}}"
+          data-id="{{soup.id}}"
+          bindtap="onPickSoup"
+        >
+          <view class="soup__emoji">{{soup.emoji}}</view>
+          <view class="soup__name ellipsis">{{soup.name}}</view>
+          <view class="soup__price">¥{{soup.priceText}}</view>
+          <view wx:if="{{soup.recommended}}" class="soup__badge">推荐</view>
+        </view>
+      </view>
+    </scroll-view>
+
+    <!-- ============ 蘸料（多选） ============ -->
+    <view class="block-title">选蘸料 <text class="block-title__sub">可多选 · 免费</text></view>
+    <view class="card dips">
+      <view
+        wx:for="{{dips}}"
+        wx:for-item="dip"
+        wx:key="id"
+        class="dip {{dipChecked[dip.id] ? 'is-on' : ''}}"
+        data-id="{{dip.id}}"
+        data-name="{{dip.name}}"
+        bindtap="onToggleDip"
+      >
+        <text class="dip__emoji">{{dip.emoji}}</text>{{dip.name}}
+        <text wx:if="{{dipChecked[dip.id]}}" class="dip__tick">✓</text>
+      </view>
+    </view>
+
+    <!-- ============ 已选明细 ============ -->
+    <view class="block-title">
+      已选明细
+      <text class="block-title__sub">{{count}} 件 / {{items.length}} 种</text>
+      <text class="block-title__clear" bindtap="onClear">清空</text>
+    </view>
+
+    <view class="card items">
+      <view
+        wx:for="{{items}}"
+        wx:for-item="it"
+        wx:key="key"
+        class="item"
+        data-key="{{it.key}}"
+        bindlongpress="onLongPressItem"
+      >
+        <view class="item__img">{{it.emoji}}</view>
+        <view class="item__main">
+          <view class="item__name ellipsis">{{it.name}}</view>
+          <view class="item__spec">
+            <text class="item__spec-tag" wx:if="{{it.spicyName}}">🌶 {{it.spicyName}}</text>
+            <text class="item__spec-tag" wx:else>默认口味</text>
+          </view>
+          <view class="item__bottom">
+            <view class="item__price">
+              <text class="price__unit">¥</text>{{it.priceText}}
+              <text class="item__unit">/{{it.unit}}</text>
+            </view>
+            <stepper
+              size="small"
+              value="{{it.count}}"
+              min="{{0}}"
+              max="{{99}}"
+              data-key="{{it.key}}"
+              bind:change="onItemCountChange"
+            />
+          </view>
+        </view>
+      </view>
+      <view class="items__tip">长按某一项可删除</view>
+    </view>
+
+    <!-- ============ 备注 ============ -->
+    <view class="card">
+      <view class="lbl">口味备注</view>
+      <textarea
+        class="remark"
+        value="{{remark}}"
+        placeholder="例如：牛肉串涮久一点 / 不要香菜 / 少放油"
+        maxlength="100"
+        bindinput="onRemarkInput"
+        bindblur="onRemarkBlur"
+        auto-height
+      />
+      <view class="remark__count">{{remark.length}}/100</view>
+    </view>
+
+    <!-- ============ 金额 ============ -->
+    <view class="card amounts">
+      <view class="row--between">
+        <text class="muted">菜品小计</text>
+        <text>¥{{summary.goodsText}}</text>
+      </view>
+      <view class="row--between mt-s">
+        <text class="muted">锅底（{{soupName}}）</text>
+        <text>¥{{summary.soupFeeText}}</text>
+      </view>
+      <view wx:if="{{summary.packFee}}" class="row--between mt-s">
+        <text class="muted">打包费</text>
+        <text>¥{{summary.packFeeText}}</text>
+      </view>
+      <view class="divider"></view>
+      <view class="row--between">
+        <text class="lbl">合计</text>
+        <text class="price total"><text class="price__unit">¥</text>{{summary.totalText}}</text>
+      </view>
+    </view>
+
+    <view class="holder"></view>
+  </block>
+
+  <!-- ============ 空态 ============ -->
+  <view wx:else class="empty">
+    <view class="empty__icon">🛒</view>
+    <view class="empty__text">购物车还是空的</view>
+    <view class="empty__btn" bindtap="goMenu">去选串串</view>
+  </view>
+
+  <!-- ============ 底部结算条 ============ -->
+  <view class="action-bar" wx:if="{{items.length}}">
+    <view class="bar__left">
+      <view class="bar__label">合计</view>
+      <view class="bar__amount"><text class="price__unit">¥</text>{{summary.totalText}}</view>
+      <view wx:if="{{!summary.canSubmit}}" class="bar__warn">{{blockReason}}</view>
+    </view>
+    <view
+      class="btn-primary bar__btn {{summary.canSubmit ? '' : 'is-disabled'}}"
+      hover-class="is-press"
+      bindtap="goConfirm"
+    >去结算({{count}})</view>
+  </view>
+</view>

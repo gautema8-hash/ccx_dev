@@ -1,0 +1,89 @@
+<!-- 订单列表：状态筛选 + 下拉刷新 -->
+<view class="page" style="{{themeStyle}}">
+  <!-- ============ 状态筛选 ============ -->
+  <view class="tabs">
+    <view
+      wx:for="{{filters}}"
+      wx:for-item="f"
+      wx:key="key"
+      class="tabs__item {{filter === f.key ? 'is-on' : ''}}"
+      data-key="{{f.key}}"
+      bindtap="onFilterTap"
+    >
+      {{f.name}}
+      <view wx:if="{{counts[f.key]}}" class="tabs__badge">{{counts[f.key]}}</view>
+    </view>
+  </view>
+
+  <!-- ============ 列表 ============ -->
+  <block wx:if="{{orders.length}}">
+    <view
+      wx:for="{{orders}}"
+      wx:for-item="o"
+      wx:for-index="oi"
+      wx:key="id"
+      class="order"
+      data-id="{{o.id}}"
+      bindtap="goDetail"
+    >
+      <view class="order__head">
+        <view class="order__shop ellipsis">{{o.shopName}}</view>
+        <view class="order__status" style="color:{{o.statusColor}}">{{o.statusText}}</view>
+      </view>
+
+      <view class="order__body">
+        <view class="order__thumbs">
+          <view wx:for="{{o.thumbItems}}" wx:for-item="it" wx:key="key" class="order__thumb">{{it.emoji}}</view>
+        </view>
+        <view class="order__info">
+          <view class="order__names ellipsis-2">{{o.summaryText}}</view>
+          <view class="order__meta">
+            {{o.diningTypeText}}{{o.tableNo ? ' · ' + o.tableNo : ''}} · {{o.itemCount}} 件
+          </view>
+        </view>
+      </view>
+
+      <view class="order__foot">
+        <view class="order__time">{{o.createDateText}}</view>
+        <view class="order__pay">实付 <text class="order__amount">¥{{o.amount.payText}}</text></view>
+      </view>
+
+      <view class="order__actions">
+        <view
+          wx:if="{{o.canCancel}}"
+          class="btn-ghost order__btn"
+          data-id="{{o.id}}"
+          catchtap="onCancel"
+        >取消订单</view>
+        <view
+          wx:if="{{o.canPay}}"
+          class="btn-primary order__btn order__btn--primary"
+          data-id="{{o.id}}"
+          catchtap="onPay"
+        >去支付</view>
+        <view
+          wx:if="{{o.canReorder}}"
+          class="btn-ghost order__btn"
+          data-id="{{o.id}}"
+          catchtap="onReorder"
+        >再来一单</view>
+        <view
+          wx:if="{{!o.canCancel && !o.canPay}}"
+          class="btn-ghost order__btn"
+          data-id="{{o.id}}"
+          catchtap="goDetail"
+        >查看详情</view>
+      </view>
+    </view>
+
+    <view class="list-end">{{hasMore ? '上拉加载更多' : '— 没有更多订单了 —'}}</view>
+  </block>
+
+  <view wx:elif="{{!loading}}" class="empty">
+    <view class="empty__icon">🧾</view>
+    <view class="empty__text">还没有订单，先去选几串吧</view>
+    <view class="empty__btn" bindtap="goMenu">去点单</view>
+  </view>
+
+  <view wx:else class="loading">加载中…</view>
+</view>

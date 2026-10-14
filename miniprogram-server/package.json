@@ -1,0 +1,25 @@
+{
+  "name": "lbz-miniprogram-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "老北京麻辣串串香 · 小程序后端（顾客端 API）",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "migrate": "node src/db.js migrate",
+    "seed": "node src/db.js seed",
+    "reset": "node src/db.js reset",
+    "test:api": "node test/api.test.js",
+    "test:concurrency": "node test/concurrency.test.js",
+    "test:resilience": "node test/resilience.test.js",
+    "test:chain": "node test/chain.test.js",
+    "test": "node test/api.test.js && node test/chain.test.js && node test/concurrency.test.js && node test/resilience.test.js"
+  },
+  "dependencies": {
+    "ioredis": "^5.4.1",
+    "mysql2": "^3.11.3"
+  }
+}
