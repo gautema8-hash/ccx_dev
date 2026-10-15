@@ -104,13 +104,25 @@ async function reject(p) {
     return { ok: true, refunded: true, amount: order.pay_amount };
   }
 
+  /**
+   * 未支付/已接单的拒单：直接复用 orderRoute.closeUnpaidOrder()，
+   * 而不是在这里再写一遍回滚（写两遍必然出现「一边改了另一边没改」的统计口径分叉）。
+   * 注意：closeUnpaidOrder 只允许 UNPAID，已接单(ACCEPTED)的拒单需先按状态处理。
+   */
+  if (order.status === ORDER_STATUS.UNPAID) {
+    const closed = await orderRoute.closeUnpaidOrder(orderId, 'staff:' + p.staffId, '拒单：' + reason);
+    if (!closed) throw bizError(CODES.STATE_CONFLICT, '订单状态已变更');
+    logger.info('order rejected', { orderId, by: p.staffId });
+    return { ok: true, refunded: false };
+  }
+
+  /* ACCEPTED：已接单但未支付（先款后做场景下的异常单），只流转 + 回滚库存，无券可退 */
   await db.tx(async (tx) => {
-    const ok1 = await transition(tx, orderId, order.status, ORDER_STATUS.CANCELED, 'staff:' + p.staffId, '拒单：' + reason);
+    const ok1 = await transition(tx, orderId, ORDER_STATUS.ACCEPTED, ORDER_STATUS.CANCELED, 'staff:' + p.staffId, '拒单：' + reason);
     if (!ok1) throw bizError(CODES.STATE_CONFLICT, '订单状态已变更');
     await tx.execute('UPDATE mp_order SET cancel_time=?, cancel_reason=?, updated_at=? WHERE id=?', [
       Date.now(), reason, Date.now(), orderId,
     ]);
-    /* 回滚门店库存 */
     const items = await tx.query('SELECT dish_id, quantity FROM mp_order_item WHERE order_id = ?', [orderId]);
     for (const it of items) {
       await tx.execute(
@@ -118,7 +130,6 @@ async function reject(p) {
         [it.quantity, it.quantity, Date.now(), order.store_id, it.dish_id]
       );
     }
-    /* 券退回 */
     if (order.coupon_id) {
       await tx.execute("UPDATE mp_user_coupon SET status='UNUSED', order_id='', used_at=0 WHERE order_id=? AND status='USED'", [orderId]);
       await tx.execute('UPDATE mp_coupon SET used_count = GREATEST(used_count - 1, 0) WHERE id = ?', [order.coupon_id]);

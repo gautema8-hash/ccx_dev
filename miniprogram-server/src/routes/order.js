@@ -561,12 +561,19 @@ async function closeUnpaidOrder(orderId, operator, reason) {
         [it.quantity, it.quantity, Date.now(), order.store_id, it.dish_id]
       );
     }
-    /* 券退回 */
+    /**
+     * 券退回：两步缺一不可
+     *   ① mp_user_coupon 置回 UNUSED  —— 用户能再用这张券
+     *   ② mp_coupon.used_count - 1     —— 模板「已使用数」回退
+     * 下单核销时是 +1（见 createOrder），这里必须 -1，否则后台券统计的
+     * 「已使用 / 使用率」会虚高，且与其他取消路径（商家拒单）口径不一致。
+     */
     if (order.coupon_id) {
       await tx.execute(
         "UPDATE mp_user_coupon SET status = 'UNUSED', order_id = '', used_at = 0 WHERE order_id = ? AND status = 'USED'",
         [orderId]
       );
+      await tx.execute('UPDATE mp_coupon SET used_count = GREATEST(used_count - 1, 0) WHERE id = ?', [order.coupon_id]);
     }
     await tx.execute("UPDATE mp_pay_record SET status = 'CLOSED', updated_at = ? WHERE order_id = ? AND status = 'CREATED'", [
       Date.now(), orderId,

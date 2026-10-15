@@ -415,6 +415,50 @@ function need(label, resp) {
     40001
   );
 
+  /* ---------------- 12b. 用券下单后取消：券与已用计数都必须回退 ---------------- */
+  console.log('\n[12b] 用券下单 → 取消：券退回且 used_count 回退');
+  const mysql2 = require('mysql2/promise');
+  const conn2 = await mysql2.createConnection({
+    host: process.env.DB_HOST || '127.0.0.1',
+    port: Number(process.env.DB_PORT || 3306),
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || 'root123!@#',
+    database: process.env.DB_NAME || 'lbz_order',
+  });
+  const usedCountOf = async (tpl) =>
+    Number((await conn2.execute('SELECT used_count FROM mp_coupon WHERE id = ?', [tpl]))[0][0].used_count);
+
+  /* 新用户登录会自动发 1 张「新客立减券 cp1」（threshold=0，无条件可用） */
+  const uNew = await login('coupon-cancel-' + Date.now());
+  /* 注意：/user/coupons 直接返回数组（不是 {list:[...]}） */
+  const unused0 = await call('/user/coupons?status=UNUSED', { headers: H(uNew.access_token) });
+  const couponCount = (r) => (Array.isArray(r.data) ? r.data.length : r.data && r.data.list ? r.data.list.length : 0);
+  truthy('新客自动发到 1 张券', couponCount(unused0) >= 1, couponCount(unused0));
+
+  const usedBefore = await usedCountOf('cp1');
+  const ordWithCoupon = await call('/orders', {
+    method: 'POST',
+    headers: H(uNew.access_token),
+    body: {
+      items: [{ dishId: plainDish.id, count: 1 }],
+      soup: { id: m.soups[0].id },
+      diningType: 'takeout',
+      coupon: { id: 'cp1' },
+    },
+  });
+  const owc = need('用券下单成功', ordWithCoupon);
+  eq('用券后产生抵扣', owc.amount.discount > 0, true);
+  const usedAfterOrder = await usedCountOf('cp1');
+  eq('下单核销后 used_count +1', usedAfterOrder, usedBefore + 1);
+
+  await call('/orders/' + owc.id + '/cancel', { method: 'POST', headers: H(uNew.access_token), body: {} });
+  const usedAfterCancel = await usedCountOf('cp1');
+  /* 关键断言：取消后 used_count 必须回退，否则后台券「已使用/使用率」统计虚高 */
+  eq('取消后 used_count 回退', usedAfterCancel, usedBefore);
+  const unused1 = await call('/user/coupons?status=UNUSED', { headers: H(uNew.access_token) });
+  truthy('券已退回用户（可再次使用）', couponCount(unused1) >= 1, couponCount(unused1));
+  await conn2.end();
+
   /* ---------------- 13. 退款 ---------------- */
   console.log('\n[13] 退款流程');
   const rf = await call('/orders/' + o3d.id + '/refund', {
