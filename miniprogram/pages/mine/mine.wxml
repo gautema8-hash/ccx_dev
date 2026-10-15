@@ -28,17 +28,12 @@
       <view class="ucard__camera">📷</view>
     </view>
 
+    <!-- 昵称区：展示态与编辑态分离渲染。不能直接摆 input(type=nickname)：
+         原生组件自带系统背景、尺寸不受 CSS 约束，iOS 上会撑出一块大底把名字顶到角落。
+         点名字就地改昵称（不跳页）；完整资料（性别/生日/城市）走「个人资料」入口，两者职责分开。
+         注意：这里只允许一条注释 —— 相邻两条多行注释会让后续 wx:if 节点被编译器静默丢弃。 -->
     <view class="ucard__main">
-      <!-- 展示态：纯文本紧贴头像。
-           不能直接摆 input(type=nickname)：原生组件自带系统背景且尺寸不受 CSS 约束，
-           在 iOS 上会撑出一块大底、把名字顶到角落 —— 必须展示/编辑分离 -->
-      <!-- 点名字就地改昵称（不跳页）；完整资料（性别/生日/城市）走「个人资料」入口，
-           两者职责分开，避免点名字却跳到另一个页面 */}
-      <view
-        wx:if="{{isLogin && !editingNick}}"
-        class="ucard__nick"
-        bindtap="onNickTap"
-      >
+      <view wx:if="{{isLogin && !editingNick}}" class="ucard__nick" bindtap="onNickTap">
         <text class="ucard__nick-text">{{displayName}}</text>
         <text class="ucard__nick-edit">✎</text>
       </view>

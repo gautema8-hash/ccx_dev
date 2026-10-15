@@ -44,10 +44,8 @@
           />
         </view>
 
-        <!-- 语音 -->
-        <view
-          wx:elif="{{item.type === 'voice'}}"
-          class="bubble bubble--voice {{playingId === item.key ? 'is-playing' : ''}}"
+        <!-- 语音：条件属性必须写在开标签首行 —— 写在续行且前面有注释时链解析会失败，见 tools/check-wxml-comments.js -->
+        <view wx:elif="{{item.type === 'voice'}}" class="bubble bubble--voice {{playingId === item.key ? 'is-playing' : ''}}"
           data-key="{{item.key}}"
           data-url="{{item.mediaUrl}}"
           bindtap="onPlayVoice"
@@ -57,9 +55,7 @@
         </view>
 
         <!-- 文件 -->
-        <view
-          wx:elif="{{item.type === 'file'}}"
-          class="bubble bubble--file"
+        <view wx:elif="{{item.type === 'file'}}" class="bubble bubble--file"
           data-url="{{item.mediaUrl}}"
           data-name="{{item.meta.name}}"
           bindtap="onOpenFile"
