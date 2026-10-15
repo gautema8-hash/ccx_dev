@@ -54,6 +54,61 @@ function compile(path) {
   return { re: new RegExp('^' + pattern + '/?$'), names };
 }
 
+/**
+ * 极简 multipart/form-data 解析（零依赖）
+ *
+ * 为什么不用 busboy/formidable：本项目只处理小文件（聊天图片/语音/短视频/文件），
+ * 而且必须对「文件内容里恰好出现 boundary」这种情况保持可控 —— 自己解析时，
+ * 我们只按「\r\n--boundary」切分并做长度校验，出问题时行为可预期，调用栈透明。
+ *
+ * @returns {{fields:Object, files:Array<{field,filename,contentType,size,buffer}>}}
+ */
+function parseMultipart(buffer, boundary) {
+  const result = { fields: {}, files: [] };
+  if (!boundary) return result;
+  const boundaryBuf = Buffer.from('--' + boundary);
+  const headerEnd = Buffer.from('\r\n\r\n');
+  let pos = buffer.indexOf(boundaryBuf);
+  if (pos === -1) return result;
+  pos += boundaryBuf.length;
+
+  while (pos < buffer.length) {
+    /* 结尾标记：--boundary-- */
+    if (buffer[pos] === 0x2d && buffer[pos + 1] === 0x2d) break;
+    if (buffer[pos] === 0x0d && buffer[pos + 1] === 0x0a) pos += 2;
+
+    const hEnd = buffer.indexOf(headerEnd, pos);
+    if (hEnd === -1) break;
+    const headerText = buffer.slice(pos, hEnd).toString('utf8');
+    const contentStart = hEnd + 4;
+
+    const nextBoundary = buffer.indexOf(boundaryBuf, contentStart);
+    if (nextBoundary === -1) break;
+    /* 内容与下一段 boundary 之间固定隔一个 CRLF，属于分隔符本身而非内容 */
+    let contentEnd = nextBoundary;
+    if (buffer[contentEnd - 2] === 0x0d && buffer[contentEnd - 1] === 0x0a) contentEnd -= 2;
+
+    const nameM = /name="([^"]*)"/i.exec(headerText);
+    const fileM = /filename="([^"]*)"/i.exec(headerText);
+    const typeM = /content-type:\s*([^\r\n;]+)/i.exec(headerText);
+    const content = buffer.slice(contentStart, contentEnd);
+
+    if (fileM) {
+      result.files.push({
+        field: nameM ? nameM[1] : 'file',
+        filename: fileM[1],
+        contentType: typeM ? typeM[1].trim().toLowerCase() : 'application/octet-stream',
+        size: content.length,
+        buffer: content,
+      });
+    } else if (nameM) {
+      result.fields[nameM[1]] = content.toString('utf8');
+    }
+    pos = nextBoundary + boundaryBuf.length;
+  }
+  return result;
+}
+
 class Router {
   constructor() {
     this.routes = [];
@@ -137,6 +192,11 @@ class Server {
 
   readBody(ctx) {
     const req = ctx.req;
+    const ctype = String(req.headers['content-type'] || '');
+    const isMultipart = ctype.indexOf('multipart/form-data') > -1;
+    /* 只有 multipart 才放开到大报文（上传），JSON 接口仍用小限额防刷 */
+    const limit = isMultipart ? config.upload.limit : config.bodyLimit;
+
     return new Promise((resolve, reject) => {
       let size = 0;
       let overflow = false;
@@ -144,26 +204,37 @@ class Server {
       req.on('data', (c) => {
         if (overflow) return; // 已判定超限：不再累积（防内存膨胀），但要继续把流读完，让客户端能收到 413
         size += c.length;
-        if (size > config.bodyLimit) {
+        if (size > limit) {
           overflow = true;
           chunks.length = 0;
           /**
            * 不要 req.destroy()：那会直接把连接掐断，客户端只会看到「网络异常」，
            * 而不是「请求体过大」。这里只拒绝，响应照常写回，连接保持正常。
            */
-          reject(new AppError(CODES.PARAM_INVALID, '请求体过大', 413));
+          reject(new AppError(CODES.PARAM_INVALID, isMultipart ? '文件过大，请压缩后重试' : '请求体过大', 413));
           return;
         }
         chunks.push(c);
       });
       req.on('end', () => {
         if (overflow) return;
-        const raw = Buffer.concat(chunks).toString('utf8');
+        const raw = Buffer.concat(chunks);
+
+        if (isMultipart) {
+          const m = /boundary=(?:"([^"]+)"|([^;]+))/i.exec(ctype);
+          const boundary = (m && (m[1] || m[2]) || '').trim();
+          const parsed = parseMultipart(raw, boundary);
+          ctx.rawBody = ''; // 二进制报文不做验签用途，不缓存
+          ctx.files = parsed.files;
+          return resolve(parsed.fields);
+        }
+
+        const text = raw.toString('utf8');
         // 微信支付回调验签必须用「原始报文」，反序列化再序列化会因键序/空格导致验签失败
-        ctx.rawBody = raw;
-        if (!raw) return resolve({});
+        ctx.rawBody = text;
+        if (!text) return resolve({});
         try {
-          resolve(JSON.parse(raw));
+          resolve(JSON.parse(text));
         } catch (e) {
           reject(new AppError(CODES.PARAM_INVALID, '请求体不是合法 JSON', 400));
         }
@@ -191,6 +262,8 @@ class Server {
       query,
       params: {},
       body: {},
+      /** multipart 上传的文件（非上传接口为空数组） */
+      files: [],
       headers: req.headers,
       ip: fwd || req.socket.remoteAddress || '',
       requestId: req.headers['x-request-id'] || nextRequestId(),
@@ -260,13 +333,15 @@ class Server {
     this.inflight++;
     this.stats.total++;
 
-    /* 单请求超时兜底：handler 卡住也要释放 */
+    /* 单请求超时兜底：handler 卡住也要释放。
+       上传（multipart）在弱网下天然更慢，单独放宽，避免大文件必超时 */
+    const isUpload = String(req.headers['content-type'] || '').indexOf('multipart/form-data') > -1;
     const timer = setTimeout(() => {
       if (!ctx.sent) {
         logger.error('request timeout', { requestId: ctx.requestId, path: ctx.pathname });
         ctx.send(504, { code: CODES.UPSTREAM_ERROR, message: '请求超时', data: null });
       }
-    }, this.requestTimeout);
+    }, isUpload ? Math.max(this.requestTimeout, 90000) : this.requestTimeout);
     timer.unref && timer.unref();
 
     try {

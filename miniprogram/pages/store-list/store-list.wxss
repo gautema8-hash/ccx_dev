@@ -1,13 +1,10 @@
+/* .page 基础样式来自 app.wxss；这里只补背景（门店页整页可滚动，筛选栏吸顶） */
 .page {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
   background: var(--c-bg, #f5f5f7);
 }
 
 /* ---------- 定位状态条 ---------- */
 .locbar {
-  flex: none;
   display: flex;
   align-items: center;
   gap: 12rpx;
@@ -41,45 +38,122 @@
   color: #8a8a8e;
 }
 
-/* ---------- 筛选 ---------- */
+/* ---------- 搜索 ---------- */
 .filters {
-  flex: none;
-  padding: 20rpx 24rpx 0;
+  display: flex;
+  align-items: center;
+  margin: 20rpx 24rpx 0;
+  padding: 0 24rpx;
+  height: 76rpx;
+  background: #fff;
+  border-radius: 38rpx;
+}
+.filters__icon {
+  font-size: 26rpx;
+  margin-right: 12rpx;
+  opacity: 0.6;
 }
 .filters__input {
-  height: 72rpx;
-  background: #fff;
-  border-radius: 36rpx;
-  padding: 0 28rpx;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
   font-size: 27rpx;
 }
 .filters__ph {
   color: #b8b8bd;
   font-size: 26rpx;
 }
-.tabs {
+.filters__clear {
   flex: none;
-  display: flex;
-  gap: 16rpx;
-  padding: 16rpx 24rpx 8rpx;
+  padding-left: 16rpx;
+  font-size: 24rpx;
+  color: #b8b8bd;
 }
-.tabs__item {
-  padding: 8rpx 24rpx;
-  border-radius: 28rpx;
+
+/* ---------- 下拉筛选栏（吸顶，面板跟着一起吸附） ---------- */
+.barwrap {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.bar {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 24rpx 12rpx;
+  background: var(--c-bg, #f5f5f7);
+}
+.bar__item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6rpx;
+  height: 64rpx;
+  margin-right: 14rpx;
+  border-radius: 32rpx;
   background: #fff;
   font-size: 25rpx;
   color: var(--c-sub, #8a8a8e);
 }
-.tabs__item.is-on {
-  background: var(--c-primary, #c62828);
-  color: #fff;
+.bar__item:last-child {
+  margin-right: 0;
+}
+.bar__item.is-active {
+  color: var(--c-primary, #c62828);
   font-weight: 600;
+}
+.bar__item.is-on {
+  background: var(--c-primary-weak, #fdecec);
+  color: var(--c-primary, #c62828);
+}
+.bar__caret {
+  font-size: 20rpx;
+  opacity: 0.7;
+}
+
+/* 下拉面板：挂在吸顶栏下沿 */
+.mask {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 19;
+  background: rgba(0, 0, 0, 0.28);
+}
+.panel {
+  position: absolute;
+  left: 24rpx;
+  right: 24rpx;
+  top: 100%;
+  z-index: 22;
+  padding: 8rpx 0;
+  background: #fff;
+  border-radius: 20rpx;
+  box-shadow: 0 12rpx 32rpx rgba(31, 31, 31, 0.14);
+}
+.panel__item {
+  padding: 24rpx 32rpx;
+  font-size: 27rpx;
+  color: var(--c-text, #1f1f1f);
+  border-bottom: 1rpx solid #f4f4f6;
+}
+.panel__item:last-child {
+  border-bottom: none;
+}
+.panel__item.is-on {
+  color: var(--c-primary, #c62828);
+  font-weight: 600;
+  background: #fffafa;
+}
+.panel__note {
+  padding: 16rpx 32rpx 20rpx;
+  font-size: 21rpx;
+  color: var(--c-text-weak, #b8b8bd);
 }
 
 /* ---------- 列表 ---------- */
 .list {
-  flex: 1;
-  min-height: 0;
   padding: 8rpx 24rpx 0;
 }
 .store {
@@ -182,4 +256,10 @@
 }
 .list__holder {
   height: 40rpx;
+}
+
+.reset {
+  margin-top: 32rpx;
+  height: 72rpx;
+  border-radius: 36rpx;
 }

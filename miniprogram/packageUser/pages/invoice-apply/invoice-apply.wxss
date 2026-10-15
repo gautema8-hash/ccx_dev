@@ -1,0 +1,194 @@
+/* ---------- 订单信息 ---------- */
+.ord {
+  padding: 26rpx 24rpx 20rpx;
+}
+.ord__head {
+  display: flex;
+  align-items: center;
+}
+.ord__title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--c-text);
+}
+.ord__no {
+  margin-left: auto;
+  font-size: 23rpx;
+  color: var(--c-text-weak);
+  font-family: DIN, -apple-system, sans-serif;
+}
+.ord__meta {
+  margin-top: 10rpx;
+  font-size: 23rpx;
+  color: var(--c-text-sub);
+}
+.ord__item {
+  display: flex;
+  align-items: center;
+  padding: 8rpx 0;
+  font-size: 25rpx;
+}
+.ord__name {
+  flex: 1;
+  min-width: 0;
+  color: #4a4a4f;
+}
+.ord__count {
+  flex: none;
+  width: 80rpx;
+  text-align: right;
+  color: var(--c-text-weak);
+  font-size: 23rpx;
+}
+.ord__amount {
+  flex: none;
+  width: 130rpx;
+  text-align: right;
+  color: var(--c-text);
+  font-family: DIN, -apple-system, sans-serif;
+}
+.ord__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16rpx;
+  padding-top: 18rpx;
+  border-top: 1rpx solid #f4f4f6;
+  font-size: 24rpx;
+  color: var(--c-text-sub);
+}
+.ord__pay-num {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: var(--c-primary);
+  font-family: DIN, -apple-system, sans-serif;
+  margin-left: 6rpx;
+}
+.ord__reject {
+  margin-top: 14rpx;
+  font-size: 22rpx;
+  color: var(--c-primary);
+  background: var(--c-primary-weak);
+  border-radius: 10rpx;
+  padding: 12rpx 16rpx;
+}
+
+/* ---------- 抬头选择 ---------- */
+.inv {
+  padding: 8rpx 24rpx 0;
+}
+.inv__item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #f4f4f6;
+}
+.inv__dot {
+  flex: none;
+  width: 30rpx;
+  height: 30rpx;
+  border-radius: 50%;
+  border: 2rpx solid #c8c8cd;
+  box-sizing: border-box;
+  margin-right: 18rpx;
+}
+.inv__item.is-on .inv__dot {
+  border-color: var(--c-primary);
+  background: var(--c-primary);
+  box-shadow: inset 0 0 0 6rpx #fff;
+}
+.inv__body {
+  flex: 1;
+  min-width: 0;
+}
+.inv__line {
+  display: flex;
+  align-items: center;
+}
+.inv__title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--c-text);
+  max-width: 400rpx;
+}
+.inv__type {
+  flex: none;
+  margin-left: 12rpx;
+  font-size: 20rpx;
+  color: #4a4a4f;
+  background: #f4f4f6;
+  border-radius: 6rpx;
+  padding: 2rpx 12rpx;
+}
+.inv__type.is-company {
+  color: var(--c-primary);
+  background: var(--c-primary-weak);
+}
+.inv__tax {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: var(--c-text-weak);
+  font-family: DIN, -apple-system, sans-serif;
+}
+.inv__none {
+  padding: 32rpx 0;
+  text-align: center;
+  font-size: 25rpx;
+  color: var(--c-text-weak);
+}
+.inv__add {
+  padding: 24rpx 0;
+  text-align: center;
+  font-size: 27rpx;
+  color: var(--c-primary);
+  font-weight: 600;
+}
+
+/* ---------- 邮箱 ---------- */
+.mail__input {
+  height: 80rpx;
+  font-size: 28rpx;
+  color: var(--c-text);
+}
+.mail__ph {
+  color: #c8c8cd;
+  font-size: 26rpx;
+}
+.mail__tip {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: var(--c-text-weak);
+  line-height: 1.6;
+}
+
+/* ---------- 开票须知勾选 ---------- */
+.agree {
+  display: flex;
+  align-items: center;
+  padding: 8rpx 32rpx 0;
+  font-size: 23rpx;
+}
+.agree__box {
+  width: 32rpx;
+  height: 32rpx;
+  border-radius: 50%;
+  border: 2rpx solid #c8c8cd;
+  box-sizing: border-box;
+  margin-right: 12rpx;
+  font-size: 20rpx;
+  color: transparent;
+  text-align: center;
+  line-height: 28rpx;
+}
+.agree__box.is-on {
+  border-color: var(--c-primary);
+  background: var(--c-primary);
+  color: #fff;
+}
+.agree__text {
+  color: var(--c-text-sub);
+}
+.agree__link {
+  color: var(--c-primary);
+}

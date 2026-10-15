@@ -1,0 +1,206 @@
+/* .page / .tip / .empty__hint 已在 app.wxss 全局定义 */
+
+/* ---------- Tab ---------- */
+.tabs {
+  display: flex;
+  background: var(--c-card);
+  padding: 0 24rpx;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+.tabs__item {
+  flex: 1;
+  text-align: center;
+  height: 92rpx;
+  line-height: 92rpx;
+  font-size: 28rpx;
+  color: var(--c-text-sub);
+  position: relative;
+}
+.tabs__item.is-on {
+  color: var(--c-primary);
+  font-weight: 600;
+}
+.tabs__item.is-on::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 8rpx;
+  transform: translateX(-50%);
+  width: 56rpx;
+  height: 6rpx;
+  border-radius: 3rpx;
+  background: var(--c-primary);
+}
+
+/* ---------- 抬头管理入口 ---------- */
+.entry {
+  display: flex;
+  align-items: center;
+  margin: 20rpx 24rpx 0;
+  padding: 26rpx 24rpx;
+  background: var(--c-card);
+  border-radius: 20rpx;
+  box-shadow: var(--shadow);
+}
+.entry__icon {
+  font-size: 34rpx;
+  width: 52rpx;
+}
+.entry__text {
+  font-size: 28rpx;
+  color: var(--c-text);
+}
+.entry__tip {
+  margin-left: auto;
+  font-size: 22rpx;
+  color: var(--c-text-weak);
+}
+.entry__arrow {
+  color: #c8c8cd;
+  font-size: 32rpx;
+  margin-left: 8rpx;
+}
+
+/* ---------- 待开票订单 ---------- */
+.order {
+  padding: 26rpx 24rpx 20rpx;
+}
+.order__head {
+  display: flex;
+  align-items: center;
+}
+.order__no {
+  font-size: 26rpx;
+  color: var(--c-text-sub);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.order__amount {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--c-primary);
+  font-family: DIN, -apple-system, sans-serif;
+}
+.order__meta {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  color: var(--c-text-weak);
+  display: flex;
+  align-items: center;
+}
+.order__dot {
+  margin: 0 10rpx;
+}
+.order__foot {
+  display: flex;
+  align-items: center;
+  margin-top: 20rpx;
+  padding-top: 18rpx;
+  border-top: 1rpx solid #f4f4f6;
+}
+.order__hint {
+  font-size: 23rpx;
+  color: var(--c-text-weak);
+  flex: 1;
+}
+.order__reject {
+  font-size: 23rpx;
+  color: var(--c-primary);
+  flex: 1;
+}
+.order__btn {
+  flex: none;
+  height: 64rpx;
+  padding: 0 32rpx;
+  border-radius: 32rpx;
+  font-size: 26rpx;
+}
+
+/* ---------- 开票历史 ---------- */
+.his {
+  padding: 26rpx 24rpx 20rpx;
+}
+.his__head {
+  display: flex;
+  align-items: center;
+}
+.his__title {
+  flex: 1;
+  min-width: 0;
+  font-size: 29rpx;
+  font-weight: 600;
+  color: var(--c-text);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.his__status {
+  flex: none;
+  font-size: 22rpx;
+  padding: 4rpx 14rpx;
+  border-radius: 999rpx;
+  background: #f4f4f6;
+  color: var(--c-text-sub);
+  margin-left: 16rpx;
+}
+.his__status--PENDING {
+  background: var(--c-primary-weak);
+  color: var(--c-primary);
+}
+.his__status--PROCESSING {
+  background: #fff3e0;
+  color: #b25a00;
+}
+.his__status--ISSUED {
+  background: #e8f5e9;
+  color: #1b8a3e;
+}
+.his__status--REJECTED {
+  background: #f4f4f6;
+  color: #8a8a8e;
+}
+.his__meta {
+  margin-top: 8rpx;
+  font-size: 23rpx;
+  color: var(--c-text-weak);
+  display: flex;
+  align-items: center;
+}
+.his__dot {
+  margin: 0 10rpx;
+}
+.his__foot {
+  display: flex;
+  align-items: center;
+  margin-top: 16rpx;
+}
+.his__amount {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--c-text);
+  font-family: DIN, -apple-system, sans-serif;
+}
+.his__time {
+  margin-left: 16rpx;
+  font-size: 22rpx;
+  color: var(--c-text-weak);
+}
+.his__arrow {
+  margin-left: auto;
+  font-size: 23rpx;
+  color: var(--c-primary);
+}
+.his__remark {
+  margin-top: 14rpx;
+  font-size: 22rpx;
+  color: var(--c-text-sub);
+  background: #fafafc;
+  border-radius: 10rpx;
+  padding: 12rpx 16rpx;
+  line-height: 1.5;
+}

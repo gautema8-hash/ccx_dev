@@ -1,0 +1,92 @@
+<!-- 发票抬头管理：列表 / 新增 / 删除（提交开票时可直接选用） -->
+<view class="page" style="{{themeStyle}}">
+  <view class="tip" wx:if="{{list.length}}">最多保存 10 个抬头 · 开票时一键选择，无需重复填写</view>
+
+  <view class="card it" wx:for="{{list}}" wx:key="id">
+    <view class="it__head">
+      <text class="it__name ellipsis">{{item.title}}</text>
+      <text class="it__type {{item.titleType === 'company' ? 'is-company' : ''}}">{{item.titleType === 'company' ? '公司' : '个人'}}</text>
+      <text wx:if="{{item.isDefault}}" class="it__default">默认</text>
+    </view>
+    <view wx:if="{{item.taxNo}}" class="it__row">
+      <text class="it__k">税号</text>
+      <text class="it__v">{{item.taxNo}}</text>
+    </view>
+    <view wx:if="{{item.email}}" class="it__row">
+      <text class="it__k">邮箱</text>
+      <text class="it__v">{{item.email}}</text>
+    </view>
+    <view class="it__ops">
+      <text class="it__act" data-title="{{item.title}}" bindtap="onCopy">复制名称</text>
+      <text class="it__act it__act--danger" data-id="{{item.id}}" data-title="{{item.title}}" bindtap="onDelete">删除</text>
+    </view>
+  </view>
+
+  <!-- 空态：明确引导新增 -->
+  <view wx:if="{{!loading && !list.length}}" class="empty">
+    <view class="empty__icon">🏷️</view>
+    <view class="empty__text">还没有发票抬头</view>
+    <view class="empty__hint">添加抬头后，申请开票时可直接选用，不用每次重复填写名称与税号</view>
+  </view>
+
+  <view class="bar-holder" wx:if="{{list.length || loading}}"></view>
+  <view class="action-bar">
+    <view class="btn-primary grow" bindtap="openForm">＋ 新增抬头</view>
+  </view>
+
+  <!-- 新增弹层（不跳页，填完即存） -->
+  <view wx:if="{{showForm}}" class="mask" bindtap="closeForm">
+    <view class="sheet" catchtap="noop">
+      <view class="sheet__title">新增发票抬头</view>
+
+      <view class="seg">
+        <view class="seg__item {{form.titleType === 'personal' ? 'is-on' : ''}}" data-t="personal" bindtap="onType">个人</view>
+        <view class="seg__item {{form.titleType === 'company' ? 'is-on' : ''}}" data-t="company" bindtap="onType">公司</view>
+      </view>
+
+      <view class="field">
+        <text class="field__label">{{form.titleType === 'company' ? '公司名称' : '个人姓名'}}</text>
+        <input
+          class="field__input"
+          value="{{form.title}}"
+          placeholder="{{form.titleType === 'company' ? '请填营业执照上的公司全称' : '请填写个人姓名'}}"
+          placeholder-class="field__ph"
+          maxlength="128"
+          data-k="title"
+          bindinput="onInput"
+        />
+      </view>
+
+      <view class="field" wx:if="{{form.titleType === 'company'}}">
+        <text class="field__label">纳税人识别号</text>
+        <input
+          class="field__input"
+          value="{{form.taxNo}}"
+          placeholder="15-20 位数字或大写字母"
+          placeholder-class="field__ph"
+          maxlength="20"
+          data-k="taxNo"
+          bindinput="onInput"
+        />
+      </view>
+
+      <view class="field">
+        <text class="field__label">接收邮箱</text>
+        <input
+          class="field__input"
+          value="{{form.email}}"
+          placeholder="选填，电子发票将发送至该邮箱"
+          placeholder-class="field__ph"
+          maxlength="128"
+          data-k="email"
+          bindinput="onInput"
+        />
+      </view>
+
+      <view class="sheet__ops">
+        <view class="btn-ghost grow" bindtap="closeForm">取消</view>
+        <view class="btn-primary grow" bindtap="onSave">保存</view>
+      </view>
+    </view>
+  </view>
+</view>

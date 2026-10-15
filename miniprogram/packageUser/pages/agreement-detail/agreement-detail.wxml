@@ -1,0 +1,30 @@
+<!-- 协议详情：富文本长文滚动 -->
+<view class="page" style="{{themeStyle}}">
+  <block wx:if="{{ag}}">
+    <view class="hd">
+      <text class="hd__title">{{ag.title}}</text>
+      <view class="hd__meta">
+        <text class="hd__ver">{{ag.version}}</text>
+        <text class="hd__time">更新于 {{timeText}}</text>
+      </view>
+      <text wx:if="{{ag.summary}}" class="hd__sum">{{ag.summary}}</text>
+    </view>
+
+    <!-- 正文：服务端存 HTML 片段，rich-text 渲染（已在服务端剥离 script / 内联事件） -->
+    <view class="card doc">
+      <rich-text class="doc__rich" nodes="{{ag.contentHtml}}" space="nbsp"></rich-text>
+    </view>
+
+    <view class="foot">
+      <text>版本 {{ag.version}} · 更新于 {{timeText}}</text>
+      <text>本{{ag.title}}由商家在管理后台维护，如有疑问可在「在线客服」中咨询</text>
+    </view>
+  </block>
+
+  <view wx:elif="{{!loading}}" class="empty">
+    <view class="empty__icon">📄</view>
+    <view class="empty__text">协议加载失败</view>
+    <view class="empty__hint">请检查网络后下拉刷新重试</view>
+    <view class="btn-ghost retry" bindtap="fetch">重新加载</view>
+  </view>
+</view>

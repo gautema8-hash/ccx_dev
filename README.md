@@ -163,6 +163,7 @@ node tools/build-preview.js && node tools/verify-preview.js
 | 8 | [`docs/08-测试报告与遗留风险.md`](docs/08-测试报告与遗留风险.md) | 用例、结果、遗留风险 |
 | 9 | [`docs/09-项目执行日志.md`](docs/09-项目执行日志.md) | 全程需求、决策与执行记录 |
 | 10 | [`docs/10-真机与交付测试报告.md`](docs/10-真机与交付测试报告.md) | 真机验证与交付测试结果 |
+| 11 | [`docs/11-我的模块新增功能设计与实现.md`](docs/11-我的模块新增功能设计与实现.md) | 「我的」8 项新增功能：入口分组、路由与跳转、字段定义、接口清单与 mock |
 
 子模块说明：`miniprogram/README.md`、`miniprogram-server/README.md`、`admin-web/README.md`、`admin-server/README.md`、`preview/README.md`、`tools/README.md`、`deploy/README.md`。
 

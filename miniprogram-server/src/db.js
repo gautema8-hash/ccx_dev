@@ -430,10 +430,14 @@ const DDL = [
     nickname     VARCHAR(64)  NOT NULL DEFAULT '串串香食客',
     avatar       VARCHAR(512) NOT NULL DEFAULT '',
     phone        VARCHAR(32)  NOT NULL DEFAULT '',
+    gender       TINYINT      NOT NULL DEFAULT 0 COMMENT '0未知 1男 2女',
+    birthday     VARCHAR(16)  NOT NULL DEFAULT '' COMMENT 'YYYY-MM-DD',
+    city         VARCHAR(64)  NOT NULL DEFAULT '',
     member_level INT          NOT NULL DEFAULT 1,
     member_name  VARCHAR(32)  NOT NULL DEFAULT '铜签会员',
     points       INT          NOT NULL DEFAULT 0,
-    status       TINYINT      NOT NULL DEFAULT 1,
+    status       TINYINT      NOT NULL DEFAULT 1 COMMENT '0已注销 1正常',
+    cancel_at    BIGINT       NOT NULL DEFAULT 0 COMMENT '注销时间',
     created_at   BIGINT       NOT NULL,
     updated_at   BIGINT       NOT NULL,
     last_login_at BIGINT      NOT NULL DEFAULT 0,
@@ -588,6 +592,113 @@ const DDL = [
     name VARCHAR(64) NOT NULL PRIMARY KEY,
     val  BIGINT      NOT NULL DEFAULT 0
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+
+  /* ---------------- 「我的」模块新增（地址 / 客服 / 协议 / 开票申请 / 加盟配置 / 注销日志） ---------------- */
+
+  `CREATE TABLE IF NOT EXISTS mp_address (
+    id         BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id    BIGINT       NOT NULL,
+    name       VARCHAR(32)  NOT NULL,
+    phone      VARCHAR(20)  NOT NULL,
+    province   VARCHAR(32)  NOT NULL DEFAULT '',
+    city       VARCHAR(32)  NOT NULL DEFAULT '',
+    district   VARCHAR(32)  NOT NULL DEFAULT '',
+    detail     VARCHAR(200) NOT NULL,
+    tag        VARCHAR(16)  NOT NULL DEFAULT '' COMMENT '家|公司|学校',
+    is_default TINYINT      NOT NULL DEFAULT 0,
+    created_at BIGINT       NOT NULL,
+    updated_at BIGINT       NOT NULL,
+    KEY idx_user (user_id, is_default, updated_at)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+
+  `CREATE TABLE IF NOT EXISTS mp_service_ticket (
+    id             BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id        BIGINT       NOT NULL,
+    store_id       VARCHAR(32)  NOT NULL DEFAULT '',
+    status         VARCHAR(16)  NOT NULL DEFAULT 'OPEN' COMMENT 'OPEN|CLOSED',
+    last_msg_at    BIGINT       NOT NULL DEFAULT 0,
+    last_preview   VARCHAR(128) NOT NULL DEFAULT '',
+    user_unread    INT          NOT NULL DEFAULT 0,
+    admin_unread   INT          NOT NULL DEFAULT 0,
+    created_at     BIGINT       NOT NULL,
+    updated_at     BIGINT       NOT NULL,
+    KEY idx_user_time (user_id, status, updated_at),
+    KEY idx_admin_unread (admin_unread, updated_at)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+
+  `CREATE TABLE IF NOT EXISTS mp_service_message (
+    id          BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    ticket_id   BIGINT       NOT NULL,
+    user_id     BIGINT       NOT NULL DEFAULT 0,
+    sender      VARCHAR(16)  NOT NULL COMMENT 'USER|ADMIN|SYSTEM',
+    msg_type    VARCHAR(16)  NOT NULL DEFAULT 'text' COMMENT 'text|image|video|voice|file',
+    content     TEXT         NULL,
+    media_url   VARCHAR(512) NOT NULL DEFAULT '',
+    media_meta  VARCHAR(512) NOT NULL DEFAULT '' COMMENT 'JSON: duration/size/name/width/height',
+    created_at  BIGINT       NOT NULL,
+    KEY idx_ticket (ticket_id, id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+
+  `CREATE TABLE IF NOT EXISTS mp_agreement (
+    id           BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    code         VARCHAR(32)  NOT NULL,
+    title        VARCHAR(64)  NOT NULL,
+    summary      VARCHAR(200) NOT NULL DEFAULT '',
+    content_html MEDIUMTEXT   NULL,
+    version      VARCHAR(16)  NOT NULL DEFAULT 'v1.0',
+    sort         INT          NOT NULL DEFAULT 0,
+    status       TINYINT      NOT NULL DEFAULT 1,
+    updated_at   BIGINT       NOT NULL,
+    UNIQUE KEY uk_code (code)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+
+  `CREATE TABLE IF NOT EXISTS mp_invoice_request (
+    id           BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    title_id     BIGINT       NOT NULL DEFAULT 0,
+    user_id      BIGINT       NOT NULL,
+    order_id     VARCHAR(40)  NOT NULL,
+    order_no     VARCHAR(40)  NOT NULL DEFAULT '',
+    store_id     VARCHAR(32)  NOT NULL DEFAULT '',
+    amount       INT          NOT NULL DEFAULT 0,
+    title_type   VARCHAR(16)  NOT NULL DEFAULT 'personal',
+    title        VARCHAR(128) NOT NULL,
+    tax_no       VARCHAR(64)  NOT NULL DEFAULT '',
+    email        VARCHAR(128) NOT NULL DEFAULT '',
+    status       VARCHAR(16)  NOT NULL DEFAULT 'PENDING' COMMENT 'PENDING|PROCESSING|ISSUED|REJECTED',
+    invoice_no   VARCHAR(64)  NOT NULL DEFAULT '',
+    invoice_url  VARCHAR(512) NOT NULL DEFAULT '',
+    remark       VARCHAR(255) NOT NULL DEFAULT '',
+    applied_at   BIGINT       NOT NULL,
+    issued_at    BIGINT       NOT NULL DEFAULT 0,
+    updated_at   BIGINT       NOT NULL,
+    UNIQUE KEY uk_order (order_id),
+    KEY idx_user (user_id, applied_at),
+    KEY idx_status (status, applied_at)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+
+  `CREATE TABLE IF NOT EXISTS mp_franchise_config (
+    id            VARCHAR(32)  NOT NULL PRIMARY KEY,
+    brand_id      VARCHAR(32)  NOT NULL DEFAULT 'brand_lbz',
+    title         VARCHAR(64)  NOT NULL DEFAULT '老北京麻辣串串香 · 加盟合作',
+    subtitle      VARCHAR(128) NOT NULL DEFAULT '',
+    highlights    VARCHAR(1024) NOT NULL DEFAULT '[]' COMMENT 'JSON 数组：[{icon,label,value}]',
+    poster_url    VARCHAR(512) NOT NULL DEFAULT '' COMMENT '整张海报图（可选，留空则用内置版式）',
+    qr_url        VARCHAR(512) NOT NULL DEFAULT '' COMMENT '企业微信二维码（后台可换）',
+    qr_tip        VARCHAR(128) NOT NULL DEFAULT '长按识别添加加盟顾问企业微信',
+    consult_phone VARCHAR(32)  NOT NULL DEFAULT '',
+    wecom_id      VARCHAR(64)  NOT NULL DEFAULT '',
+    updated_at    BIGINT       NOT NULL,
+    KEY idx_brand (brand_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+
+  `CREATE TABLE IF NOT EXISTS mp_user_cancel_log (
+    id          BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id     BIGINT       NOT NULL,
+    openid_hash VARCHAR(64)  NOT NULL DEFAULT '' COMMENT 'openid 的 SHA-256，脱敏留痕',
+    reason      VARCHAR(255) NOT NULL DEFAULT '',
+    created_at  BIGINT       NOT NULL,
+    KEY idx_user (user_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
 ];
 
 /** 幂等加列：老库升级时用，已存在则跳过 */
@@ -635,6 +746,24 @@ async function migrate() {
     await ensureColumn(conn, 'mp_coupon', 'day_limit', 'day_limit INT NOT NULL DEFAULT 0');
     await ensureColumn(conn, 'mp_coupon', 'used_count', 'used_count INT NOT NULL DEFAULT 0');
     await ensureColumn(conn, 'mp_coupon', 'created_by', 'created_by BIGINT NOT NULL DEFAULT 0');
+    /* 用户表升级：个人资料（性别/生日/城市）与注销留痕 */
+    await ensureColumn(conn, 'mp_user', 'gender', 'gender TINYINT NOT NULL DEFAULT 0');
+    await ensureColumn(conn, 'mp_user', 'birthday', "birthday VARCHAR(16) NOT NULL DEFAULT ''");
+    await ensureColumn(conn, 'mp_user', 'city', "city VARCHAR(64) NOT NULL DEFAULT ''");
+    await ensureColumn(conn, 'mp_user', 'cancel_at', 'cancel_at BIGINT NOT NULL DEFAULT 0');
+    /* 加盟配置升级：海报文案与二维码提示（老库只有 6 列，缺 title / qr_tip） */
+    await ensureColumn(
+      conn,
+      'mp_franchise_config',
+      'title',
+      "title VARCHAR(64) NOT NULL DEFAULT '老北京麻辣串串香 · 加盟合作'"
+    );
+    await ensureColumn(
+      conn,
+      'mp_franchise_config',
+      'qr_tip',
+      "qr_tip VARCHAR(128) NOT NULL DEFAULT '长按识别添加加盟顾问企业微信'"
+    );
     logger.info('migrate done', { tables: DDL.length, db: config.db.database });
     logger.info('提示：若刚从单店版升级，建议执行 `node src/db.js reset` 重建数据（自动导入品牌/门店/账号/主题/券）');
   } finally {
@@ -652,6 +781,66 @@ const SEED_STORES = [
   { id: 'st_hd', code: 'BJ003', name: '老北京麻辣串串香·中关村店', type: 'DIRECT', region: '华北', city: '北京', address: '海淀区中关村大街 1 号 3 层', lat: 39.9836, lng: 116.3164, perCapita: 70 },
   { id: 'st_ft', code: 'BJ004', name: '老北京麻辣串串香·丰台万达店（加盟）', type: 'FRANCHISE', region: '华北', city: '北京', address: '丰台区南三环西路 16 号万达广场 5 层', lat: 39.8586, lng: 116.295, perCapita: 65, franchisee: '北京味觉餐饮管理有限公司' },
   { id: 'st_tz', code: 'BJ005', name: '老北京麻辣串串香·通州万达店（加盟）', type: 'FRANCHISE', region: '华北', city: '北京', address: '通州区新华西街 60 号万达广场 4 层', lat: 39.9097, lng: 116.6564, perCapita: 64, franchisee: '通州蜀香餐饮合伙企业' },
+];
+
+/**
+ * 协议与政策种子（「我的 → 协议及政策」）
+ * content_html 用 rich-text 支持的基础标签（h3/p/ul/li/b），保持排版稳定
+ */
+const SEED_AGREEMENTS = [
+  {
+    code: 'invoice-notice',
+    title: '开票须知',
+    summary: '电子发票开具范围、时限与常见问题',
+    version: 'v1.1',
+    sort: 1,
+    contentHtml:
+      '<h3>一、开票范围</h3><p>在本品牌任一门店消费并完成支付的订单，均可申请开具电子普通发票；暂不支持开具增值税专用发票。</p>' +
+      '<h3>二、开票时限</h3><ul><li>订单完成后 90 天内可申请开票，逾期不再受理；</li><li>提交申请后 1-3 个工作日内开具，开具结果通过小程序消息与邮箱同步；</li><li>单笔订单仅支持开具一次发票，请核对抬头与税号后再提交。</li></ul>' +
+      '<h3>三、金额说明</h3><p>开票金额为订单实付金额（已扣除优惠券、折扣与已退款部分），配送费、包装费按实际发生金额开具。</p>' +
+      '<h3>四、退换与红冲</h3><ul><li>订单发生退款时，已开具的发票需先行红冲；</li><li>抬头、税号填写错误需红冲重开的，请联系在线客服并提供正确信息。</li></ul>' +
+      '<h3>五、其他</h3><p>发票抬头与纳税人识别号由用户自行填写并负责其真实性，因信息填写错误导致的发票作废由用户承担。</p>',
+  },
+  {
+    code: 'license-publicity',
+    title: '经营者证照公示',
+    summary: '营业执照、食品经营许可证与食品安全承诺',
+    version: 'v1.0',
+    sort: 2,
+    contentHtml:
+      '<h3>主体信息</h3><p>经营者名称：老北京麻辣烫串串香（集团）有限公司<br/>统一社会信用代码：91110101MA00LBZ666<br/>注册地址：北京市东城区东直门内大街 188 号</p>' +
+      '<h3>许可信息</h3><p>食品经营许可证编号：JY11101010088888<br/>许可范围：热食类食品制售、自制饮品制售<br/>有效期至：2029-12-31</p>' +
+      '<h3>门店公示</h3><p>各门店均在店内显著位置悬挂《营业执照》《食品经营许可证》及从业人员健康证明，欢迎到店查看。</p>' +
+      '<h3>食品安全承诺</h3><ul><li>每日食材当日配送，现串现涮，不隔夜复用；</li><li>锅底一次性使用，废弃油脂交由有资质单位回收；</li><li>如遇食品安全问题，可拨打 12315 或门店客服电话投诉。</li></ul>',
+  },
+  {
+    code: 'privacy-policy',
+    title: '隐私协议',
+    summary: '我们如何收集、使用与保护你的个人信息',
+    version: 'v1.2',
+    sort: 3,
+    contentHtml:
+      '<h3>一、我们收集的信息</h3><ul><li>账号信息：微信 openid、昵称、头像（你主动填写时收集）；</li><li>联系方式：手机号（你主动授权绑定时收集，用于订单通知与发票联系）；</li><li>位置信息：在你授权后用于推荐最近门店与计算距离，不上传历史轨迹；</li><li>订单信息：下单、支付、开票、售后所必需的数据。</li></ul>' +
+      '<h3>二、我们如何使用信息</h3><p>仅用于完成点单、支付、取餐通知、售后服务、发票开具与依法合规目的，不会用于与上述目的无关的用途。</p>' +
+      '<h3>三、信息的存储与保护</h3><p>数据存储于中国境内服务器，传输采用 HTTPS 加密；敏感字段（手机号）以脱敏方式展示，支付信息由微信支付托管，我们不接触你的支付密码。</p>' +
+      '<h3>四、信息共享</h3><p>除以下情形外，我们不会向第三方提供你的个人信息：<br/>· 为完成支付与微信支付共享必要交易信息；<br/>· 为核销团购券与平台共享核销结果；<br/>· 法律法规要求或司法机关依法要求提供。</p>' +
+      '<h3>五、你的权利</h3><ul><li>你可以在「我的 → 个人资料」中查询、更正你的信息；</li><li>你可以在「我的 → 账号设置」中注销账号，注销后我们将删除或匿名化你的个人信息；</li><li>你可以通过在线客服联系我们行使上述权利。</li></ul>' +
+      '<h3>六、联系我们</h3><p>如对本协议有任何疑问，可通过「我的 → 在线客服」或致电 400-888-6666 联系我们的个人信息保护负责人。</p>',
+  },
+  {
+    code: 'user-agreement',
+    title: '用户协议',
+    summary: '使用本小程序服务前请阅读并同意以下条款',
+    version: 'v1.2',
+    sort: 4,
+    contentHtml:
+      '<h3>一、协议范围</h3><p>本协议是你与老北京麻辣烫串串香（集团）有限公司之间就使用本点单小程序所订立的约定。你开始使用本服务即视为已阅读并同意本协议。</p>' +
+      '<h3>二、账号与安全</h3><ul><li>本服务通过微信授权登录，请妥善保管你的微信账号；</li><li>你应对通过你的账号进行的操作负责；</li><li>账号注销后不可恢复，历史订单与优惠券将一并作废。</li></ul>' +
+      '<h3>三、下单与支付</h3><ul><li>商品价格以下单时小程序展示为准，菜单与库存可能因门店实际情况调整；</li><li>未支付订单将在 15 分钟后自动取消并释放库存；</li><li>已支付订单如需取消，将按退款规则原路退回。</li></ul>' +
+      '<h3>四、优惠券使用</h3><p>优惠券在有效期内使用，过期自动失效；每笔订单限用一张券，券不兑换现金、不找零、不可叠加（活动另有说明除外）。</p>' +
+      '<h3>五、用户行为规范</h3><p>你不得利用本服务从事刷单、套现、恶意占库存、批量注册等行为，一经发现我们有权取消订单、冻结权益并保留追责权利。</p>' +
+      '<h3>六、免责与争议解决</h3><p>因不可抗力、网络故障、系统维护等导致的服务中断，我们将尽力恢复但不承担由此产生的间接损失。本协议适用中华人民共和国法律，争议提交经营者所在地人民法院解决。</p>',
+  },
 ];
 
 /**
@@ -828,6 +1017,44 @@ async function seed() {
       [c.id, BRAND_ID, c.name, c.type, c.value, c.threshold, c.scope, JSON.stringify(c.stores), c.issueType, c.receive, c.dayLimit, c.total, c.perUser, c.expire, now, now]
     );
   }
+
+  /* ---------------- 协议与政策（小程序「我的 → 协议及政策」） ---------------- */
+  for (const a of SEED_AGREEMENTS) {
+    await execute(
+      `INSERT INTO mp_agreement (code, title, summary, content_html, version, sort, status, updated_at)
+       VALUES (?,?,?,?,?,?,1,?)
+       ON DUPLICATE KEY UPDATE title=VALUES(title),summary=VALUES(summary),
+         content_html=IF(mp_agreement.content_html IS NULL OR mp_agreement.content_html = '', VALUES(content_html), mp_agreement.content_html),
+         version=VALUES(version),sort=VALUES(sort),status=1,updated_at=VALUES(updated_at)`,
+      [a.code, a.title, a.summary, a.contentHtml, a.version, a.sort, now]
+    );
+  }
+
+  /* ---------------- 加盟咨询配置（单行，后台可改；二维码留空时前端用占位版式） ---------------- */
+  await execute(
+    `INSERT INTO mp_franchise_config
+     (id, brand_id, title, subtitle, highlights, poster_url, qr_url, qr_tip, consult_phone, wecom_id, updated_at)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?)
+     ON DUPLICATE KEY UPDATE brand_id=VALUES(brand_id)`,
+    [
+      BRAND_ID,
+      BRAND_ID,
+      '老北京麻辣串串香 · 城市合伙人计划',
+      '现串现涮 · 一口老北京味，开到你的城市',
+      JSON.stringify([
+        { icon: '🏪', label: '已开门店', value: '5 家' },
+        { icon: '💰', label: '单店投资', value: '35-60 万' },
+        { icon: '📈', label: '回本周期', value: '约 12-18 个月' },
+        { icon: '🤝', label: '合作模式', value: '整店加盟 / 区域代理' },
+      ]),
+      '',
+      '',
+      '长按识别二维码，添加加盟顾问企业微信',
+      '400-888-6666',
+      'lbz_franchise',
+      now,
+    ]
+  );
 
   logger.info('seed done', {
     brand: BRAND_ID,

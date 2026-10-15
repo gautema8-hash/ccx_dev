@@ -1,0 +1,148 @@
+.page--store {
+  padding-bottom: 24rpx;
+}
+
+/* ---------- 顶部地图 ---------- */
+.map {
+  position: relative;
+  height: 460rpx;
+  background: #e8e8ec;
+}
+.map__canvas {
+  width: 100%;
+  height: 100%;
+}
+.map__nav {
+  position: absolute;
+  right: 24rpx;
+  bottom: 68rpx;
+  z-index: 2;
+  padding: 14rpx 26rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--c-primary);
+  font-size: 25rpx;
+  font-weight: 600;
+  box-shadow: 0 6rpx 18rpx rgba(31, 31, 31, 0.16);
+}
+
+/* ---------- 门店主卡片 ---------- */
+.head {
+  position: relative;
+  margin-top: -40rpx;
+  z-index: 2;
+  padding: 28rpx 24rpx 24rpx;
+}
+.head__line {
+  display: flex;
+  align-items: center;
+}
+.head__name {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: var(--c-text);
+  flex: 1;
+  min-width: 0;
+}
+.head__type {
+  flex: none;
+  margin-left: 16rpx;
+  font-size: 20rpx;
+  color: var(--c-primary);
+  background: var(--c-primary-weak);
+  border-radius: 6rpx;
+  padding: 4rpx 14rpx;
+}
+.head__type.is-franchise {
+  color: #b25a00;
+  background: #fff3e0;
+}
+.head__meta {
+  display: flex;
+  align-items: center;
+  margin-top: 14rpx;
+  flex-wrap: wrap;
+}
+.head__state {
+  font-size: 22rpx;
+  border-radius: 6rpx;
+  padding: 2rpx 12rpx;
+}
+.head__state.is-open {
+  color: #1b8a3e;
+  background: #e8f5e9;
+}
+.head__state.is-close {
+  color: #8a8a8e;
+  background: #f4f4f6;
+}
+.head__time {
+  margin-left: 14rpx;
+  font-size: 23rpx;
+  color: var(--c-text-sub);
+}
+.head__dist {
+  margin-left: 14rpx;
+  font-size: 23rpx;
+  color: var(--c-primary);
+  font-family: DIN, -apple-system, sans-serif;
+}
+.head__cur {
+  position: absolute;
+  right: 24rpx;
+  top: -26rpx;
+  padding: 6rpx 18rpx;
+  border-radius: 999rpx;
+  background: linear-gradient(135deg, #d32f2f, #b71c1c);
+  color: #fff;
+  font-size: 20rpx;
+  font-weight: 600;
+  box-shadow: 0 6rpx 16rpx rgba(198, 40, 40, 0.3);
+}
+
+/* ---------- 信息行 ---------- */
+.info {
+  padding: 4rpx 24rpx;
+}
+.info__row {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #f4f4f6;
+}
+.info__row:last-child {
+  border-bottom: none;
+}
+.info__k {
+  flex: none;
+  width: 170rpx;
+  font-size: 25rpx;
+  color: var(--c-text-sub);
+}
+.info__v {
+  flex: 1;
+  min-width: 0;
+  font-size: 26rpx;
+  color: var(--c-text);
+  line-height: 1.5;
+}
+.info__act {
+  flex: none;
+  margin-left: 16rpx;
+  font-size: 23rpx;
+  color: var(--c-primary);
+}
+
+.tip {
+  padding: 4rpx 32rpx 0;
+  font-size: 21rpx;
+  color: var(--c-text-weak);
+  line-height: 1.7;
+}
+
+/* ---------- 底部操作 ---------- */
+.act {
+  flex: none;
+  min-width: 140rpx;
+  margin-right: 16rpx;
+}

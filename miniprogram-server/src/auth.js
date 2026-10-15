@@ -55,6 +55,11 @@ function publicUser(u) {
     nickname: u.nickname,
     avatar: u.avatar,
     phoneMask: u.phone ? u.phone.slice(0, 3) + '****' + u.phone.slice(-4) : '',
+    phoneBound: !!u.phone,
+    /** 个人资料扩展字段（「我的 → 个人资料」） */
+    gender: Number(u.gender || 0),
+    birthday: u.birthday || '',
+    city: u.city || '',
     memberLevel: u.member_level,
     memberName: u.member_name,
     points: u.points,

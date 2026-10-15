@@ -14,10 +14,14 @@ const ENDPOINTS = {
   prod: 'https://api.lbz-chuanchuan.cn/miniapp/v1',
 };
 
+const BASE_URL = ENDPOINTS[ENV] || ENDPOINTS.local;
+
 module.exports = {
   ENV,
   /** 后端网关地址 */
-  BASE_URL: ENDPOINTS[ENV] || ENDPOINTS.local,
+  BASE_URL,
+  /** 静态资源源站（上传文件 /uploads/** 挂在这里），由 BASE_URL 推导，避免两处配置漂移 */
+  ORIGIN: BASE_URL.replace(/\/miniapp\/v1\/?$/, ''),
 
   /** true = 走本地内置菜单/订单数据（无后端时演示用）；接后端后必须为 false */
   USE_MOCK: false,
@@ -37,6 +41,12 @@ module.exports = {
   TIMEOUT: 12000,
   /** 幂等请求失败自动重试次数（仅 GET 或显式 idempotent 的请求） */
   RETRY: 1,
+
+  /** 上传大小上限（与后端 config.upload.maxSize 对应，客户端先拦一层省一次往返） */
+  UPLOAD_IMAGE_MAX: 5 * 1024 * 1024,
+  UPLOAD_VOICE_MAX: 2 * 1024 * 1024,
+  UPLOAD_VIDEO_MAX: 15 * 1024 * 1024,
+  UPLOAD_FILE_MAX: 10 * 1024 * 1024,
 
   /** 订阅消息模板 ID（在小程序后台「订阅消息」申请后填入） */
   TMPL: {

@@ -1,0 +1,65 @@
+<!-- 发票管理：待开票订单 / 开票历史 两个视图 -->
+<view class="page" style="{{themeStyle}}">
+  <view class="tabs">
+    <view class="tabs__item {{tab === 'orders' ? 'is-on' : ''}}" data-t="orders" bindtap="onTab">待开票订单</view>
+    <view class="tabs__item {{tab === 'history' ? 'is-on' : ''}}" data-t="history" bindtap="onTab">开票历史</view>
+  </view>
+
+  <view class="entry" bindtap="goTitles">
+    <text class="entry__icon">🏷️</text>
+    <text class="entry__text">发票抬头管理</text>
+    <text class="entry__tip">个人 / 公司抬头，最多 10 个</text>
+    <text class="entry__arrow">›</text>
+  </view>
+
+  <!-- 待开票订单 -->
+  <block wx:if="{{tab === 'orders'}}">
+    <view class="card order" wx:for="{{orders}}" wx:key="orderId">
+      <view class="order__head">
+        <text class="order__no">订单 {{item.orderNo}}</text>
+        <text class="order__amount">¥{{item.amountYuan}}</text>
+      </view>
+      <view class="order__meta">
+        <text>{{item.storeName}}</text>
+        <text class="order__dot">·</text>
+        <text>{{item.timeText}}</text>
+      </view>
+      <view class="order__foot">
+        <text wx:if="{{item.rejected}}" class="order__reject">上次申请被驳回，可重新提交</text>
+        <text wx:else class="order__hint">共 {{item.itemCount}} 件商品</text>
+        <view class="btn-primary order__btn" data-id="{{item.orderId}}" bindtap="goApply">申请开票</view>
+      </view>
+    </view>
+    <view wx:if="{{!loading && !orders.length}}" class="empty">
+      <view class="empty__icon">🧮</view>
+      <view class="empty__text">暂无可开票订单</view>
+      <view class="empty__hint">订单支付完成后即可申请电子发票（完成后 90 天内有效）</view>
+    </view>
+  </block>
+
+  <!-- 开票历史 -->
+  <block wx:else>
+    <view class="card his" wx:for="{{records}}" wx:key="id" data-id="{{item.id}}" bindtap="goDetail">
+      <view class="his__head">
+        <text class="his__title">{{item.title}}</text>
+        <text class="his__status his__status--{{item.status}}">{{item.statusText}}</text>
+      </view>
+      <view class="his__meta">
+        <text>{{item.titleType === 'company' ? '公司' : '个人'}}</text>
+        <text class="his__dot">·</text>
+        <text>{{item.orderNo}}</text>
+      </view>
+      <view class="his__foot">
+        <text class="his__amount">¥{{item.amountYuan}}</text>
+        <text class="his__time">{{item.timeText}}</text>
+        <text class="his__arrow">详情 ›</text>
+      </view>
+      <view wx:if="{{item.remark}}" class="his__remark">备注：{{item.remark}}</view>
+    </view>
+    <view wx:if="{{!loading && !records.length}}" class="empty">
+      <view class="empty__icon">🗂️</view>
+      <view class="empty__text">暂无开票记录</view>
+      <view class="empty__hint">在「待开票订单」中选择订单即可提交开票申请</view>
+    </view>
+  </block>
+</view>

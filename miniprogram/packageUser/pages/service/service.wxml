@@ -1,0 +1,159 @@
+<!-- 在线客服：气泡按类型渲染（text / image / video / voice / file），底部输入区带表情与「+」多媒体面板 -->
+<view class="page" style="{{themeStyle}}">
+  <scroll-view
+    class="chat"
+    scroll-y
+    enhanced
+    show-scrollbar="{{false}}"
+    scroll-into-view="{{intoView}}"
+    scroll-with-animation
+  >
+    <view class="chat__top">
+      <text class="chat__top-text">在线客服 · 人工服务时间 10:00 - 22:00</text>
+      <text class="chat__top-act" bindtap="onCloseSession">结束会话</text>
+    </view>
+
+    <view wx:for="{{messages}}" wx:key="key" id="msg-{{item.key}}" class="msg msg--{{item.sender === 'USER' ? 'me' : (item.sender === 'SYSTEM' ? 'sys' : 'other')}}">
+      <view wx:if="{{item.sender !== 'SYSTEM'}}" class="msg__avatar">{{item.sender === 'USER' ? avatarText : '客'}}</view>
+      <view class="msg__wrap">
+        <!-- 文本 -->
+        <view wx:if="{{item.type === 'text'}}" class="bubble bubble--text">
+          <text>{{item.content}}</text>
+        </view>
+
+        <!-- 图片 -->
+        <view wx:elif="{{item.type === 'image'}}" class="bubble bubble--media">
+          <image
+            class="media-img"
+            src="{{item.mediaUrl}}"
+            mode="widthFix"
+            data-url="{{item.mediaUrl}}"
+            bindtap="onPreviewImage"
+            lazy-load
+          />
+        </view>
+
+        <!-- 视频 -->
+        <view wx:elif="{{item.type === 'video'}}" class="bubble bubble--media">
+          <video
+            class="media-video"
+            src="{{item.mediaUrl}}"
+            object-fit="cover"
+            show-center-play-btn
+            enable-progress-gesture="{{false}}"
+          />
+        </view>
+
+        <!-- 语音 -->
+        <view
+          wx:elif="{{item.type === 'voice'}}"
+          class="bubble bubble--voice {{playingId === item.key ? 'is-playing' : ''}}"
+          data-key="{{item.key}}"
+          data-url="{{item.mediaUrl}}"
+          bindtap="onPlayVoice"
+        >
+          <text class="voice__icon">🔊</text>
+          <text class="voice__dur">{{item.meta.duration || 0}}″</text>
+        </view>
+
+        <!-- 文件 -->
+        <view
+          wx:elif="{{item.type === 'file'}}"
+          class="bubble bubble--file"
+          data-url="{{item.mediaUrl}}"
+          data-name="{{item.meta.name}}"
+          bindtap="onOpenFile"
+        >
+          <text class="file__icon">📎</text>
+          <view class="file__main">
+            <text class="file__name">{{item.meta.name || '附件'}}</text>
+            <text class="file__size">{{item.sizeText}}</text>
+          </view>
+        </view>
+
+        <view class="msg__meta">
+          <text>{{item.timeText}}</text>
+          <text wx:if="{{item.status === 'sending'}}" class="msg__status">发送中…</text>
+          <text wx:if="{{item.status === 'failed'}}" class="msg__status msg__status--fail">发送失败</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="chat__holder" id="chat-bottom"></view>
+  </scroll-view>
+
+  <!-- 快捷问题：只在不打扰输入时展示 -->
+  <scroll-view wx:if="{{showQuick && quickReplies.length}}" class="quick" scroll-x show-scrollbar="{{false}}">
+    <view
+      wx:for="{{quickReplies}}"
+      wx:key="key"
+      class="quick__item"
+      data-send="{{item.send}}"
+      bindtap="onQuick"
+    >{{item.label}}</view>
+  </scroll-view>
+
+  <!-- 输入区 -->
+  <view class="bar">
+    <view class="bar__row">
+      <input
+        class="bar__input"
+        value="{{draft}}"
+        placeholder="输入消息…"
+        placeholder-class="bar__ph"
+        confirm-type="send"
+        confirm-hold
+        maxlength="500"
+        adjust-position="{{true}}"
+        data-k="draft"
+        bindinput="onDraft"
+        bindconfirm="onSendText"
+        bindfocus="onInputFocus"
+      />
+      <view class="bar__icon" bindtap="toggleEmoji">🙂</view>
+      <view class="bar__icon bar__icon--plus {{panel ? 'is-open' : ''}}" bindtap="togglePanel">＋</view>
+      <view wx:if="{{draft}}" class="bar__send" bindtap="onSendText">发送</view>
+    </view>
+
+    <!-- 表情面板 -->
+    <view wx:if="{{showEmoji}}" class="emojis">
+      <view
+        wx:for="{{emojis}}"
+        wx:key="*this"
+        class="emojis__item"
+        data-e="{{item}}"
+        bindtap="onEmoji"
+      >{{item}}</view>
+    </view>
+
+    <!-- 「+」多媒体面板 -->
+    <view wx:if="{{panel}}" class="panel">
+      <view class="panel__item" bindtap="onCamera">
+        <view class="panel__icon">📷</view>
+        <text class="panel__label">拍照</text>
+      </view>
+      <view class="panel__item" bindtap="onAlbum">
+        <view class="panel__icon">🖼️</view>
+        <text class="panel__label">相册</text>
+      </view>
+      <view class="panel__item" bindtap="onVideo">
+        <view class="panel__icon">🎬</view>
+        <text class="panel__label">视频</text>
+      </view>
+      <view class="panel__item" bindtap="onFile">
+        <view class="panel__icon">📎</view>
+        <text class="panel__label">文件</text>
+      </view>
+      <view class="panel__item" bindtap="onVoice">
+        <view class="panel__icon">{{recording ? '⏹️' : '🎤'}}</view>
+        <text class="panel__label">{{recording ? '停止' : '录音'}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 录音浮层 -->
+  <view wx:if="{{recording}}" class="recording">
+    <view class="recording__dot"></view>
+    <text>正在录音… 点击「停止」结束（最长 60 秒）</text>
+  </view>
+</view>

@@ -43,11 +43,11 @@ function callGet(path) {
     });
 }
 
-function call(path, body) {
+function callMethod(method, path, body) {
   const url = config.internal.baseUrl + path;
   const t0 = Date.now();
   return fetch(url, {
-    method: 'POST',
+    method,
     headers: {
       'Content-Type': 'application/json',
       'X-Internal-Token': config.internal.token,
@@ -73,6 +73,16 @@ function call(path, body) {
       logger.error('internal call failed', { path, message: e && e.message });
       throw bizError(CODES.UPSTREAM_ERROR, '依赖的小程序服务不可用，请稍后重试');
     });
+}
+
+/** POST 语义（动作类：推进订单、回复客服，幂等性由下游保证） */
+function call(path, body) {
+  return callMethod('POST', path, body);
+}
+
+/** PUT 语义（配置类：加盟配置、协议内容，覆盖式更新） */
+function callPut(path, body) {
+  return callMethod('PUT', path, body);
 }
 
 module.exports = {
@@ -102,4 +112,28 @@ module.exports = {
     call('/internal/dishes/' + encodeURIComponent(dishId) + '/status', { storeId, status, staffId }),
   /** 失效菜单缓存（改价/改库存/上下架后调用） */
   invalidateMenuCache: (storeId) => call('/internal/menu-cache/invalidate', { storeId: storeId || '' }),
+
+  /* ---------------- 「我的」模块新增：客服 / 发票 / 内容 ---------------- */
+
+  /** 客服工单列表（按门店范围过滤在网关侧算好） */
+  listServiceTickets: (queryString) => callGet('/internal/service/tickets?' + String(queryString || '')),
+  /** 工单详情（含消息，读取即置管理端已读） */
+  getServiceTicket: (id) => callGet('/internal/service/tickets/' + encodeURIComponent(id)),
+  /** 客服回复（支持 text / image / video / voice / file） */
+  replyServiceTicket: (id, payload) =>
+    call('/internal/service/tickets/' + encodeURIComponent(id) + '/reply', payload),
+  /** 结束会话 */
+  closeServiceTicket: (id, staffId) =>
+    call('/internal/service/tickets/' + encodeURIComponent(id) + '/close', { staffId }),
+  /** 开票申请列表 */
+  listInvoiceRecords: (queryString) => callGet('/internal/invoice/records?' + String(queryString || '')),
+  /** 受理 / 开具 / 驳回 */
+  updateInvoiceRecord: (id, payload) =>
+    call('/internal/invoice/records/' + encodeURIComponent(id) + '/status', payload),
+  /** 加盟配置读写 */
+  getFranchise: (brandId) => callGet('/internal/franchise?brandId=' + encodeURIComponent(brandId || 'brand_lbz')),
+  updateFranchise: (payload) => callPut('/internal/franchise', payload),
+  /** 协议维护 */
+  listAgreements: () => callGet('/internal/agreements'),
+  updateAgreement: (code, payload) => callPut('/internal/agreements/' + encodeURIComponent(code), payload),
 };

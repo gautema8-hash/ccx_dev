@@ -1,6 +1,7 @@
 const auth = require('../../utils/auth');
 const cart = require('../../utils/cart');
 const userService = require('../../services/user');
+const invoiceService = require('../../services/invoice');
 const orderService = require('../../services/order');
 const menuService = require('../../services/menu');
 const config = require('../../utils/config');
@@ -15,6 +16,9 @@ Page({
     store: null,
     shop: {},
     version: config.VERSION,
+    /* ---- 入口副文案：由 refreshBadges 拉取，失败时退回默认文案，不阻塞页面 ---- */
+    invoiceTip: '可开电子发票',
+    addressTip: '管理自取 / 配送地址',
     /* ---- 用户卡展示态（由 syncProfile 统一派生，避免 WXML 里堆判断） ---- */
     avatarText: '客', // 无头像时的文字占位
     avatarBroken: false, // 头像 URL 加载失败 → 回退文字
@@ -38,6 +42,7 @@ Page({
     this.setData({ store: require('../../services/chain').currentStore() });
     this.refreshUser();
     this.refreshStats();
+    this.refreshBadges();
   },
 
   refreshUser() {
@@ -102,6 +107,27 @@ Page({
           )
           .catch(() => {})
       );
+  },
+
+  /**
+   * 入口副文案：待开票单数 / 地址数量
+   * 都是「锦上添花」的信息 —— 任一失败就保持默认文案，绝不因为统计失败让页面报错。
+   */
+  refreshBadges() {
+    invoiceService
+      .invoicableOrders()
+      .then((list) => {
+        const n = (list || []).length;
+        this.setData({ invoiceTip: n ? n + ' 单待开票' : '可开电子发票' });
+      })
+      .catch(() => {});
+    userService
+      .listAddress()
+      .then((list) => {
+        const n = (list || []).length;
+        this.setData({ addressTip: n ? '已存 ' + n + ' 个地址' : '管理自取 / 配送地址' });
+      })
+      .catch(() => {});
   },
 
   /* ------------------------- 用户资料 ------------------------- */
@@ -182,6 +208,36 @@ Page({
     wx.navigateTo({ url: '/pages/store-list/store-list' });
   },
 
+  /* ---- 新增分包入口：地址 / 客服 / 加盟 / 发票 / 资料 / 设置 / 协议 ---- */
+
+  goAddress() {
+    wx.navigateTo({ url: '/packageUser/pages/address/address' });
+  },
+
+  goService() {
+    wx.navigateTo({ url: '/packageUser/pages/service/service' });
+  },
+
+  goFranchise() {
+    wx.navigateTo({ url: '/packageUser/pages/franchise/franchise' });
+  },
+
+  goInvoice() {
+    wx.navigateTo({ url: '/packageUser/pages/invoice/invoice' });
+  },
+
+  goProfile() {
+    wx.navigateTo({ url: '/packageUser/pages/profile/profile' });
+  },
+
+  goSettings() {
+    wx.navigateTo({ url: '/packageUser/pages/settings/settings' });
+  },
+
+  goAgreement() {
+    wx.navigateTo({ url: '/packageUser/pages/agreement/agreement' });
+  },
+
   callShop() {
     wx.makePhoneCall({ phoneNumber: config.SERVICE_PHONE, fail: () => {} });
   },
@@ -228,80 +284,6 @@ Page({
       getApp().syncCartBadge();
       this.setData({ stats: { orderCount: 0, ongoingCount: 0, couponCount: 0 } });
       toast('已清空本地数据', 'success');
-    });
-  },
-
-  /* ------------------------- 发票抬头 ------------------------- */
-
-  onInvoice() {
-    const that = this;
-    wx.showLoading({ title: '加载中', mask: true });
-    userService
-      .listInvoice()
-      .then((list) => {
-        wx.hideLoading();
-        const labels = list.map(
-          (t) => (t.isDefault ? '⭐ ' : '') + t.title + (t.taxNo ? ' · ' + t.taxNo : '')
-        );
-        labels.push('➕ 新增抬头');
-        wx.showActionSheet({
-          itemList: labels.slice(0, 6),
-          success(res) {
-            if (res.tapIndex === labels.length - 1) return that.addInvoice();
-            const t = list[res.tapIndex];
-            if (!t) return;
-            wx.showActionSheet({
-              itemList: ['删除该抬头'],
-              success(r2) {
-                if (r2.tapIndex !== 0) return;
-                userService
-                  .deleteInvoice(t.id)
-                  .then(() => {
-                    toast('已删除', 'success');
-                    that.onInvoice();
-                  })
-                  .catch((e) => toastError(e));
-              },
-              fail: () => {},
-            });
-          },
-          fail: () => {},
-        });
-      })
-      .catch((e) => {
-        wx.hideLoading();
-        toastError(e);
-      });
-  },
-
-  addInvoice() {
-    const that = this;
-    wx.showModal({
-      title: '新增发票抬头',
-      editable: true,
-      placeholderText: '个人姓名 或 公司名称',
-      confirmColor: '#C62828',
-      success(r1) {
-        if (!r1.confirm) return;
-        const title = (r1.content || '').trim();
-        if (!title) return toast('请填写抬头');
-        wx.showModal({
-          title: '纳税人识别号',
-          editable: true,
-          placeholderText: '公司抬头必填，个人可留空',
-          confirmColor: '#C62828',
-          success(r2) {
-            const taxNo = (r2.content || '').trim();
-            userService
-              .saveInvoice({ title, taxNo, titleType: taxNo ? 'company' : 'personal' })
-              .then(() => {
-                toast('已保存', 'success');
-                that.onInvoice();
-              })
-              .catch((e) => toastError(e));
-          },
-        });
-      },
     });
   },
 

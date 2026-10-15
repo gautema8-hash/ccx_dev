@@ -1,0 +1,83 @@
+<!-- 门店详情：地图（腾讯地图底图）+ 门店信息 + 操作 -->
+<view class="page page--store" style="{{themeStyle}}">
+  <block wx:if="{{store}}">
+    <!-- 顶部地图 -->
+    <view class="map">
+      <map
+        class="map__canvas"
+        id="storeMap"
+        latitude="{{center.latitude}}"
+        longitude="{{center.longitude}}"
+        scale="16"
+        markers="{{markers}}"
+        show-location="{{true}}"
+        enable-rotate="{{false}}"
+        bindmarkertap="onMarkerTap"
+      ></map>
+      <view class="map__nav" bindtap="onNavigate">🧭 导航</view>
+    </view>
+
+    <!-- 门店卡片（上移压住地图边缘，形成层次） -->
+    <view class="card head">
+      <view class="head__line">
+        <text class="head__name ellipsis">{{store.name}}</text>
+        <text class="head__type {{store.type === 'FRANCHISE' ? 'is-franchise' : ''}}">{{store.typeText}}</text>
+      </view>
+      <view class="head__meta">
+        <text class="head__state {{store.openNow ? 'is-open' : 'is-close'}}">{{store.openNow ? '营业中' : '已打烊'}}</text>
+        <text class="head__time">{{store.openTime}}</text>
+        <text wx:if="{{store.distanceText}}" class="head__dist">距你 {{store.distanceText}}</text>
+      </view>
+      <view wx:if="{{sameStore}}" class="head__cur">当前下单门店</view>
+    </view>
+
+    <!-- 门店信息 -->
+    <view class="card info">
+      <view class="info__row" bindtap="onCopyAddress">
+        <text class="info__k">门店地址</text>
+        <text class="info__v">{{store.address}}</text>
+        <text class="info__act">复制</text>
+      </view>
+      <view class="info__row" bindtap="onCall">
+        <text class="info__k">联系电话</text>
+        <text class="info__v">{{store.phone || '未配置'}}</text>
+        <text class="info__act">{{store.phone ? '拨打' : ''}}</text>
+      </view>
+      <view class="info__row">
+        <text class="info__k">营业时间</text>
+        <text class="info__v">{{store.openTime}}</text>
+        <text class="info__act"></text>
+      </view>
+      <view class="info__row">
+        <text class="info__k">人均消费</text>
+        <text class="info__v">¥{{store.perCapita}}</text>
+        <text class="info__act"></text>
+      </view>
+      <view class="info__row" wx:if="{{store.tables.length}}">
+        <text class="info__k">桌位</text>
+        <text class="info__v">{{tableText}}</text>
+        <text class="info__act"></text>
+      </view>
+      <view class="info__row" wx:if="{{store.franchisee}}">
+        <text class="info__k">加盟商</text>
+        <text class="info__v">{{store.franchisee}}</text>
+        <text class="info__act"></text>
+      </view>
+    </view>
+
+    <view class="tip">切换到该门店后，菜单、库存与优惠都会按该门店实时更新</view>
+  </block>
+
+  <view wx:elif="{{!loading}}" class="empty">
+    <view class="empty__icon">🏪</view>
+    <view class="empty__text">门店不存在或已下线</view>
+    <view class="empty__hint">返回「选择门店」重新选择一家</view>
+  </view>
+
+  <view class="bar-holder" wx:if="{{store}}"></view>
+  <view class="action-bar" wx:if="{{store}}">
+    <view class="btn-ghost act" bindtap="onCall">电话</view>
+    <view class="btn-ghost act" bindtap="onNavigate">导航</view>
+    <view class="btn-primary grow" bindtap="onUse">{{sameStore ? '进入点单' : '选为下单门店'}}</view>
+  </view>
+</view>

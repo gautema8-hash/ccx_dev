@@ -21,6 +21,10 @@ const menuRoute = require('./routes/menu');
 const userRoute = require('./routes/user');
 const chainRoute = require('./routes/chain');
 const internalRoute = require('./routes/internal');
+const addressRoute = require('./routes/address');
+const serviceRoute = require('./routes/service');
+const contentRoute = require('./routes/content');
+const invoiceRoute = require('./routes/invoice');
 
 /**
  * 内部接口守卫
@@ -62,10 +66,36 @@ function build() {
   app.put(P + '/user/profile', auth.requireAuth, userRoute.updateProfile);
   app.post(P + '/user/phone', auth.requireAuth, userRoute.bindPhone);
   app.post(P + '/user/avatar', auth.requireAuth, userRoute.uploadAvatar);
+  app.post(P + '/user/cancel', auth.requireAuth, userRoute.cancelAccount);
   app.get(P + '/user/stats', auth.requireAuth, userRoute.stats);
   app.get(P + '/user/invoice', auth.requireAuth, userRoute.listInvoice);
   app.post(P + '/user/invoice', auth.requireAuth, userRoute.saveInvoice);
   app.del(P + '/user/invoice/:id', auth.requireAuth, userRoute.deleteInvoice);
+
+  /* ---------------- 发票管理：待开票订单 / 开票申请 / 开票历史 ---------------- */
+  app.get(P + '/user/invoice/orders', auth.requireAuth, invoiceRoute.invoicableOrders);
+  app.get(P + '/user/invoice/records', auth.requireAuth, invoiceRoute.listRecords);
+  app.post(P + '/user/invoice/records', auth.requireAuth, invoiceRoute.apply);
+  app.get(P + '/user/invoice/records/:id', auth.requireAuth, invoiceRoute.recordDetail);
+
+  /* ---------------- 地址管理 ---------------- */
+  app.get(P + '/addresses', auth.requireAuth, addressRoute.list);
+  app.post(P + '/addresses', auth.requireAuth, addressRoute.create);
+  app.put(P + '/addresses/:id', auth.requireAuth, addressRoute.update);
+  app.del(P + '/addresses/:id', auth.requireAuth, addressRoute.remove);
+  app.post(P + '/addresses/:id/default', auth.requireAuth, addressRoute.setDefault);
+
+  /* ---------------- 在线客服（会话 / 消息 / 媒体上传） ---------------- */
+  app.get(P + '/service/session', auth.requireAuth, serviceRoute.session);
+  app.get(P + '/service/messages', auth.requireAuth, serviceRoute.messages);
+  app.post(P + '/service/messages', auth.requireAuth, serviceRoute.send);
+  app.post(P + '/service/close', auth.requireAuth, serviceRoute.close);
+  app.post(P + '/upload', auth.requireAuth, serviceRoute.upload);
+
+  /* ---------------- 协议及政策 / 加盟咨询（只读配置） ---------------- */
+  app.get(P + '/agreements', auth.optionalAuth, contentRoute.listAgreements);
+  app.get(P + '/agreements/:code', auth.optionalAuth, contentRoute.getAgreement);
+  app.get(P + '/franchise', auth.optionalAuth, contentRoute.getFranchise);
 
   /* ---------------- 用户：优惠券（连锁版） ---------------- */
   app.get(P + '/user/coupons', auth.requireAuth, chainRoute.myCoupons);
@@ -107,6 +137,19 @@ function build() {
   app.post('/internal/store-dishes', internalOnly, internalRoute.updateStoreDishes);
   app.post('/internal/dishes/:id/status', internalOnly, internalRoute.toggleStoreDish);
   app.post('/internal/menu-cache/invalidate', internalOnly, internalRoute.invalidateMenuCache);
+  /* 客服工单 */
+  app.get('/internal/service/tickets', internalOnly, internalRoute.listServiceTickets);
+  app.get('/internal/service/tickets/:id', internalOnly, internalRoute.getServiceTicket);
+  app.post('/internal/service/tickets/:id/reply', internalOnly, internalRoute.replyServiceTicket);
+  app.post('/internal/service/tickets/:id/close', internalOnly, internalRoute.closeServiceTicket);
+  /* 发票管理 */
+  app.get('/internal/invoice/records', internalOnly, internalRoute.listInvoiceRecords);
+  app.post('/internal/invoice/records/:id/status', internalOnly, internalRoute.updateInvoiceRecord);
+  /* 加盟配置 / 协议维护 */
+  app.get('/internal/franchise', internalOnly, internalRoute.getFranchiseConfig);
+  app.put('/internal/franchise', internalOnly, internalRoute.updateFranchiseConfig);
+  app.get('/internal/agreements', internalOnly, internalRoute.listAgreementsAdmin);
+  app.put('/internal/agreements/:code', internalOnly, internalRoute.updateAgreement);
 
   /* ---------------- 静态资源 ---------------- */
   app.get('/uploads/:a/:b', userRoute.serveUpload);

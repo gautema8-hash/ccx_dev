@@ -176,6 +176,9 @@ async function listStores(ctx) {
   const lng = ctx.query.lng;
   const type = ctx.query.type; // DIRECT | FRANCHISE | 空=全部
   const keyword = String(ctx.query.keyword || '').trim();
+  /* 下拉筛选：只看营业中 / 距离上限（公里） */
+  const onlyOpen = ctx.query.onlyOpen === '1' || ctx.query.onlyOpen === 'true';
+  const maxKm = Number(ctx.query.maxKm) > 0 ? Number(ctx.query.maxKm) : 0;
 
   const params = [brandId];
   let where = 'WHERE brand_id = ? AND status = 1';
@@ -192,17 +195,21 @@ async function listStores(ctx) {
   let list = rows.map((s) => storeDTO(s, lat, lng));
   const hasCoord = geo.validCoord(lat, lng);
   if (hasCoord) {
-    list = list
-      .filter((s) => s.distanceKm == null || s.distanceKm <= config.chain.nearbyRadiusKm)
-      .sort((a, b) => {
-        /* 营业中优先，其次按距离 */
-        if (a.openNow !== b.openNow) return a.openNow ? -1 : 1;
-        return (a.distanceKm || 0) - (b.distanceKm || 0);
-      })
-      .slice(0, config.chain.nearbyLimit);
+    /* 只在用户显式选了距离范围时按半径过滤。
+       默认（maxKm=0）不过滤：门店页是「选门店」而不是「找附近」，
+       静默把 50km 外的门店藏掉会让用户以为公司没开那家店。
+       距离升序已经保证最近的排在最前面。 */
+    if (maxKm) list = list.filter((s) => s.distanceKm == null || s.distanceKm <= maxKm);
+  }
+  if (onlyOpen) list = list.filter((s) => s.openNow);
+  if (hasCoord) {
+    /* 需求：门店列表按距离由近到远（升序）。营业状态只做标签提示，不参与排序，
+       否则「最近的打烊店」会被挤到远处店后面，与用户对距离的心理预期不符 */
+    list.sort((a, b) => (a.distanceKm || 0) - (b.distanceKm || 0));
   } else {
     list.sort((a, b) => (b.openNow ? 1 : 0) - (a.openNow ? 1 : 0) || a.id.localeCompare(b.id));
   }
+  list = list.slice(0, config.chain.nearbyLimit);
 
   return ctx.ok({
     list,

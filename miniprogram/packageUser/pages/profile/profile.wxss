@@ -1,0 +1,144 @@
+.page {
+  min-height: 100vh;
+}
+
+.form {
+  padding: 8rpx 24rpx;
+}
+.form__row {
+  display: flex;
+  align-items: center;
+  min-height: 108rpx;
+  border-bottom: 1rpx solid #f4f4f6;
+}
+.form__row--last {
+  border-bottom: none;
+}
+.form__label {
+  flex: none;
+  width: 160rpx;
+  font-size: 28rpx;
+  color: var(--c-text);
+}
+.form__input {
+  flex: 1;
+  min-width: 0;
+  height: 108rpx;
+  font-size: 28rpx;
+  color: var(--c-text);
+}
+.form__value {
+  flex: 1;
+  min-width: 0;
+  font-size: 28rpx;
+  color: var(--c-text-sub);
+  font-family: DIN, -apple-system, sans-serif;
+}
+.form__picker {
+  flex: 1;
+  min-width: 0;
+  font-size: 28rpx;
+  color: var(--c-text);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.form__picker.is-ph {
+  color: var(--c-text-weak);
+}
+.form__arrow {
+  flex: none;
+  color: #c8c8cd;
+  font-size: 32rpx;
+  margin-left: 8rpx;
+}
+.form__ph {
+  color: var(--c-text-weak);
+  font-size: 28rpx;
+}
+.form__hint {
+  font-size: 22rpx;
+  color: var(--c-text-weak);
+  margin-left: 20rpx;
+}
+.form__btn {
+  flex: none;
+  height: 56rpx;
+  padding: 0 26rpx;
+  border-radius: 28rpx;
+  border: 2rpx solid var(--c-primary);
+  color: var(--c-primary);
+  font-size: 24rpx;
+  display: flex;
+  align-items: center;
+}
+
+/* 头像：外层 wrap 固定圆形并裁剪，原生 button 的默认样式被压掉 */
+.avatar-wrap {
+  width: 108rpx;
+  height: 108rpx;
+  border-radius: 50%;
+  overflow: hidden;
+  flex: none;
+  background: #f4f4f6;
+  margin-left: 4rpx;
+}
+.avatar-btn {
+  width: 108rpx;
+  height: 108rpx;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  line-height: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  display: block;
+}
+.avatar-img {
+  width: 108rpx;
+  height: 108rpx;
+  display: block;
+}
+.avatar-ph {
+  width: 108rpx;
+  height: 108rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 44rpx;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(145deg, #e05252, #c62828);
+}
+
+/* 性别：胶囊单选 */
+.genders {
+  display: flex;
+}
+.genders__item {
+  min-width: 108rpx;
+  text-align: center;
+  padding: 12rpx 0;
+  margin-right: 18rpx;
+  border-radius: 999rpx;
+  background: #f4f4f6;
+  color: var(--c-text-sub);
+  font-size: 26rpx;
+}
+.genders__item.is-on {
+  background: var(--c-primary-weak);
+  color: var(--c-primary);
+  font-weight: 500;
+}
+
+.tips {
+  padding: 20rpx 32rpx;
+  font-size: 22rpx;
+  color: var(--c-text-weak);
+  line-height: 1.6;
+}
+
+.action-bar .grow {
+  flex: 1;
+}

@@ -50,6 +50,21 @@ const config = {
   maxInflight: num('MAX_INFLIGHT', 2000),
   bodyLimit: num('BODY_LIMIT', 256 * 1024),
 
+  /**
+   * 媒体上传（客服聊天图片/视频/语音/文件、身份证件等）
+   * 与普通 JSON 请求分开限额：JSON 仍受 bodyLimit 约束（小报文防刷），
+   * 只有 multipart/form-data 才放开到 upload.limit，避免大报文打满内存。
+   */
+  upload: {
+    limit: num('UPLOAD_LIMIT', 20 * 1024 * 1024),
+    maxSize: {
+      image: num('UPLOAD_MAX_IMAGE', 5 * 1024 * 1024),
+      voice: num('UPLOAD_MAX_VOICE', 2 * 1024 * 1024),
+      video: num('UPLOAD_MAX_VIDEO', 15 * 1024 * 1024),
+      file: num('UPLOAD_MAX_FILE', 10 * 1024 * 1024),
+    },
+  },
+
   jwtSecret: str('JWT_SECRET', 'dev-only-change-me-9f2c1a7b4e6d8f30'),
   jwtTtl: num('JWT_TTL', 604800),
   refreshTtl: num('REFRESH_TTL', 2592000),

@@ -1,0 +1,54 @@
+<!-- 加盟咨询：全屏宣传海报 + 企业微信二维码（可缩放预览 / 保存到本地） -->
+<view class="page page--poster" style="{{themeStyle}}">
+  <view class="poster">
+    <!-- 品牌头部 -->
+    <view class="poster__brand">
+      <text class="poster__logo">🍢</text>
+      <text class="poster__name">老北京麻辣串串香</text>
+      <text class="poster__badge">全国招商</text>
+    </view>
+
+    <view class="poster__title">{{info.title}}</view>
+    <view class="poster__sub">{{info.subtitle}}</view>
+
+    <!-- 优势亮点 -->
+    <view class="hl">
+      <view class="hl__item" wx:for="{{info.highlights}}" wx:key="label">
+        <text class="hl__icon">{{item.icon}}</text>
+        <text class="hl__value">{{item.value}}</text>
+        <text class="hl__label">{{item.label}}</text>
+      </view>
+    </view>
+
+    <!-- 二维码卡片 -->
+    <view class="qr">
+      <view class="qr__box" bindtap="previewQr">
+        <image wx:if="{{info.qrUrl}}" class="qr__img" src="{{info.qrUrl}}" mode="aspectFit" show-menu-by-longpress="{{true}}" />
+        <!-- 后台未配置二维码时的占位图：纯 CSS 绘制（三个定位角 + 文案），不依赖任何图片资源 -->
+        <view wx:else class="qr__ph">
+          <view class="qr__corner qr__corner--tl"></view>
+          <view class="qr__corner qr__corner--tr"></view>
+          <view class="qr__corner qr__corner--bl"></view>
+          <text class="qr__ph-txt">企业微信</text>
+          <text class="qr__ph-sub">二维码待配置</text>
+        </view>
+      </view>
+      <text class="qr__tip">{{info.qrTip}}</text>
+      <view class="qr__id" bindtap="copyWecom">企微号：{{info.wecomId}} <text class="qr__copy">复制</text></view>
+    </view>
+
+    <view class="poster__note">长按二维码识别 · 添加加盟顾问企业微信</view>
+  </view>
+
+  <!-- 操作区 -->
+  <view class="ops">
+    <view class="btn-primary grow" bindtap="savePoster">{{saving ? '生成中…' : '保存到相册'}}</view>
+    <view class="btn-ghost grow" bindtap="previewPoster">预览海报</view>
+  </view>
+  <view class="ops ops--sub">
+    <view class="btn-ghost grow" bindtap="callConsult">☎ 拨打加盟热线 {{info.consultPhone}}</view>
+  </view>
+
+  <!-- 离屏画布：用于把海报导出成图片保存到相册 -->
+  <canvas type="2d" id="poster" class="offcanvas"></canvas>
+</view>

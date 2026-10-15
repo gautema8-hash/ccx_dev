@@ -76,8 +76,32 @@ label.f span{display:block;font-size:12.5px;color:var(--s);margin-bottom:4px}
 .swatches i{width:22px;height:22px;border-radius:6px;border:1px solid rgba(0,0,0,.08)}
 .storebar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .storebar select{width:auto;min-width:220px}
+/* 客服消息：左会话列表 + 右聊天面板 */
+.svc{display:grid;grid-template-columns:320px 1fr;gap:14px;align-items:start}
+.svc .card{margin-bottom:0}
+.svc__items{max-height:64vh;overflow:auto;margin:0 -8px}
+.svc__item{padding:10px 12px;border-radius:8px;cursor:pointer;border-bottom:1px solid var(--l)}
+.svc__item:hover{background:#fafafc}
+.svc__item-head{display:flex;align-items:center;gap:6px;font-size:13.5px}
+.svc__item-sub{font-size:12px;color:var(--s);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.svc__item-time{font-size:11px;color:var(--w);margin-top:2px}
+.svc__chat{display:flex;flex-direction:column;min-height:64vh}
+.svc__chat-head{display:flex;align-items:center;gap:8px;padding-bottom:10px;border-bottom:1px solid var(--l)}
+.svc__msgs{flex:1;overflow:auto;padding:12px 4px;max-height:52vh;background:#fafafc;border-radius:8px;margin-top:10px}
+.msg{margin-bottom:12px;display:flex;flex-direction:column}
+.msg__meta{font-size:11px;color:var(--w);margin-bottom:3px}
+.msg__bubble{max-width:76%;padding:8px 12px;border-radius:10px;background:#fff;border:1px solid var(--l);font-size:13.5px;word-break:break-word}
+.msg--user{align-items:flex-start}
+.msg--admin{align-items:flex-end}
+.msg--admin .msg__bubble{background:#fdecec;border-color:#f7d4d4}
+.msg--system{align-items:center}
+.msg--system .msg__bubble{background:#f2f2f5;border-style:dashed;color:var(--s);font-size:12.5px}
+.svc__reply{display:flex;gap:8px;align-items:flex-end;margin-top:10px}
+.svc__reply textarea{flex:1;min-height:64px;max-height:140px}
+.svc__reply .btn{height:40px;padding:0 20px;flex:none}
 @media(max-width:820px){
   .side{width:60px}.side .logo span,.side a span,.side .me{display:none}
   .side a{justify-content:center;padding:12px 0}
   .grid2,.grid3{grid-template-columns:1fr}
+  .svc{grid-template-columns:1fr}
 }

@@ -1,0 +1,65 @@
+/* ---------- 协议头部 ---------- */
+.hd {
+  padding: 36rpx 40rpx 28rpx;
+  background: var(--c-card);
+}
+.hd__title {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 700;
+  color: var(--c-text);
+  line-height: 1.35;
+}
+.hd__meta {
+  display: flex;
+  align-items: center;
+  margin-top: 16rpx;
+}
+.hd__ver {
+  font-size: 20rpx;
+  color: var(--c-primary);
+  background: var(--c-primary-weak);
+  border-radius: 6rpx;
+  padding: 2rpx 12rpx;
+}
+.hd__time {
+  margin-left: 14rpx;
+  font-size: 22rpx;
+  color: var(--c-text-weak);
+}
+.hd__sum {
+  display: block;
+  margin-top: 16rpx;
+  font-size: 24rpx;
+  color: var(--c-text-sub);
+  line-height: 1.6;
+}
+
+/* ---------- 富文本正文 ---------- */
+.doc {
+  margin-top: 20rpx;
+  padding: 8rpx 32rpx 40rpx;
+}
+/* rich-text 内部的标题/段落样式由服务端 HTML 标签决定，
+   这里只控制字号与行高，保证长文阅读节奏（引用主题色不生效，rich-text 里的节点读不到页面 CSS 变量） */
+.doc__rich {
+  display: block;
+  font-size: 28rpx;
+  line-height: 1.85;
+  color: #2f2f33;
+  word-break: break-all;
+}
+
+.foot {
+  padding: 32rpx 48rpx 60rpx;
+  text-align: center;
+  font-size: 21rpx;
+  color: var(--c-text-weak);
+  line-height: 2;
+}
+
+.retry {
+  margin-top: 32rpx;
+  height: 72rpx;
+  border-radius: 36rpx;
+}

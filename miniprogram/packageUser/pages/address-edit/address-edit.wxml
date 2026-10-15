@@ -1,0 +1,78 @@
+<!-- 地址新增 / 编辑：字段校验与提示必须在提交前给到，避免提交后才报错 -->
+<view class="page" style="{{themeStyle}}">
+  <view class="card form">
+    <view class="form__row">
+      <text class="form__label">联系人</text>
+      <input
+        class="form__input"
+        value="{{form.name}}"
+        placeholder="收货人姓名"
+        placeholder-class="form__ph"
+        maxlength="20"
+        data-k="name"
+        bindinput="onInput"
+      />
+    </view>
+    <view class="form__row">
+      <text class="form__label">手机号</text>
+      <input
+        class="form__input"
+        type="number"
+        value="{{form.phone}}"
+        placeholder="11 位手机号"
+        placeholder-class="form__ph"
+        maxlength="11"
+        data-k="phone"
+        bindinput="onInput"
+      />
+    </view>
+    <!-- 整行包在 picker 里：微信的 picker 需要一个有尺寸的子节点才能点开，
+         把 picker 直接包住 row 是最稳的写法（不需要透明遮罩 hack） -->
+    <picker mode="region" value="{{region}}" bindchange="onRegionChange">
+      <view class="form__row">
+        <text class="form__label">所在地区</text>
+        <view class="form__picker {{regionText ? '' : 'is-ph'}}">{{regionText || '请选择省 / 市 / 区'}}</view>
+        <text class="form__arrow">›</text>
+      </view>
+    </picker>
+    <view class="form__row form__row--area">
+      <text class="form__label">详细地址</text>
+      <textarea
+        class="form__textarea"
+        value="{{form.detail}}"
+        placeholder="街道、楼牌号、单元室等（不少于 5 个字）"
+        placeholder-class="form__ph"
+        maxlength="200"
+        auto-height
+        data-k="detail"
+        bindinput="onInput"
+      />
+    </view>
+    <view class="form__row form__row--last">
+      <text class="form__label">标签</text>
+      <view class="tags">
+        <view
+          wx:for="{{tagOptions}}"
+          wx:key="*this"
+          class="tags__item {{form.tag === item ? 'is-on' : ''}}"
+          data-tag="{{item}}"
+          bindtap="onTag"
+        >{{item}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="card switch-row">
+    <view class="switch-row__main">
+      <text class="switch-row__title">设为默认地址</text>
+      <text class="switch-row__sub">下单时优先使用该地址</text>
+    </view>
+    <switch checked="{{form.isDefault}}" color="#C62828" bindchange="onDefault" />
+  </view>
+
+  <view class="bar-holder"></view>
+  <view class="action-bar">
+    <view class="btn-ghost" wx:if="{{isEdit}}" bindtap="onDelete">删除</view>
+    <view class="btn-primary grow" bindtap="onSave">{{saving ? '保存中…' : '保存地址'}}</view>
+  </view>
+</view>

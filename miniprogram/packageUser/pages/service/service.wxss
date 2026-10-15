@@ -1,0 +1,334 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--c-bg);
+}
+
+/* ---------- 消息区 ---------- */
+.chat {
+  flex: 1;
+  min-height: 0;
+  padding: 20rpx 24rpx 0;
+  box-sizing: border-box;
+}
+.chat__top {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8rpx;
+}
+.chat__top-text {
+  font-size: 22rpx;
+  color: var(--c-text-weak);
+  flex: 1;
+  min-width: 0;
+}
+.chat__top-act {
+  font-size: 22rpx;
+  color: var(--c-primary);
+}
+.chat__holder {
+  height: 30rpx;
+}
+
+.msg {
+  display: flex;
+  align-items: flex-start;
+  margin: 22rpx 0;
+}
+.msg--me {
+  flex-direction: row-reverse;
+}
+.msg--sys {
+  justify-content: center;
+}
+.msg__avatar {
+  flex: none;
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #e05252, #c62828);
+  color: #fff;
+  font-size: 26rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.msg--other .msg__avatar {
+  background: linear-gradient(145deg, #4a4a4f, #1f1f1f);
+}
+.msg__wrap {
+  max-width: 520rpx;
+  margin: 0 16rpx;
+  display: flex;
+  flex-direction: column;
+}
+.msg--me .msg__wrap {
+  align-items: flex-end;
+}
+.msg__meta {
+  margin-top: 8rpx;
+  font-size: 20rpx;
+  color: var(--c-text-weak);
+  display: flex;
+  align-items: center;
+}
+.msg__status {
+  margin-left: 10rpx;
+}
+.msg__status--fail {
+  color: var(--c-primary);
+}
+
+/* ---------- 气泡 ---------- */
+.bubble {
+  border-radius: 18rpx;
+  font-size: 28rpx;
+  line-height: 1.55;
+  word-break: break-word;
+}
+.bubble--text {
+  background: var(--c-card);
+  color: var(--c-text);
+  padding: 20rpx 24rpx;
+  box-shadow: 0 2rpx 10rpx rgba(31, 31, 31, 0.05);
+}
+.msg--me .bubble--text {
+  background: linear-gradient(135deg, #d32f2f, #b71c1c);
+  color: #fff;
+}
+.bubble--media {
+  padding: 0;
+  overflow: hidden;
+  background: #000;
+  line-height: 0;
+}
+.media-img {
+  width: 360rpx;
+  border-radius: 18rpx;
+  display: block;
+}
+.media-video {
+  width: 420rpx;
+  height: 236rpx;
+  border-radius: 18rpx;
+}
+
+/* 语音 */
+.bubble--voice {
+  display: flex;
+  align-items: center;
+  min-width: 180rpx;
+  padding: 20rpx 24rpx;
+  background: var(--c-card);
+  box-shadow: 0 2rpx 10rpx rgba(31, 31, 31, 0.05);
+}
+.msg--me .bubble--voice {
+  background: linear-gradient(135deg, #d32f2f, #b71c1c);
+  color: #fff;
+}
+.bubble--voice.is-playing {
+  opacity: 0.75;
+}
+.voice__icon {
+  font-size: 30rpx;
+  margin-right: 12rpx;
+}
+.voice__dur {
+  font-size: 26rpx;
+}
+
+/* 文件 */
+.bubble--file {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 24rpx;
+  background: var(--c-card);
+  box-shadow: 0 2rpx 10rpx rgba(31, 31, 31, 0.05);
+  min-width: 320rpx;
+}
+.file__icon {
+  font-size: 40rpx;
+  margin-right: 14rpx;
+}
+.file__main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.file__name {
+  font-size: 26rpx;
+  color: var(--c-text);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 300rpx;
+}
+.file__size {
+  font-size: 20rpx;
+  color: var(--c-text-weak);
+  margin-top: 4rpx;
+}
+
+/* 系统消息 */
+.msg--sys .bubble--text {
+  background: #ededf0;
+  color: var(--c-text-sub);
+  font-size: 24rpx;
+  padding: 14rpx 22rpx;
+  max-width: 560rpx;
+  text-align: center;
+}
+
+/* ---------- 快捷问题 ---------- */
+.quick {
+  flex: none;
+  white-space: nowrap;
+  padding: 12rpx 24rpx;
+  background: transparent;
+}
+.quick__item {
+  display: inline-block;
+  padding: 10rpx 24rpx;
+  margin-right: 16rpx;
+  border-radius: 999rpx;
+  background: #fff;
+  border: 1rpx solid var(--c-line);
+  color: var(--c-primary);
+  font-size: 24rpx;
+}
+
+/* ---------- 输入区 ---------- */
+.bar {
+  flex: none;
+  background: #fff;
+  border-top: 1rpx solid var(--c-line);
+  padding: 14rpx 20rpx;
+  padding-bottom: calc(14rpx + env(safe-area-inset-bottom));
+}
+.bar__row {
+  display: flex;
+  align-items: center;
+}
+.bar__input {
+  flex: 1;
+  min-width: 0;
+  height: 72rpx;
+  background: #f4f4f6;
+  border-radius: 36rpx;
+  padding: 0 26rpx;
+  font-size: 28rpx;
+  color: var(--c-text);
+}
+.bar__ph {
+  color: var(--c-text-weak);
+  font-size: 28rpx;
+}
+.bar__icon {
+  flex: none;
+  width: 76rpx;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+}
+.bar__icon--plus {
+  font-size: 46rpx;
+  color: #4a4a4f;
+  transition: transform 0.18s ease;
+}
+.bar__icon--plus.is-open {
+  transform: rotate(45deg);
+  color: var(--c-primary);
+}
+.bar__send {
+  flex: none;
+  margin-left: 10rpx;
+  height: 72rpx;
+  padding: 0 30rpx;
+  border-radius: 36rpx;
+  background: linear-gradient(135deg, #d32f2f, #b71c1c);
+  color: #fff;
+  font-size: 27rpx;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+/* ---------- 表情面板 ---------- */
+.emojis {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 16rpx 0 6rpx;
+  max-height: 380rpx;
+  overflow-y: auto;
+}
+.emojis__item {
+  width: 12.5%;
+  text-align: center;
+  font-size: 44rpx;
+  line-height: 1.6;
+}
+
+/* ---------- 「+」面板 ---------- */
+.panel {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 24rpx 0 8rpx;
+}
+.panel__item {
+  width: 20%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+.panel__icon {
+  width: 104rpx;
+  height: 104rpx;
+  border-radius: 24rpx;
+  background: #f4f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 44rpx;
+}
+.panel__label {
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  color: var(--c-text-sub);
+}
+
+/* ---------- 录音浮层 ---------- */
+.recording {
+  position: fixed;
+  left: 50%;
+  bottom: 260rpx;
+  transform: translateX(-50%);
+  background: rgba(31, 31, 31, 0.86);
+  color: #fff;
+  font-size: 25rpx;
+  padding: 18rpx 30rpx;
+  border-radius: 999rpx;
+  display: flex;
+  align-items: center;
+  z-index: 99;
+}
+.recording__dot {
+  width: 18rpx;
+  height: 18rpx;
+  border-radius: 50%;
+  background: #ff5252;
+  margin-right: 14rpx;
+  animation: rec-blink 1s infinite;
+}
+@keyframes rec-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}

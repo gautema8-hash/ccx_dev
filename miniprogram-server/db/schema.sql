@@ -1,6 +1,6 @@
 -- ============================================================
 -- 老北京麻辣串串香 · 连锁点单系统
--- schema.sql —— 数据库结构定义（27 张 mp_* 表，DDL 建表语句）
+-- schema.sql —— 数据库结构定义（34 张 mp_* 表，DDL 建表语句）
 --
 -- 项目: miniprogram-server（数据库 schema 的唯一拥有者）
 -- 来源: 由本机 MySQL 8.0.44 的 lbz_order 库以 mysqldump --no-data 导出，
@@ -552,10 +552,14 @@ CREATE TABLE `mp_user` (
   `nickname` varchar(64) NOT NULL DEFAULT '串串香食客',
   `avatar` varchar(512) NOT NULL DEFAULT '',
   `phone` varchar(32) NOT NULL DEFAULT '',
+  `gender` tinyint NOT NULL DEFAULT '0' COMMENT '0未知 1男 2女',
+  `birthday` varchar(16) NOT NULL DEFAULT '' COMMENT 'YYYY-MM-DD',
+  `city` varchar(64) NOT NULL DEFAULT '',
   `member_level` int NOT NULL DEFAULT '1',
   `member_name` varchar(32) NOT NULL DEFAULT '铜签会员',
   `points` int NOT NULL DEFAULT '0',
-  `status` tinyint NOT NULL DEFAULT '1',
+  `status` tinyint NOT NULL DEFAULT '1' COMMENT '0已注销 1正常',
+  `cancel_at` bigint NOT NULL DEFAULT '0' COMMENT '注销时间',
   `created_at` bigint NOT NULL,
   `updated_at` bigint NOT NULL,
   `last_login_at` bigint NOT NULL DEFAULT '0',
@@ -609,6 +613,161 @@ CREATE TABLE `mp_voucher` (
   KEY `idx_store_time` (`store_id`,`created_at`),
   KEY `idx_time` (`created_at`)
 ) ENGINE=InnoDB AUTO_INCREMENT=85 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+
+--
+-- Table structure for table `mp_address`
+-- （「我的 → 地址管理」：用户收货/联系地址）
+--
+
+DROP TABLE IF EXISTS `mp_address`;
+CREATE TABLE `mp_address` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `user_id` bigint NOT NULL,
+  `name` varchar(32) NOT NULL,
+  `phone` varchar(20) NOT NULL,
+  `province` varchar(32) NOT NULL DEFAULT '',
+  `city` varchar(32) NOT NULL DEFAULT '',
+  `district` varchar(32) NOT NULL DEFAULT '',
+  `detail` varchar(200) NOT NULL,
+  `tag` varchar(16) NOT NULL DEFAULT '' COMMENT '家|公司|学校',
+  `is_default` tinyint NOT NULL DEFAULT '0',
+  `created_at` bigint NOT NULL,
+  `updated_at` bigint NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_user` (`user_id`,`is_default`,`updated_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Table structure for table `mp_service_ticket`
+-- （「我的 → 在线客服」：会话主表，一个用户同时只有一个 OPEN 会话）
+--
+
+DROP TABLE IF EXISTS `mp_service_ticket`;
+CREATE TABLE `mp_service_ticket` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `user_id` bigint NOT NULL,
+  `store_id` varchar(32) NOT NULL DEFAULT '',
+  `status` varchar(16) NOT NULL DEFAULT 'OPEN' COMMENT 'OPEN|CLOSED',
+  `last_msg_at` bigint NOT NULL DEFAULT '0',
+  `last_preview` varchar(128) NOT NULL DEFAULT '',
+  `user_unread` int NOT NULL DEFAULT '0',
+  `admin_unread` int NOT NULL DEFAULT '0',
+  `created_at` bigint NOT NULL,
+  `updated_at` bigint NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_user_time` (`user_id`,`status`,`updated_at`),
+  KEY `idx_admin_unread` (`admin_unread`,`updated_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Table structure for table `mp_service_message`
+--
+
+DROP TABLE IF EXISTS `mp_service_message`;
+CREATE TABLE `mp_service_message` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `ticket_id` bigint NOT NULL,
+  `user_id` bigint NOT NULL DEFAULT '0',
+  `sender` varchar(16) NOT NULL COMMENT 'USER|ADMIN|SYSTEM',
+  `msg_type` varchar(16) NOT NULL DEFAULT 'text' COMMENT 'text|image|video|voice|file',
+  `content` text,
+  `media_url` varchar(512) NOT NULL DEFAULT '',
+  `media_meta` varchar(512) NOT NULL DEFAULT '' COMMENT 'JSON: duration/size/name/width/height',
+  `created_at` bigint NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_ticket` (`ticket_id`,`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Table structure for table `mp_agreement`
+-- （「我的 → 协议及政策」，内容后台可维护）
+--
+
+DROP TABLE IF EXISTS `mp_agreement`;
+CREATE TABLE `mp_agreement` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `code` varchar(32) NOT NULL,
+  `title` varchar(64) NOT NULL,
+  `summary` varchar(200) NOT NULL DEFAULT '',
+  `content_html` mediumtext,
+  `version` varchar(16) NOT NULL DEFAULT 'v1.0',
+  `sort` int NOT NULL DEFAULT '0',
+  `status` tinyint NOT NULL DEFAULT '1',
+  `updated_at` bigint NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_code` (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Table structure for table `mp_invoice_request`
+-- （「我的 → 发票管理」：开票申请，一笔订单仅一张，驳回后可复用同行重提）
+--
+
+DROP TABLE IF EXISTS `mp_invoice_request`;
+CREATE TABLE `mp_invoice_request` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `title_id` bigint NOT NULL DEFAULT '0',
+  `user_id` bigint NOT NULL,
+  `order_id` varchar(40) NOT NULL,
+  `order_no` varchar(40) NOT NULL DEFAULT '',
+  `store_id` varchar(32) NOT NULL DEFAULT '',
+  `amount` int NOT NULL DEFAULT '0',
+  `title_type` varchar(16) NOT NULL DEFAULT 'personal',
+  `title` varchar(128) NOT NULL,
+  `tax_no` varchar(64) NOT NULL DEFAULT '',
+  `email` varchar(128) NOT NULL DEFAULT '',
+  `status` varchar(16) NOT NULL DEFAULT 'PENDING' COMMENT 'PENDING|PROCESSING|ISSUED|REJECTED',
+  `invoice_no` varchar(64) NOT NULL DEFAULT '',
+  `invoice_url` varchar(512) NOT NULL DEFAULT '',
+  `remark` varchar(255) NOT NULL DEFAULT '',
+  `applied_at` bigint NOT NULL,
+  `issued_at` bigint NOT NULL DEFAULT '0',
+  `updated_at` bigint NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_order` (`order_id`),
+  KEY `idx_user` (`user_id`,`applied_at`),
+  KEY `idx_status` (`status`,`applied_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Table structure for table `mp_franchise_config`
+-- （「我的 → 加盟咨询」：海报与企微二维码配置，单行，后台可改）
+--
+
+DROP TABLE IF EXISTS `mp_franchise_config`;
+CREATE TABLE `mp_franchise_config` (
+  `id` varchar(32) NOT NULL,
+  `brand_id` varchar(32) NOT NULL DEFAULT 'brand_lbz',
+  `title` varchar(64) NOT NULL DEFAULT '老北京麻辣串串香 · 加盟合作',
+  `subtitle` varchar(128) NOT NULL DEFAULT '',
+  `highlights` varchar(1024) NOT NULL DEFAULT '[]' COMMENT 'JSON 数组：[{icon,label,value}]',
+  `poster_url` varchar(512) NOT NULL DEFAULT '' COMMENT '整张海报图（可选，留空则用内置版式）',
+  `qr_url` varchar(512) NOT NULL DEFAULT '' COMMENT '企业微信二维码（后台可换）',
+  `qr_tip` varchar(128) NOT NULL DEFAULT '长按识别添加加盟顾问企业微信',
+  `consult_phone` varchar(32) NOT NULL DEFAULT '',
+  `wecom_id` varchar(64) NOT NULL DEFAULT '',
+  `updated_at` bigint NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_brand` (`brand_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Table structure for table `mp_user_cancel_log`
+-- （账号注销留痕：openid 只存 SHA-256，避免注销后仍可反查用户）
+--
+
+DROP TABLE IF EXISTS `mp_user_cancel_log`;
+CREATE TABLE `mp_user_cancel_log` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `user_id` bigint NOT NULL,
+  `openid_hash` varchar(64) NOT NULL DEFAULT '',
+  `reason` varchar(255) NOT NULL DEFAULT '',
+  `created_at` bigint NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_user` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
 

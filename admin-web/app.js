@@ -175,12 +175,16 @@
   var MENU = [
     { key: 'dashboard', name: '经营看板', icon: '📊', perm: 'stats:read' },
     { key: 'orders', name: '订单管理', icon: '🧾', perm: 'order:read' },
+    { key: 'service', name: '客服消息', icon: '💬', perm: 'service:read' },
+    { key: 'invoice', name: '发票管理', icon: '🧮', perm: 'invoice:read' },
     { key: 'voucher', name: '团购券核销', icon: '🎫', perm: 'voucher:verify' },
     { key: 'coupon', name: '优惠券', icon: '🎟️', perm: 'coupon:read' },
     { key: 'theme', name: '主题管理', icon: '🎨', perm: 'theme:read' },
     { key: 'dish', name: '菜单与库存', icon: '🍢', perm: 'dish:read' },
     { key: 'store', name: '门店管理', icon: '🏪', perm: 'store:read' },
     { key: 'staff', name: '员工与权限', icon: '👥', perm: 'staff:read' },
+    { key: 'franchise', name: '加盟配置', icon: '🤝', perm: 'content:read' },
+    { key: 'agreement', name: '协议及政策', icon: '📄', perm: 'content:read' },
     { key: 'audit', name: '审计日志', icon: '📜', perm: 'audit:read' },
   ];
 
@@ -771,11 +775,325 @@
   }
 
   /* ============ 路由 ============ */
-  var VIEWS = { dashboard: viewDashboard, orders: viewOrders, voucher: viewVoucher, coupon: viewCoupon, theme: viewTheme, dish: viewDish, store: viewStore, staff: viewStaff, audit: viewAudit };
+  /* ============ 视图：客服消息（用户端「我的 → 在线客服」的回复端） ============ */
+  var SVC_MSG_LABEL = { image: '[图片]', video: '[视频]', voice: '[语音]', file: '[文件]' };
+
+  function svcPreview(t) {
+    return esc((t.lastPreview || '').slice(0, 22)) || '（暂无消息）';
+  }
+
+  function viewService() {
+    var status = S.svcStatus || 'OPEN';
+    return api('/admin/service/tickets?status=' + status + '&size=60').then(function (d) {
+      S.svcTickets = d.list || [];
+      var items = S.svcTickets.map(function (t) {
+        return '<div class="svc__item" data-tid="' + t.id + '">' +
+          '<div class="svc__item-head"><b>' + esc(t.nickname) + '</b>' +
+          (t.adminUnread ? '<span class="tag tag-p">未读 ' + t.adminUnread + '</span>' : '') + '</div>' +
+          '<div class="svc__item-sub">' + svcPreview(t) + '</div>' +
+          '<div class="svc__item-time">' + fmtTime(t.lastMsgAt) + (t.storeId ? ' · ' + esc(t.storeId) : '') + '</div>' +
+          '</div>';
+      }).join('');
+      shell('客服消息', '用户在「我的 → 在线客服」发来的消息 · 仅显示你权限内的门店',
+        '<div class="svc">' +
+        '<div class="card svc__list">' +
+        '<h3>会话<span class="sp">' + S.svcTickets.length + ' 条</span></h3>' +
+        '<div class="row" style="margin-bottom:10px">' +
+        '<button class="btn btn-sm ' + (status === 'OPEN' ? 'btn-p' : '') + '" data-sst="OPEN">进行中</button>' +
+        '<button class="btn btn-sm ' + (status === 'CLOSED' ? 'btn-p' : '') + '" data-sst="CLOSED">已结束</button>' +
+        '</div>' +
+        '<div class="svc__items">' + (items || '<div class="empty">暂无会话</div>') + '</div>' +
+        '</div>' +
+        '<div class="card svc__chat" id="svcChat"><div class="empty">← 选择左侧会话开始回复</div></div>' +
+        '</div>');
+
+      Array.prototype.forEach.call(document.querySelectorAll('[data-sst]'), function (b) {
+        b.onclick = function () { S.svcStatus = b.dataset.sst; S.svcOpen = null; render(); };
+      });
+      Array.prototype.forEach.call(document.querySelectorAll('.svc__item'), function (n) {
+        n.onclick = function () { openTicket(Number(n.dataset.tid)); };
+      });
+      if (S.svcOpen) openTicket(S.svcOpen, true);
+    });
+  }
+
+  function openTicket(id, silent) {
+    S.svcOpen = id;
+    var box = el('svcChat');
+    if (!silent || !box) return;
+    return api('/admin/service/tickets/' + id).then(function (d) {
+      S.svcDetail = d;
+      renderTicket();
+      /* 打开会话后自动轮询，客服不用手动刷新就能看到新消息 */
+      if (S.svcTimer) clearInterval(S.svcTimer);
+      S.svcTimer = setInterval(function () {
+        if (S.view !== 'service' || !document.getElementById('svcChat')) { clearInterval(S.svcTimer); S.svcTimer = null; return; }
+        api('/admin/service/tickets/' + id).then(function (dd) { S.svcDetail = dd; renderTicket(); }).catch(function () {});
+      }, 6000);
+    });
+  }
+
+  function renderTicket() {
+    var d = S.svcDetail;
+    var box = el('svcChat');
+    if (!box || !d) return;
+    var msgs = (d.list || []).map(function (m) {
+      var body;
+      if (m.type === 'text') body = esc(m.content).replace(/\n/g, '<br/>');
+      else body = '<a href="' + esc(m.mediaUrl) + '" target="_blank" rel="noopener">' + (SVC_MSG_LABEL[m.type] || '[附件]') +
+        (m.meta && m.meta.name ? ' ' + esc(m.meta.name) : '') + (m.meta && m.meta.duration ? ' ' + m.meta.duration + '″' : '') + '</a>';
+      return '<div class="msg msg--' + m.sender.toLowerCase() + '">' +
+        '<div class="msg__meta">' + (m.sender === 'USER' ? esc(d.ticket.nickname) : m.sender === 'ADMIN' ? '客服' : '系统') + ' · ' + fmtTime(m.createdAt) + '</div>' +
+        '<div class="msg__bubble">' + body + '</div></div>';
+    }).join('');
+    box.innerHTML =
+      '<div class="svc__chat-head"><b>' + esc(d.ticket.nickname) + '</b>' +
+      '<span class="tag ' + (d.ticket.status === 'OPEN' ? 'tag-ok' : '') + '">' + (d.ticket.status === 'OPEN' ? '进行中' : '已结束') + '</span>' +
+      (d.ticket.phoneMask ? '<span class="tag">' + esc(d.ticket.phoneMask) + '</span>' : '') +
+      '<span class="sp" style="margin-left:auto">' +
+      '<button class="btn btn-sm" id="svcRefresh">刷新</button> ' +
+      (d.ticket.status === 'OPEN' && has('service:reply') ? '<button class="btn btn-sm btn-d" id="svcClose">结束会话</button>' : '') +
+      '</span></div>' +
+      '<div class="svc__msgs" id="svcMsgs">' + (msgs || '<div class="empty">暂无消息</div>') + '</div>' +
+      (d.ticket.status === 'OPEN' && has('service:reply')
+        ? '<div class="svc__reply"><textarea id="svcInput" placeholder="输入回复内容，Enter 换行，点击发送（Ctrl/Cmd + Enter 快捷发送）"></textarea>' +
+          '<button class="btn btn-p" id="svcSend">发送</button></div>'
+        : '<div class="empty" style="padding:16px 0">会话已结束，如需继续请联系用户重新发起</div>');
+    var msgsBox = el('svcMsgs');
+    if (msgsBox) msgsBox.scrollTop = msgsBox.scrollHeight;
+    var rf = el('svcRefresh');
+    if (rf) rf.onclick = function () { openTicket(d.ticket.id, true); };
+    var cl = el('svcClose');
+    if (cl) cl.onclick = function () {
+      if (!window.confirm('结束后用户需要重新发起会话，确定结束？')) return;
+      api('/admin/service/tickets/' + d.ticket.id + '/close', { method: 'POST' }).then(function () { toast('已结束会话'); viewService(); });
+    };
+    var sd = el('svcSend');
+    if (sd) {
+      sd.onclick = function () { sendReply(d.ticket.id); };
+      el('svcInput').onkeydown = function (e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') sendReply(d.ticket.id);
+      };
+    }
+  }
+
+  function sendReply(ticketId) {
+    var input = el('svcInput');
+    var content = (input.value || '').trim();
+    if (!content) return toast('请输入回复内容');
+    api('/admin/service/tickets/' + ticketId + '/reply', { method: 'POST', body: { content: content } })
+      .then(function () {
+        input.value = '';
+        toast('已发送');
+        return openTicket(ticketId, true);
+      })
+      .catch(function (e) { toast((e && e.message) || '发送失败'); });
+  }
+
+  /* ============ 视图：发票管理 ============ */
+  var INV_LABEL = { PENDING: '待处理', PROCESSING: '开票中', ISSUED: '已开具', REJECTED: '已驳回' };
+  var INV_TAG = { PENDING: 'tag-p', PROCESSING: 'tag-a', ISSUED: 'tag-ok', REJECTED: '' };
+
+  function viewInvoice() {
+    var st = S.invStatus || 'PENDING';
+    var q = '/admin/invoice/records?size=100' + (st === 'ALL' ? '' : '&status=' + st) + (S.storeId ? '&storeId=' + encodeURIComponent(S.storeId) : '');
+    return api(q).then(function (d) {
+      var rows = (d.list || []).map(function (r) {
+        var acts = '';
+        if (has('invoice:write')) {
+          if (r.status === 'PENDING') acts += '<button class="btn btn-sm" data-inv="' + r.id + '" data-to="PROCESSING">受理</button> ';
+          if (r.status === 'PENDING' || r.status === 'PROCESSING') {
+            acts += '<button class="btn btn-sm btn-p" data-inv="' + r.id + '" data-to="ISSUED">开具</button> ';
+            acts += '<button class="btn btn-sm btn-d" data-inv="' + r.id + '" data-to="REJECTED">驳回</button>';
+          }
+        }
+        return '<tr><td><b>' + esc(r.title) + '</b><div style="font-size:11px;color:#999">' + esc(r.titleType === 'company' ? '公司' + (r.taxNo ? ' · ' + esc(r.taxNo) : '') : '个人') + '</div></td>' +
+          '<td>¥' + fen(r.amount) + '</td>' +
+          '<td style="font-size:12px">' + esc(r.orderNo) + '<div style="color:#999">' + esc(r.nickname || '') + '</div></td>' +
+          '<td style="font-size:12px">' + esc(r.email) + '</td>' +
+          '<td>' + esc(r.storeId || '') + '</td>' +
+          '<td><span class="tag ' + (INV_TAG[r.status] || '') + '">' + (INV_LABEL[r.status] || r.status) + '</span>' +
+          (r.invoiceNo ? '<div style="font-size:11px;color:#999">' + esc(r.invoiceNo) + '</div>' : '') +
+          (r.remark ? '<div style="font-size:11px;color:#999">' + esc(r.remark) + '</div>' : '') + '</td>' +
+          '<td style="font-size:12px">' + fmtTime(r.appliedAt) + '</td>' +
+          '<td>' + (acts || '—') + '</td></tr>';
+      }).join('');
+      var tabs = ['PENDING', 'PROCESSING', 'ISSUED', 'REJECTED', 'ALL'].map(function (k) {
+        return '<button class="btn btn-sm ' + (st === k ? 'btn-p' : '') + '" data-invst="' + k + '">' +
+          (k === 'ALL' ? '全部' : INV_LABEL[k]) + '</button>';
+      }).join(' ');
+      shell('发票管理', '用户在小程序「我的 → 发票管理」提交的开票申请',
+        '<div class="card"><div class="storebar">' + storeSelectorHtml(true) + '<span style="width:1px;height:20px;background:#eee"></span>' + tabs +
+        '<button class="btn" id="invRefresh" style="margin-left:auto">刷新</button></div></div>' +
+        '<div class="card"><div class="tbl-wrap"><table><thead><tr>' +
+        '<th>抬头</th><th>金额</th><th>订单 / 用户</th><th>邮箱</th><th>门店</th><th>状态</th><th>申请时间</th><th>操作</th>' +
+        '</tr></thead><tbody>' + (rows || '<tr><td colspan="8" class="empty">暂无开票申请</td></tr>') + '</tbody></table></div></div>');
+
+      bindStoreSelector(function () { render(); });
+      var rf = el('invRefresh');
+      if (rf) rf.onclick = function () { render(); };
+      Array.prototype.forEach.call(document.querySelectorAll('[data-invst]'), function (b) {
+        b.onclick = function () { S.invStatus = b.dataset.invst; render(); };
+      });
+      Array.prototype.forEach.call(document.querySelectorAll('[data-inv]'), function (b) {
+        b.onclick = function () { updateInvoice(Number(b.dataset.inv), b.dataset.to); };
+      });
+    });
+  }
+
+  function updateInvoice(id, to) {
+    if (to === 'ISSUED') {
+      modal('开具发票', '<label class="f"><span>发票号码 / 文件地址（至少填一项，必填）</span><input type="text" id="invNo" placeholder="如 25117000000012345678"></label>' +
+        '<label class="f"><span>发票文件地址（可选，PDF/图片 URL）</span><input type="text" id="invUrl" placeholder="/uploads/... 或 https://..."></label>' +
+        '<label class="f"><span>备注（可选）</span><input type="text" id="invRemark" placeholder="如：已发送至邮箱"></label>',
+        function () {
+          var invoiceNo = (el('invNo').value || '').trim();
+          var invoiceUrl = (el('invUrl').value || '').trim();
+          if (!invoiceNo && !invoiceUrl) { toast('请填写发票号码或文件地址'); return false; }
+          api('/admin/invoice/records/' + id + '/status', { method: 'POST', body: { status: 'ISSUED', invoiceNo: invoiceNo, invoiceUrl: invoiceUrl, remark: (el('invRemark').value || '').trim() } })
+            .then(function () { toast('已开具'); render(); })
+            .catch(function (e) { toast((e && e.message) || '操作失败'); });
+          return true;
+        }, '确认开具');
+      return;
+    }
+    if (to === 'REJECTED') {
+      modal('驳回开票申请', '<label class="f"><span>驳回原因（用户可见）</span><input type="text" id="invRemark" placeholder="如：抬头税号与订单主体不一致"></label>',
+        function () {
+          var remark = (el('invRemark').value || '').trim();
+          if (!remark) { toast('请填写驳回原因'); return false; }
+          api('/admin/invoice/records/' + id + '/status', { method: 'POST', body: { status: 'REJECTED', remark: remark } })
+            .then(function () { toast('已驳回'); render(); })
+            .catch(function (e) { toast((e && e.message) || '操作失败'); });
+          return true;
+        }, '确认驳回');
+      return;
+    }
+    api('/admin/invoice/records/' + id + '/status', { method: 'POST', body: { status: to } })
+      .then(function () { toast('已受理'); render(); })
+      .catch(function (e) { toast((e && e.message) || '操作失败'); });
+  }
+
+  /* ============ 视图：加盟配置（小程序「我的 → 加盟咨询」海报） ============ */
+  function viewFranchise() {
+    return api('/admin/franchise').then(function (d) {
+      var hs = (d.highlights || []).slice(0, 4);
+      while (hs.length < 4) hs.push({ icon: '', label: '', value: '' });
+      var rows = hs.map(function (h, i) {
+        return '<div class="grid3">' +
+          '<label class="f"><span>图标（emoji）</span><input type="text" id="fh' + i + '" value="' + esc(h.icon || '') + '"></label>' +
+          '<label class="f"><span>指标名称</span><input type="text" id="fl' + i + '" value="' + esc(h.label || '') + '"></label>' +
+          '<label class="f"><span>指标值</span><input type="text" id="fv' + i + '" value="' + esc(h.value || '') + '"></label>' +
+          '</div>';
+      }).join('');
+      shell('加盟配置', '小程序「我的 → 加盟咨询」页面的海报文案与企业微信二维码',
+        '<div class="card"><h3>海报内容<span class="sp">留空则使用内置版式</span></h3>' +
+        '<div class="grid2">' +
+        '<label class="f"><span>主标题</span><input type="text" id="fTitle" value="' + esc(d.title) + '"></label>' +
+        '<label class="f"><span>副标题</span><input type="text" id="fSub" value="' + esc(d.subtitle) + '"></label>' +
+        '</div>' +
+        rows +
+        '<div class="grid2">' +
+        '<label class="f"><span>企业微信二维码地址（后台上传后填入，留空显示占位）</span><input type="text" id="fQr" value="' + esc(d.qrUrl) + '" placeholder="/uploads/... 或 https://..."></label>' +
+        '<label class="f"><span>整张海报图地址（可选，配置后小程序直接展示该图）</span><input type="text" id="fPoster" value="' + esc(d.posterUrl) + '" placeholder="留空使用内置版式"></label>' +
+        '</div>' +
+        '<div class="grid2">' +
+        '<label class="f"><span>二维码下方提示文案</span><input type="text" id="fTip" value="' + esc(d.qrTip) + '"></label>' +
+        '<label class="f"><span>加盟咨询电话</span><input type="text" id="fPhone" value="' + esc(d.consultPhone) + '"></label>' +
+        '</div>' +
+        '<label class="f"><span>企业微信号（选填，展示用）</span><input type="text" id="fWecom" value="' + esc(d.wecomId) + '"></label>' +
+        '<div class="row"><button class="btn btn-p" id="fSave">保存配置</button><span class="tag">最近更新：' + fmtTime(d.updatedAt) + '</span></div>' +
+        '</div>');
+
+      el('fSave').onclick = function () {
+        var highlights = [];
+        for (var i = 0; i < 4; i++) {
+          var label = (el('fl' + i).value || '').trim();
+          if (!label) continue;
+          highlights.push({ icon: (el('fh' + i).value || '').trim(), label: label, value: (el('fv' + i).value || '').trim() });
+        }
+        var body = {
+          title: (el('fTitle').value || '').trim(),
+          subtitle: (el('fSub').value || '').trim(),
+          highlights: highlights,
+          qrUrl: (el('fQr').value || '').trim(),
+          posterUrl: (el('fPoster').value || '').trim(),
+          qrTip: (el('fTip').value || '').trim(),
+          consultPhone: (el('fPhone').value || '').trim(),
+          wecomId: (el('fWecom').value || '').trim(),
+        };
+        api('/admin/franchise', { method: 'PUT', body: body })
+          .then(function () { toast('已保存，小程序端即时生效'); })
+          .catch(function (e) { toast((e && e.message) || '保存失败'); });
+      };
+    });
+  }
+
+  /* ============ 视图：协议及政策（富文本维护） ============ */
+  function viewAgreement() {
+    return api('/admin/agreements').then(function (d) {
+      var rows = (d.list || []).map(function (a) {
+        return '<tr><td><b>' + esc(a.title) + '</b><div style="font-size:11px;color:#999">' + esc(a.code) + '</div></td>' +
+          '<td style="font-size:12px">' + esc(a.summary || '') + '</td>' +
+          '<td>' + esc(a.version) + '</td>' +
+          '<td><span class="tag ' + (a.status ? 'tag-ok' : '') + '">' + (a.status ? '已上线' : '已下线') + '</span></td>' +
+          '<td style="font-size:12px">' + fmtTime(a.updatedAt) + '</td>' +
+          '<td>' + (has('content:write') ? '<button class="btn btn-sm btn-p" data-ag="' + esc(a.code) + '">编辑</button>' : '—') + '</td></tr>';
+      }).join('');
+      shell('协议及政策', '小程序「我的 → 协议及政策」展示内容 · 支持基础 HTML（h3/p/ul/li/b）',
+        '<div class="card"><div class="tbl-wrap"><table><thead><tr>' +
+        '<th>标题</th><th>摘要</th><th>版本</th><th>状态</th><th>更新时间</th><th>操作</th>' +
+        '</tr></thead><tbody>' + (rows || '<tr><td colspan="6" class="empty">暂无协议</td></tr>') + '</tbody></table></div>' +
+        '<div class="hint" style="margin-top:12px;font-size:12px;color:#8a8a8e">提示：正文使用 HTML 片段，例如 &lt;h3&gt;一、标题&lt;/h3&gt;&lt;p&gt;内容&lt;/p&gt;；rich-text 只渲染白名单标签。</div></div>');
+
+      Array.prototype.forEach.call(document.querySelectorAll('[data-ag]'), function (b) {
+        b.onclick = function () { editAgreement(b.dataset.ag); };
+      });
+    });
+  }
+
+  function editAgreement(code) {
+    api('/admin/agreements').then(function (d) {
+      var a = (d.list || []).filter(function (x) { return x.code === code; })[0];
+      if (!a) return toast('协议不存在');
+      modal('编辑：' + a.title,
+        '<div class="grid2">' +
+        '<label class="f"><span>标题</span><input type="text" id="agTitle" value="' + esc(a.title) + '"></label>' +
+        '<label class="f"><span>版本号</span><input type="text" id="agVer" value="' + esc(a.version) + '"></label>' +
+        '</div>' +
+        '<div class="grid2">' +
+        '<label class="f"><span>列表摘要</span><input type="text" id="agSummary" value="' + esc(a.summary || '') + '"></label>' +
+        '<label class="f"><span>排序（越小越靠前）</span><input type="number" id="agSort" value="' + (a.sort || 0) + '"></label>' +
+        '</div>' +
+        '<label class="f"><span>正文（HTML 片段）</span><textarea id="agHtml" style="min-height:260px;font-family:ui-monospace,Consolas,monospace">' + esc(a.contentHtml || '') + '</textarea></label>' +
+        '<label class="f"><span>状态</span><select id="agStatus"><option value="1"' + (a.status ? ' selected' : '') + '>上线</option><option value="0"' + (a.status ? '' : ' selected') + '>下线</option></select></label>',
+        function () {
+          return api('/admin/agreements/' + encodeURIComponent(code), {
+            method: 'PUT',
+            body: {
+              title: (el('agTitle').value || '').trim(),
+              version: (el('agVer').value || '').trim(),
+              summary: (el('agSummary').value || '').trim(),
+              sort: Number(el('agSort').value) || 0,
+              contentHtml: el('agHtml').value || '',
+              status: el('agStatus').value === '1',
+            },
+          }).then(function () { toast('已保存，小程序端即时生效'); render(); });
+        }, '保存');
+    });
+  }
+
+  var VIEWS = {
+    dashboard: viewDashboard, orders: viewOrders, voucher: viewVoucher, coupon: viewCoupon,
+    theme: viewTheme, dish: viewDish, store: viewStore, staff: viewStaff, audit: viewAudit,
+    service: viewService, invoice: viewInvoice, franchise: viewFranchise, agreement: viewAgreement,
+  };
 
   function render() {
     if (!S.staff) return renderLogin();
     if (S.staff.mustChangePwd) return renderForcePwd();
+    /* 切换视图时停掉上一个视图可能开着的轮询（客服消息），避免后台白跑请求 */
+    if (S.svcTimer) { clearInterval(S.svcTimer); S.svcTimer = null; }
     var v = VIEWS[S.view] || viewDashboard;
     if (!has((MENU.filter(function (m) { return m.key === S.view; })[0] || {}).perm || 'stats:read')) {
       S.view = (MENU.filter(function (m) { return has(m.perm); })[0] || {}).key || 'dashboard';

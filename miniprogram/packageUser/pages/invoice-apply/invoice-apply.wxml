@@ -1,0 +1,82 @@
+<!-- 提交开票申请：订单信息 + 抬头选择 + 接收邮箱 + 开票须知 -->
+<view class="page" style="{{themeStyle}}">
+  <block wx:if="{{order}}">
+    <!-- 订单信息 -->
+    <view class="card ord">
+      <view class="ord__head">
+        <text class="ord__title">开票订单</text>
+        <text class="ord__no">{{order.orderNo}}</text>
+      </view>
+      <view class="ord__meta">{{order.storeName}} · {{order.diningTypeText}} · {{order.createTimeText}}</view>
+      <view class="divider"></view>
+      <view class="ord__item" wx:for="{{order.items}}" wx:key="index">
+        <text class="ord__name ellipsis">{{item.name}}{{item.spicyName ? '（' + item.spicyName + '）' : ''}}</text>
+        <text class="ord__count">×{{item.count}}</text>
+        <text class="ord__amount">¥{{item.amountText}}</text>
+      </view>
+      <view class="ord__foot">
+        <text>共 {{order.itemCount}} 件</text>
+        <text class="ord__pay">实付 <text class="ord__pay-num">¥{{order.amount.payText}}</text></text>
+      </view>
+      <view wx:if="{{rejected}}" class="ord__reject">该订单上次开票申请被驳回，可修改抬头发起重提</view>
+    </view>
+
+    <!-- 抬头选择 -->
+    <view class="block-title">发票抬头</view>
+    <view class="card inv">
+      <view
+        class="inv__item {{item.isOn ? 'is-on' : ''}}"
+        wx:for="{{titles}}"
+        wx:key="id"
+        data-id="{{item.id}}"
+        bindtap="onPickTitle"
+      >
+        <text class="inv__dot"></text>
+        <view class="inv__body">
+          <view class="inv__line">
+            <text class="inv__title ellipsis">{{item.title}}</text>
+            <text class="inv__type {{item.titleType === 'company' ? 'is-company' : ''}}">{{item.titleType === 'company' ? '公司' : '个人'}}</text>
+          </view>
+          <text wx:if="{{item.taxNo}}" class="inv__tax">税号 {{item.taxNo}}</text>
+        </view>
+      </view>
+      <view wx:if="{{!titles.length}}" class="inv__none">还没有发票抬头，请先添加一个</view>
+      <view class="inv__add" bindtap="goTitles">＋ {{titles.length ? '新增 / 管理抬头' : '去添加抬头'}}</view>
+    </view>
+
+    <!-- 接收邮箱 -->
+    <view class="block-title">接收邮箱</view>
+    <view class="card">
+      <input
+        class="mail__input"
+        value="{{email}}"
+        placeholder="请输入接收电子发票的邮箱"
+        placeholder-class="mail__ph"
+        maxlength="128"
+        data-k="email"
+        bindinput="onEmail"
+      />
+      <view class="mail__tip">电子发票（PDF / OFD）将在开具后发送至该邮箱，请确认填写正确</view>
+    </view>
+
+    <!-- 开票须知 -->
+    <view class="agree">
+      <text class="agree__box {{agree ? 'is-on' : ''}}" bindtap="onAgree">✓</text>
+      <text class="agree__text" bindtap="onAgree">我已阅读并同意</text>
+      <text class="agree__link" catchtap="goNotice">《开票须知》</text>
+    </view>
+
+    <view class="bar-holder"></view>
+    <view class="action-bar">
+      <view class="btn-primary grow {{submitting || !titles.length ? 'is-disabled' : ''}}" bindtap="onSubmit">
+        {{submitting ? '提交中…' : '提交开票申请'}}
+      </view>
+    </view>
+  </block>
+
+  <view wx:elif="{{!loading}}" class="empty">
+    <view class="empty__icon">🧾</view>
+    <view class="empty__text">订单信息加载失败</view>
+    <view class="empty__hint">请返回上一页重新选择要开票的订单</view>
+  </view>
+</view>

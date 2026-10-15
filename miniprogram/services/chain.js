@@ -54,7 +54,12 @@ function openLocationSetting() {
   });
 }
 
-/** 附近门店 */
+/**
+ * 附近门店
+ * @param {object} opts { latitude, longitude, keyword, type, onlyOpen, maxKm }
+ *   带坐标时服务端按距离升序返回并附 distanceKm / distanceText；
+ *   onlyOpen / maxKm 只做筛选，不改变排序（排序规则始终是「由近到远」）。
+ */
 function nearbyStores(opts) {
   opts = opts || {};
   const data = {};
@@ -64,6 +69,8 @@ function nearbyStores(opts) {
   }
   if (opts.keyword) data.keyword = opts.keyword;
   if (opts.type) data.type = opts.type;
+  if (opts.onlyOpen) data.onlyOpen = 1;
+  if (opts.maxKm) data.maxKm = opts.maxKm;
   return request({ url: '/stores', method: 'GET', data, idempotent: true });
 }
 
@@ -119,6 +126,31 @@ function navigateTo(store) {
     scale: 17,
     fail: () => wx.showToast({ title: '打开地图失败', icon: 'none' }),
   });
+}
+
+/**
+ * 自动匹配最近门店（下单时若用户从未选过门店则调用）
+ *
+ * 只在「没有任何已选门店」时触发：用户手动选过店就尊重其选择，
+ * 否则会出现「用户特意选了朝阳店，重新进入又被自动改成东直门店」的糟糕体验。
+ * @returns {Promise<{store: object|null, located: boolean, needLocation: boolean}>}
+ */
+function autoPickNearestStore() {
+  const exist = currentStore();
+  if (exist) return Promise.resolve({ store: exist, located: true, already: true });
+
+  const locate = (loc) =>
+    nearbyStores(loc ? { latitude: loc.latitude, longitude: loc.longitude } : {}).then((d) => {
+      const list = (d && d.list) || [];
+      /* 营业中的就近门店优先；全打烊时退回最近的（用户仍可查看菜单与营业时间） */
+      const pick = list.filter((s) => s.openNow)[0] || list[0] || null;
+      if (pick) setCurrentStore(pick);
+      return { store: pick, located: !!loc, needLocation: !!(d && d.needLocation) };
+    });
+
+  const cached = cachedLocation();
+  if (cached) return locate({ latitude: cached.lat, longitude: cached.lng });
+  return getLocation().then((loc) => (loc.ok ? locate(loc) : locate(null)));
 }
 
 /* ============================ 主题 ============================ */
@@ -266,6 +298,7 @@ module.exports = {
   currentStore,
   setCurrentStore,
   navigateTo,
+  autoPickNearestStore,
   /* 主题 */
   tokensToStyle,
   loadTheme,

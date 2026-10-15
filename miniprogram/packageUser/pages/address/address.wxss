@@ -1,0 +1,100 @@
+/* .page / .tip / .empty__hint 已在 app.wxss 全局定义 */
+
+/* ---------- 地址卡片 ---------- */
+.addr {
+  background: var(--c-card);
+  border-radius: 20rpx;
+  margin: 20rpx 24rpx 0;
+  padding: 26rpx 24rpx 0;
+  box-shadow: var(--shadow);
+}
+.addr__head {
+  display: flex;
+  align-items: center;
+}
+.addr__name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--c-text);
+  max-width: 240rpx;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.addr__phone {
+  font-size: 26rpx;
+  color: var(--c-text-sub);
+  margin-left: 16rpx;
+  font-family: DIN, -apple-system, sans-serif;
+}
+.addr__tag {
+  margin-left: 12rpx;
+  font-size: 20rpx;
+  color: var(--c-primary);
+  background: var(--c-primary-weak);
+  border-radius: 6rpx;
+  padding: 2rpx 10rpx;
+  flex: none;
+}
+.addr__detail {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 12rpx;
+}
+.addr__badge {
+  flex: none;
+  margin-right: 10rpx;
+  font-size: 20rpx;
+  color: #fff;
+  background: linear-gradient(135deg, #d32f2f, #b71c1c);
+  border-radius: 6rpx;
+  padding: 2rpx 10rpx;
+  line-height: 1.4;
+}
+.addr__text {
+  font-size: 26rpx;
+  color: #4a4a4f;
+  line-height: 1.5;
+  flex: 1;
+  min-width: 0;
+}
+.addr__ops {
+  display: flex;
+  align-items: center;
+  margin-top: 22rpx;
+  padding: 18rpx 0;
+  border-top: 1rpx solid #f4f4f6;
+}
+.addr__op {
+  display: flex;
+  align-items: center;
+}
+.addr__op--right {
+  margin-left: auto;
+}
+.addr__dot {
+  width: 26rpx;
+  height: 26rpx;
+  border-radius: 50%;
+  border: 2rpx solid #c8c8cd;
+  margin-right: 10rpx;
+  box-sizing: border-box;
+}
+/* 选中态：实心红点 + 白心（不用图片，纯 CSS） */
+.addr__dot.is-on {
+  border-color: var(--c-primary);
+  background: var(--c-primary);
+  box-shadow: inset 0 0 0 5rpx #fff;
+}
+.addr__op-text {
+  font-size: 24rpx;
+  color: var(--c-text-sub);
+}
+.addr__act {
+  font-size: 26rpx;
+  color: var(--c-text-sub);
+  padding: 6rpx 0 6rpx 32rpx;
+}
+.addr__act--danger {
+  color: var(--c-primary);
+}

@@ -1,0 +1,28 @@
+<!-- 协议及政策：开票须知 / 经营者证照公示 / 隐私协议 / 用户协议 -->
+<view class="page" style="{{themeStyle}}">
+  <view class="list" wx:if="{{list.length}}">
+    <view class="ag" wx:for="{{list}}" wx:key="code" data-code="{{item.code}}" bindtap="goDetail">
+      <text class="ag__icon">{{item.icon}}</text>
+      <view class="ag__body">
+        <view class="ag__line">
+          <text class="ag__title">{{item.title}}</text>
+          <text class="ag__ver">{{item.version}}</text>
+        </view>
+        <text class="ag__sum ellipsis-2">{{item.summary}}</text>
+        <text class="ag__time">更新于 {{item.timeText}}</text>
+      </view>
+      <text class="ag__arrow">›</text>
+    </view>
+  </view>
+
+  <view wx:if="{{!loading && !list.length}}" class="empty">
+    <view class="empty__icon">📄</view>
+    <view class="empty__text">暂无协议内容</view>
+    <view class="empty__hint">协议由商家在管理后台维护，稍后再试</view>
+  </view>
+
+  <view class="foot">
+    <text>老北京麻辣串串香 · 点单小程序 {{version}}</text>
+    <text>如对条款有疑问，可在「在线客服」中咨询</text>
+  </view>
+</view>

@@ -38,8 +38,19 @@ Page({
   },
 
   onLoad() {
-    this.loadCoupons();
-    this.refresh();
+    /**
+     * 下单前兜底匹配最近门店
+     * 正常路径上菜单页已经选好门店；但从「购物车 / 分享链接」直接进结算页时可能还是空，
+     * 这里补一次自动匹配，保证订单一定落到「距用户最近的门店」而不是服务端默认店。
+     * 定位失败不阻塞下单（服务端会退回默认门店）。
+     */
+    require('../../services/chain')
+      .autoPickNearestStore()
+      .catch(() => {})
+      .then(() => {
+        this.loadCoupons();
+        this.refresh();
+      });
   },
 
   onShow() {

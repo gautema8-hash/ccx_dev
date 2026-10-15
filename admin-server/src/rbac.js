@@ -41,9 +41,18 @@ const PERMS = {
   VOUCHER_REFUND: 'voucher:refund',
   STATS_READ: 'stats:read',
   AUDIT_READ: 'audit:read',
+  /* 「我的」模块新增：在线客服 / 发票管理 / 内容运营（协议与加盟配置） */
+  SERVICE_READ: 'service:read',
+  SERVICE_REPLY: 'service:reply',
+  INVOICE_READ: 'invoice:read',
+  INVOICE_WRITE: 'invoice:write',
+  CONTENT_READ: 'content:read',
+  CONTENT_WRITE: 'content:write',
 };
 
 const READ_ONLY = [PERMS.STORE_READ, PERMS.STAFF_READ, PERMS.DISH_READ, PERMS.ORDER_READ, PERMS.COUPON_READ, PERMS.THEME_READ, PERMS.VOUCHER_READ, PERMS.STATS_READ];
+/** 门店侧三件套：看客服、回客服、处理开票 */
+const SERVICE_STORE = [PERMS.SERVICE_READ, PERMS.SERVICE_REPLY, PERMS.INVOICE_READ, PERMS.INVOICE_WRITE];
 
 const ROLES = {
   BRAND_ADMIN: {
@@ -56,7 +65,7 @@ const ROLES = {
     key: 'REGION_MANAGER',
     name: '区域经理',
     allStores: false, // 按 region 解析门店
-    perms: READ_ONLY.concat([
+    perms: READ_ONLY.concat(SERVICE_STORE, [
       PERMS.DISH_STOCK,
       PERMS.ORDER_ADVANCE,
       PERMS.ORDER_CANCEL,
@@ -66,13 +75,14 @@ const ROLES = {
       PERMS.THEME_WRITE,
       PERMS.VOUCHER_VERIFY,
       PERMS.AUDIT_READ,
+      PERMS.CONTENT_READ,
     ]),
   },
   STORE_MANAGER: {
     key: 'STORE_MANAGER',
     name: '店长',
     allStores: false,
-    perms: READ_ONLY.concat([
+    perms: READ_ONLY.concat(SERVICE_STORE, [
       PERMS.DISH_STOCK,
       PERMS.ORDER_ADVANCE,
       PERMS.ORDER_CANCEL,
@@ -83,13 +93,13 @@ const ROLES = {
     key: 'STAFF',
     name: '店员',
     allStores: false,
-    perms: [PERMS.STORE_READ, PERMS.DISH_READ, PERMS.ORDER_READ, PERMS.ORDER_ADVANCE, PERMS.VOUCHER_VERIFY],
+    perms: [PERMS.STORE_READ, PERMS.DISH_READ, PERMS.ORDER_READ, PERMS.ORDER_ADVANCE, PERMS.VOUCHER_VERIFY, PERMS.SERVICE_READ, PERMS.SERVICE_REPLY],
   },
   FRANCHISE_OWNER: {
     key: 'FRANCHISE_OWNER',
     name: '加盟商',
     allStores: false,
-    perms: READ_ONLY.concat([
+    perms: READ_ONLY.concat(SERVICE_STORE, [
       PERMS.DISH_STOCK,
       PERMS.ORDER_ADVANCE,
       PERMS.ORDER_CANCEL,

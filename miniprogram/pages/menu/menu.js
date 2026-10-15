@@ -85,7 +85,22 @@ Page({
     this.visible = false;
 
     this.unsubscribe = cart.subscribe(() => this.refreshCart());
-    this.loadMenu();
+
+    /**
+     * 下单第一步：自动匹配最近门店
+     * 只在用户从未选过门店时生效（手动选过的店不会被覆盖），成功后首屏菜单就是最近门店的菜单，
+     * 省掉「进店先手动选店」这一步；定位失败/被拒绝时服务端会退回门店顺序，不阻塞点单。
+     */
+    chain
+      .autoPickNearestStore()
+      .then((r) => {
+        this.syncStore();
+        if (r && r.store && !r.already) {
+          wx.showToast({ title: '已为你匹配最近门店：' + r.store.name, icon: 'none', duration: 1800 });
+        }
+      })
+      .catch(() => {})
+      .then(() => this.loadMenu());
   },
 
   onReady() {

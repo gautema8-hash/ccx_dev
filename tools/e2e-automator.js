@@ -63,6 +63,41 @@ const ANY = (cls) => `//*[${C(cls)}]`;
 const IN = (outer, inner) => `//*[${C(outer)}]//*[${C(inner)}]`;
 const NTH = (xp, n) => `(${xp})[${n}]`;
 const TXT = (t) => `//*[contains(text(),"${t}")]`;
+/**
+ * 精确「class + 文案」定位
+ * 纯文本 XPath 太容易误命中：例如点「公司」会先命中「公司名称」这个 label，
+ * 加上 class 约束才能稳定点中分段控件里的那一个。
+ */
+const TXC = (cls, t) => `//*[${C(cls)} and contains(text(),"${t}")]`;
+/**
+ * 「class 容器 + 后代文案」定位
+ * 有些控件把文案包在子 <text> 里（如筛选栏 .bar__item > <text>），
+ * 此时父节点自己的 text() 是空的，必须用后代匹配才点得到。
+ */
+const TXTIN = (cls, t) => `//*[${C(cls)}]//*[contains(text(),"${t}")]`;
+
+/**
+ * 可选：清空本轮要写入的业务数据（地址 / 客服会话 / 开票申请）
+ * 让 e2e 可重复运行 —— 不清的话第二次跑「提交开票申请」会命中
+ * 「该订单已提交过开票申请」的幂等保护，测试结果就不可信了。
+ * 用 E2E_RESET=1 显式开启，默认不动库（避免误伤手工数据）。
+ */
+async function resetFixtures() {
+  if (process.env.E2E_RESET !== '1') return false;
+  const mysql = require(path.resolve(__dirname, '../miniprogram-server/node_modules/mysql2/promise'));
+  const c = await mysql.createConnection({
+    host: process.env.DB_HOST || '127.0.0.1',
+    port: Number(process.env.DB_PORT || 3306),
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || 'root123!@#',
+    database: process.env.DB_NAME || 'lbz_order',
+  });
+  for (const t of ['mp_service_message', 'mp_service_ticket', 'mp_invoice_request', 'mp_address']) {
+    await c.query('DELETE FROM ' + t);
+  }
+  await c.end();
+  return true;
+}
 
 let pass = 0;
 const fails = [];
@@ -112,12 +147,23 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     await sleep(650);
     return true;
   };
-  const tapXp = (page, xp) => page.getElementByXpath(xp).then(tap);
+  const tapXp = (page, xp) => elOf(page, xp).then(tap);
   /** 注意：带下标谓词的 XPath 形如 (//*[...])[4]，开头是 "(" 而不是 "/" */
   const isXpath = (s) => s.charAt(0) === '/' || s.charAt(0) === '(';
+  /**
+   * 取元素（带真实性校验）
+   *
+   * 坑：Automator 的 getElementByXpath 在「找不到匹配」时**不返回 null**，
+   * 而是返回一个假元素对象（text() 恒为 ''、wxml()/attribute() 抛错、offset 恒为 {0,0}）。
+   * 直接 !!el 判断会让所有「元素存在」断言假阳性（连 ZZZZ_NOT_EXIST 都能"命中"），
+   * tapXp 也会对着空气点击。真元素有 tagName，假元素 tagName === undefined，据此过滤。
+   */
   const elOf = async (page, sel) => {
     try {
-      return isXpath(sel) ? await page.getElementByXpath(sel) : await page.$(sel);
+      const el = isXpath(sel) ? await page.getElementByXpath(sel) : await page.$(sel);
+      if (!el) return null;
+      if (el.tagName === undefined) return null;
+      return el;
     } catch (e) {
       return null;
     }
@@ -140,6 +186,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     await mini.mockWxMethod('showModal', { confirm: true, cancel: false });
     await mini.mockWxMethod('vibrateShort', { errMsg: 'vibrateShort:ok' });
 
+    /* 可选前置：清空本轮要写入的业务数据，保证脚本可重复运行 */
+    if (await resetFixtures()) ok('已清理地址 / 客服 / 开票测试数据（E2E_RESET=1）');
+    else skip('清理测试数据', '未设置 E2E_RESET=1，按现有数据继续（断言已改为增量比对）');
+
     /* ================= 0. 重置 ================= */
     console.log('[0.1] 重置：我的 → 清除本地缓存（清掉内存态购物车）');
     const mine0 = await mini.reLaunch('/pages/mine/mine');
@@ -148,12 +198,26 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     await sleep(800);
     ok('已重置本地状态');
 
+    /* ============ 0.2 固定测试定位与门店 ============
+       菜单页/确认页在 onLoad 会调 chain.autoPickNearestStore()：
+       没有任何已选门店时，它按定位挑最近的店。模拟器定位会漂（可能落到丰台店），
+       而丰台店有 2 个菜停售（totalDishes=28），会把后续「菜品数 / 价格」断言带偏。
+       这里显式把定位钉在朝阳大悦城，让自动匹配**确定地**选中 st_cy（30 个菜）。
+       同时清掉可能残留的已选门店，避免「有门店就不重新匹配」把固定动作短路掉。 */
+    await mini.evaluate(() => {
+      wx.removeStorageSync('lbz_store_v1');
+      wx.setStorageSync('lbz_location_v1', { lat: 39.9245, lng: 116.516, ts: Date.now() });
+      return 'ok';
+    });
+    ok('已固定定位 → 自动匹配应选中 st_cy（朝阳大悦城店）');
+
     /* ================= 1. 首屏 ================= */
     console.log('\n[1] 点单页：首屏与菜单');
     const menu = await mini.reLaunch('/pages/menu/menu');
     await menu.waitFor(1800);
     let d = await menu.data();
     eq('页面路径', menu.path, 'pages/menu/menu');
+    eq('自动匹配门店 = st_cy', d.storeId, 'st_cy');
     eq('分类数', d.categories.length, 6);
     eq('菜品总数', d.totalDishes, 30);
     eq('骨架屏已关闭', d.loading, false);
@@ -185,7 +249,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     })(d.categories);
     truthy('定位到带辣度的菜品', !!spicyDish, spicyDish && spicyDish.name);
     /* 「+」按钮现在覆盖全部在售菜品：19 个辣度菜 + 10 个无规格菜（数量为 0 时显示「+」） */
-    eq('列表加号数（辣度菜 + 无规格在售菜）', (await menu.$$('.dish__add')).length, 29);
+    eq('列表加号数（每道在售菜都有加号）', (await menu.$$('.dish__add')).length, d.totalDishes);
 
     await tap(await menu.$('.dish__add'));
     d = await menu.data();
@@ -204,7 +268,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     eq('默认选中第 2 档（微微辣）', optClasses[1].indexOf('is-on') > -1, true);
     eq('其余档未选中', optClasses.filter((c) => c.indexOf('is-on') > -1).length, 1);
 
-    await tap(await menu.getElementByXpath(NTH(IN('sku-opts', 'sku-opt'), 4))); // 特辣
+    await tap(await elOf(menu, NTH(IN('sku-opts', 'sku-opt'), 4))); // 特辣
     await tapXp(menu, IN('sku-qty', 'stepper__plus')); // 1 → 2
     eq('弹层数量显示为 2', await textOf(menu, IN('sku-qty', 'stepper__num')), '2');
     await tapXp(menu, ANY('sku-foot__btn'));
@@ -398,6 +462,320 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     truthy('名字有兜底文案（不会空白）', !!md.displayName, md.displayName);
     truthy('头像占位文字有兜底', !!md.avatarText, md.avatarText);
     eq('无改动时不显示「保存」高亮', md.hasPending, false);
+    /* ================= 13. 我的：三个分组的新增入口 ================= */
+    console.log('\n[13] 我的页：分组入口与新增功能可达性');
+    await mini.reLaunch('/pages/mine/mine');
+    await sleep(1500);
+    const minePage = await mini.currentPage();
+    for (const g of ['交易与资产', '门店与服务', '账户与设置']) {
+      truthy('分组标题：' + g, !!(await elOf(minePage, TXT(g))));
+    }
+    for (const item of ['发票管理', '收货地址', '在线客服', '加盟咨询', '个人资料', '账号设置', '协议及政策', '选择门店']) {
+      truthy('入口存在：' + item, !!(await elOf(minePage, TXT(item))));
+    }
+    const mineData = await minePage.data();
+    truthy('发票入口副文案有值', !!mineData.invoiceTip, mineData.invoiceTip);
+    truthy('地址入口副文案有值', !!mineData.addressTip, mineData.addressTip);
+    /* 旧的「发票抬头」二级 ActionSheet 已下线，抬头管理改为发票管理内的独立页 */
+    eq('旧「发票抬头」入口已移除', !!(await elOf(minePage, TXT('发票抬头'))), false);
+
+    /* ================= 14. 收货地址：新增 / 设为默认 / 删除 ================= */
+    console.log('\n[14] 收货地址：新增（含校验）→ 编辑 → 设为默认');
+    const addrPage = await mini.navigateTo('/packageUser/pages/address/address');
+    await sleep(1600);
+    eq('跳转到地址管理', addrPage.path, 'packageUser/pages/address/address');
+    const addr0 = await addrPage.data();
+    const addrBefore = addr0.list.length;
+    if (!addrBefore) truthy('空态给出新增引导', !!(await elOf(addrPage, TXT('添加地址后'))));
+    else skip('空态新增引导', '库里已有地址数据（未加 E2E_RESET=1）');
+
+    const editPage = await mini.navigateTo('/packageUser/pages/address-edit/address-edit');
+    await sleep(1200);
+    eq('跳转到新增地址', editPage.path, 'packageUser/pages/address-edit/address-edit');
+    /* 只填一个字 → 保存必须被客户端校验拦下（不依赖服务端报错） */
+    await (await editPage.$$('.form__input'))[0].input('张');
+    await tapXp(editPage, TXC('btn-primary', '保存地址'));
+    await sleep(700);
+    eq('姓名过短时不跳页（客户端校验生效）', (await mini.currentPage()).path, 'packageUser/pages/address-edit/address-edit');
+
+    const eInputs = await editPage.$$('.form__input');
+    await eInputs[0].input('张三');
+    await eInputs[1].input('13800138000');
+    await (await editPage.$('textarea')).input('东直门内大街 12 号院 3 单元 501');
+    await tapXp(editPage, TXC('tags__item', '家'));
+    /* 默认地址开关：原生 switch，用 tap 切换 */
+    await tap(await editPage.$('switch'));
+    await tapXp(editPage, TXC('btn-primary', '保存地址'));
+    await sleep(2200);
+    eq('保存后返回列表', (await mini.currentPage()).path, 'packageUser/pages/address/address');
+    const addr1 = await addrPage.data();
+    eq('地址已创建', addr1.list.length, addrBefore + 1);
+    /* 服务端把默认地址置顶 */
+    const top = addr1.list[0];
+    truthy('手机号已脱敏展示', /^\d{3}\*{4}\d{4}$/.test(top.phoneMask), top.phoneMask);
+    truthy('地区文案已拼装', !!top.regionText, top.regionText);
+    eq('标签已保存', top.tag, '家');
+    eq('设为默认已生效', top.isDefault, true);
+
+    /* 编辑：改详细地址（走同一个表单页的编辑态） */
+    await tapXp(addrPage, TXC('addr__act', '编辑'));
+    await sleep(1400);
+    const edit2 = await mini.currentPage();
+    eq('进入编辑态', (await edit2.data()).isEdit, true);
+    await (await edit2.$('textarea')).input('东直门内大街 12 号院 3 单元 502（改）');
+    await tapXp(edit2, TXC('btn-primary', '保存地址'));
+    await sleep(2200);
+    truthy('详细地址已更新', (await addrPage.data()).list[0].detail.indexOf('502') > -1, (await addrPage.data()).list[0].detail);
+
+    /* ================= 15. 在线客服：会话 / 表情 / 「+」面板 / 文本消息 ================= */
+    console.log('\n[15] 在线客服：会话建立、多媒体面板与消息收发');
+    const svcPage = await mini.navigateTo('/packageUser/pages/service/service');
+    await sleep(2400);
+    eq('跳转到在线客服', svcPage.path, 'packageUser/pages/service/service');
+    const svc0 = await svcPage.data();
+    truthy('会话已建立', !!svc0.ticketId, svc0.ticketId);
+    truthy('已推送欢迎语', svc0.messages.length >= 1, svc0.messages.length + ' 条');
+    truthy('快捷问题已下发', svc0.quickReplies.length >= 3, svc0.quickReplies.length + ' 条');
+    eq('表情面板默认收起', svc0.showEmoji, false);
+
+    await tapXp(svcPage, TXC('bar__icon', '🙂'));
+    await sleep(500);
+    const svcE = await svcPage.data();
+    truthy('表情面板已展开', svcE.showEmoji);
+    eq('表情数量', svcE.emojis.length, 32);
+    await tapXp(svcPage, TXC('bar__icon', '🙂'));
+    await sleep(400);
+
+    await tapXp(svcPage, ANY('bar__icon--plus'));
+    await sleep(600);
+    truthy('「+」面板已展开', !!(await svcPage.data()).panel);
+    for (const label of ['拍照', '相册', '视频', '文件', '录音']) {
+      truthy('多媒体项存在：' + label, !!(await elOf(svcPage, TXC('panel__label', label))));
+    }
+    await tapXp(svcPage, ANY('bar__icon--plus'));
+    await sleep(400);
+
+    const draftInput = await svcPage.$('.bar__input');
+    await draftInput.input('请问附近有停车位吗？');
+    await sleep(300);
+    await tapXp(svcPage, TXC('bar__send', '发送'));
+    await sleep(2400);
+    const svc1 = await svcPage.data();
+    truthy('我的消息已进入列表', svc1.messages.some((m) => String(m.content).indexOf('停车位') > -1));
+    truthy('收到客服侧回复', svc1.messages.some((m) => m.sender !== 'USER' && m.type === 'text'));
+    truthy('文本气泡 ≥2 条', svc1.messages.filter((m) => m.type === 'text').length >= 2);
+
+    /* ================= 16. 协议及政策：列表 + 富文本详情 ================= */
+    console.log('\n[16] 协议及政策：列表与富文本长文');
+    const agPage = await mini.navigateTo('/packageUser/pages/agreement/agreement');
+    await sleep(1800);
+    eq('跳转到协议列表', agPage.path, 'packageUser/pages/agreement/agreement');
+    const ag0 = await agPage.data();
+    eq('协议条数', ag0.list.length, 4);
+    eq('协议顺序（sort 字段生效）', ag0.list.map((a) => a.code).join(','), 'invoice-notice,license-publicity,privacy-policy,user-agreement');
+    truthy('每条都有版本号', ag0.list.every((a) => /^v\d/.test(a.version)));
+
+    await tapXp(agPage, TXC('ag__title', '用户协议'));
+    await sleep(1800);
+    const agdPage = await mini.currentPage();
+    eq('跳转到协议详情', agdPage.path, 'packageUser/pages/agreement-detail/agreement-detail');
+    const agd = await agdPage.data();
+    eq('标题正确', agd.ag.title, '用户协议');
+    truthy('富文本正文非空', String(agd.ag.contentHtml).length > 200, String(agd.ag.contentHtml).length + ' 字符');
+    truthy('正文含小标题标签', agd.ag.contentHtml.indexOf('<h3') > -1);
+    truthy('富文本容器已渲染', (await agdPage.$$('.doc__rich')).length >= 1);
+    await mini.navigateBack();
+    await sleep(900);
+
+    /* ================= 17. 加盟咨询：海报 / 二维码 / 保存能力 ================= */
+    console.log('\n[17] 加盟咨询：宣传海报与企微二维码');
+    const frPage = await mini.navigateTo('/packageUser/pages/franchise/franchise');
+    await sleep(2000);
+    eq('跳转到加盟咨询', frPage.path, 'packageUser/pages/franchise/franchise');
+    const fr0 = await frPage.data();
+    truthy('海报标题来自后台配置', !!fr0.info.title, fr0.info.title);
+    eq('亮点四宫格', fr0.info.highlights.length, 4);
+    truthy('企微号已配置', !!fr0.info.wecomId, fr0.info.wecomId);
+    truthy('咨询电话已配置', !!fr0.info.consultPhone, fr0.info.consultPhone);
+    /* 后台未配置二维码时必须渲染占位图，而不是空白块 */
+    const qrImg = await elOf(frPage, '.qr__img');
+    const qrPh = await elOf(frPage, '.qr__ph');
+    truthy('二维码区已渲染（图片或占位图二选一）', !!qrImg || !!qrPh, qrImg ? '已配置二维码' : 'CSS 占位图');
+    truthy('保存到相册入口存在', !!(await elOf(frPage, TXC('btn-primary', '保存到相册'))));
+    truthy('预览海报入口存在', !!(await elOf(frPage, TXC('btn-ghost', '预览海报'))));
+    truthy('离屏画布已挂载', (await frPage.$$('canvas')).length >= 1);
+
+    /* ================= 18. 门店选择：定位排序 / 下拉筛选 / 搜索 / 门店详情 ================= */
+    console.log('\n[18] 门店：距离排序、下拉筛选、关键词搜索与门店详情');
+    const slPage = await mini.reLaunch('/pages/store-list/store-list');
+    await slPage.waitFor(2600);
+    const sl0 = await slPage.data();
+    truthy('门店列表非空', sl0.stores.length >= 3, sl0.stores.length + ' 家');
+    eq('筛选项默认全部生效', [sl0.type, sl0.onlyOpen, sl0.maxKm].join('|'), '|false|0');
+    eq('筛选面板默认收起', sl0.panel, '');
+    const dist = sl0.stores.map((s) => s.distanceKm).filter((v) => typeof v === 'number');
+    if (dist.length === sl0.stores.length && dist.length > 1) {
+      truthy(
+        '列表按距离升序',
+        dist.every((v, i) => i === 0 || dist[i - 1] <= v),
+        dist.map((v) => v.toFixed(2)).join(' ≤ ')
+      );
+    } else {
+      skip('列表按距离升序', '模拟器未返回定位（已按门店顺序兜底）');
+    }
+
+    /* 下拉筛选：营业状态 */
+    await tapXp(slPage, TXTIN('bar__item', '全部营业状态'));
+    await sleep(600);
+    eq('下拉面板已展开', (await slPage.data()).panel, 'state');
+    await tapXp(slPage, TXC('panel__item', '仅看营业中'));
+    await sleep(1800);
+    const sl1 = await slPage.data();
+    eq('仅看营业中已生效', sl1.onlyOpen, true);
+    eq('下拉面板已收起', sl1.panel, '');
+    truthy('结果全部为营业中', sl1.stores.every((s) => s.openNow), sl1.stores.length + ' 家');
+
+    /* 下拉筛选：门店类型 */
+    await tapXp(slPage, TXTIN('bar__item', '全部类型'));
+    await sleep(600);
+    await tapXp(slPage, TXC('panel__item', '直营店'));
+    await sleep(1800);
+    const sl2 = await slPage.data();
+    eq('类型筛选已生效', sl2.type, 'DIRECT');
+    truthy('结果全部为直营店', sl2.stores.every((s) => s.type === 'DIRECT'));
+
+    /* 关键词搜索（叠加当前筛选条件） */
+    await (await slPage.$('.filters__input')).input('东直门');
+    await sleep(2000);
+    const sl3 = await slPage.data();
+    truthy('搜索命中', sl3.stores.length >= 1, sl3.stores.length + ' 家');
+    truthy(
+      '结果与关键词匹配',
+      sl3.stores.every((s) => (s.name + s.address).indexOf('东直门') > -1),
+      sl3.stores.map((s) => s.name).join('、')
+    );
+
+    /* 清空关键词 → 列表恢复 */
+    await tapXp(slPage, ANY('filters__clear'));
+    await sleep(2000);
+    const sl4 = await slPage.data();
+    eq('关键词已清空', sl4.keyword, '');
+    truthy('列表已恢复（不少于命中结果）', sl4.stores.length >= sl3.stores.length, sl4.stores.length + ' 家');
+
+    /* 点击门店 → 门店详情（顶部地图 + marker） */
+    await tapXp(slPage, ANY('store__name'));
+    await sleep(2000);
+    const sdPage = await mini.currentPage();
+    eq('跳转到门店详情', sdPage.path, 'pages/store-detail/store-detail');
+    const sd0 = await sdPage.data();
+    truthy('门店信息已加载', !!sd0.store, sd0.store && sd0.store.name);
+    eq('地图组件已挂载', (await sdPage.$$('map')).length, 1);
+    eq('门店 marker 已生成', sd0.markers.length, 1);
+    truthy('地图中心点有效', sd0.center.latitude > 3 && sd0.center.longitude > 70);
+    truthy('桌位文案已拼装', !!sd0.tableText, sd0.tableText);
+    const useBtn = (await elOf(sdPage, TXC('btn-primary', '选为下单门店'))) || (await elOf(sdPage, TXC('btn-primary', '进入点单')));
+    truthy('「选为下单门店」按钮存在', !!useBtn);
+
+    /* ================= 19. 发票管理：抬头 → 待开票订单 → 提交申请 → 历史 → 详情 ================= */
+    console.log('\n[19] 发票管理：抬头维护、开票申请与开票历史');
+    const invPage = await mini.reLaunch('/packageUser/pages/invoice/invoice');
+    await sleep(2400);
+    eq('跳转到发票管理', invPage.path, 'packageUser/pages/invoice/invoice');
+    eq('默认停留在「待开票订单」', (await invPage.data()).tab, 'orders');
+
+    /* 抬头管理：新增公司抬头 */
+    await tapXp(invPage, TXC('entry__text', '发票抬头管理'));
+    await sleep(1600);
+    const itPage = await mini.currentPage();
+    eq('跳转到抬头管理', itPage.path, 'packageUser/pages/invoice-title/invoice-title');
+    const itBefore = (await itPage.data()).list.length;
+    await tapXp(itPage, TXC('btn-primary', '＋ 新增抬头'));
+    await sleep(600);
+    truthy('新增表单已弹出', (await itPage.data()).showForm);
+    await tapXp(itPage, TXC('seg__item', '公司'));
+    await sleep(400);
+    const itFields = await itPage.$$('.field__input');
+    eq('公司抬头出现税号输入', itFields.length, 3);
+    await itFields[0].input('北京串串香科技有限公司');
+    await itFields[1].input('91110101MA001X8N3K');
+    await itFields[2].input('finance@lbz-demo.com');
+    await tapXp(itPage, TXC('btn-primary', '保存'));
+    await sleep(2000);
+    const it1 = await itPage.data();
+    eq('抬头已保存', it1.list.length, itBefore + 1);
+    eq('抬头类型为公司', it1.list[0].titleType, 'company');
+    eq('表单已关闭', it1.showForm, false);
+    const titleCount = it1.list.length;
+
+    await mini.navigateBack();
+    await sleep(1600);
+    const invPage2 = await mini.currentPage();
+    await tapXp(invPage2, TXC('tabs__item', '开票历史'));
+    await sleep(1600);
+    eq('切到开票历史', (await invPage2.data()).tab, 'history');
+    await tapXp(invPage2, TXC('tabs__item', '待开票订单'));
+    await sleep(1800);
+
+    const inv1 = await invPage2.data();
+    if (inv1.orders.length) {
+      truthy('待开票订单已列出', !!inv1.orders[0].orderNo, inv1.orders[0].orderNo);
+      truthy('订单金额已格式化', /^\d+\.\d{2}$/.test(inv1.orders[0].amountYuan), inv1.orders[0].amountYuan);
+
+      await tapXp(invPage2, TXC('order__btn', '申请开票'));
+      await sleep(2000);
+      const apPage = await mini.currentPage();
+      eq('跳转到开票申请', apPage.path, 'packageUser/pages/invoice-apply/invoice-apply');
+      const ap0 = await apPage.data();
+      truthy('订单信息已加载', !!ap0.order, ap0.order && ap0.order.orderNo);
+      eq('抬头可选', ap0.titles.length, titleCount);
+      truthy('默认选中抬头', !!ap0.titleId, ap0.titleId);
+      truthy('邮箱自动带出（抬头上记过）', !!ap0.email, ap0.email);
+      eq('开票须知默认未勾选', ap0.agree, false);
+      truthy('关联《开票须知》入口存在', !!(await elOf(apPage, TXC('agree__link', '《开票须知》'))));
+
+      /* 未勾选须知时必须拦下 */
+      await tapXp(apPage, TXC('btn-primary', '提交开票申请'));
+      await sleep(800);
+      eq('未同意须知时不提交', (await mini.currentPage()).path, 'packageUser/pages/invoice-apply/invoice-apply');
+      eq('勾选状态仍为未同意', (await apPage.data()).agree, false);
+
+      await tapXp(apPage, TXC('agree__text', '我已阅读并同意'));
+      await sleep(500);
+      eq('已勾选须知', (await apPage.data()).agree, true);
+      await tapXp(apPage, TXC('btn-primary', '提交开票申请'));
+      await sleep(2800);
+      eq('提交后返回发票管理', (await mini.currentPage()).path, 'packageUser/pages/invoice/invoice');
+      const inv2 = await invPage2.data();
+      eq('待开票订单减少一条（一单只能开一张）', inv2.orders.length, inv1.orders.length - 1);
+      eq('开票历史已新增', inv2.records.length, inv1.records.length + 1);
+      eq('状态为待处理', inv2.records[0].status, 'PENDING');
+      eq('状态文案正确', inv2.records[0].statusText, '待处理');
+      truthy('抬头已快照到记录', /串串香/.test(inv2.records[0].title), inv2.records[0].title);
+
+      /* 详情页：时间线 + 订单快照 */
+      await tapXp(invPage2, TXC('tabs__item', '开票历史'));
+      await sleep(1600);
+      await tapXp(invPage2, ANY('his__title'));
+      await sleep(2000);
+      const dtPage = await mini.currentPage();
+      eq('跳转到开票详情', dtPage.path, 'packageUser/pages/invoice-detail/invoice-detail');
+      const dt0 = await dtPage.data();
+      eq('时间线三步', dt0.steps.length, 3);
+      eq('第一步已完成', dt0.steps[0].done, true);
+      eq('第三步未完成', dt0.steps[2].done, false);
+      truthy('订单快照已带出', !!dt0.rec.order, dt0.rec.order && dt0.rec.order.orderNo);
+      truthy('明细已渲染', dt0.rec.order.items.length >= 1);
+      truthy('实付金额有效', Number(dt0.rec.amount) > 0, dt0.rec.amount);
+    } else if (inv1.records.length) {
+      skip('提交开票申请全流程', '该订单上次运行已提交过申请（幂等保护），本次只校验历史与详情');
+      await tapXp(invPage2, TXC('tabs__item', '开票历史'));
+      await sleep(1600);
+      const hist = (await invPage2.data()).records;
+      truthy('开票历史非空', hist.length >= 1);
+      truthy('状态文案合法', ['待处理', '开票中', '已开具', '已驳回'].indexOf(hist[0].statusText) > -1, hist[0].statusText);
+    } else {
+      bad('发票管理可开票订单', '既没有待开票订单也没有历史记录，无法验证开票链路');
+    }
   } catch (e) {
     bad('测试中断', (e && e.message) || e);
     console.error(e);

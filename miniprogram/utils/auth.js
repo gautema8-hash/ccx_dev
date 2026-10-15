@@ -102,8 +102,8 @@ function refreshToken() {
 }
 
 /**
- * 更新头像昵称
- * @param {{avatar?:string, nickname?:string}} payload
+ * 更新头像昵称与个人资料
+ * @param {{avatar?:string, nickname?:string, gender?:number, birthday?:string, city?:string}} payload
  */
 function updateProfile(payload) {
   if (config.USE_MOCK) {
@@ -113,6 +113,10 @@ function updateProfile(payload) {
   }
   const body = {};
   if (payload.nickname) body.nickname = payload.nickname;
+  /* gender 的 0（保密）是合法值，不能用真值判断筛掉 */
+  if (payload.gender !== undefined && payload.gender !== null && payload.gender !== '') body.gender = Number(payload.gender);
+  if (payload.birthday) body.birthday = payload.birthday;
+  if (payload.city) body.city = payload.city;
 
   const uploadThenSave = payload.avatar
     ? uploadAvatar(payload.avatar).then((url) => {

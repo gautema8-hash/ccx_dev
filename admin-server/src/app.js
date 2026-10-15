@@ -118,6 +118,22 @@ function build() {
   app.get(P + '/audit', staffOnly, adminRoute.listAudit);
   app.get(P + '/login-logs', staffOnly, adminRoute.listLoginLogs);
 
+  /* ---------------- 在线客服（回复用户消息） ---------------- */
+  app.get(P + '/service/tickets', staffOnly, adminRoute.listServiceTickets);
+  app.get(P + '/service/tickets/:id', staffOnly, adminRoute.getServiceTicket);
+  app.post(P + '/service/tickets/:id/reply', staffOnly, adminRoute.replyServiceTicket);
+  app.post(P + '/service/tickets/:id/close', staffOnly, adminRoute.closeServiceTicket);
+
+  /* ---------------- 发票管理（受理 / 开具 / 驳回） ---------------- */
+  app.get(P + '/invoice/records', staffOnly, adminRoute.listInvoiceRecords);
+  app.post(P + '/invoice/records/:id/status', staffOnly, adminRoute.updateInvoiceRecord);
+
+  /* ---------------- 内容运营：加盟配置 / 协议及政策 ---------------- */
+  app.get(P + '/franchise', staffOnly, adminRoute.getFranchise);
+  app.put(P + '/franchise', staffOnly, adminRoute.saveFranchise);
+  app.get(P + '/agreements', staffOnly, adminRoute.listAgreements);
+  app.put(P + '/agreements/:code', staffOnly, adminRoute.saveAgreement);
+
   /* 兜底：任何未被捕获的 async 异常都不允许冒泡到进程 */
   process.on('unhandledRejection', (e) => {
     logger.error('unhandledRejection', {

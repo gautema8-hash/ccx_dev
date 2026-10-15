@@ -1,4 +1,4 @@
-<!-- 我的：用户体系 + 权益入口 + 分包入口 -->
+<!-- 我的：用户卡 + 权益数据 + 分组功能入口（交易资产 / 门店服务 / 账户设置） -->
 <view class="page" style="{{themeStyle}}">
   <!-- ============ 用户卡 ============ -->
   <!-- 头像与名字的四种状态由 syncProfile() 统一派生：
@@ -6,7 +6,8 @@
   <view class="ucard">
     <!-- 头像：open-type=chooseAvatar 必须挂在 button 上，但微信 button 自带
          padding/宽度默认值，直接用会渲染成一个大椭圆。所以：
-         ① 外层 wrap 固定 132rpx 圆形并裁剪；② 相机角标挂在 wrap 上不被裁掉 -->
+         ① 外层 wrap 固定 132rpx 圆形，裁剪交给 button 自身；
+         ② 相机角标挂在 wrap 上，wrap 不裁剪，角标才能完整露出 -->
     <view class="ucard__avatar-wrap">
       <button
         class="ucard__avatar"
@@ -31,6 +32,8 @@
       <!-- 展示态：纯文本紧贴头像。
            不能直接摆 input(type=nickname)：原生组件自带系统背景且尺寸不受 CSS 约束，
            在 iOS 上会撑出一块大底、把名字顶到角落 —— 必须展示/编辑分离 -->
+      <!-- 点名字就地改昵称（不跳页）；完整资料（性别/生日/城市）走「个人资料」入口，
+           两者职责分开，避免点名字却跳到另一个页面 */}
       <view
         wx:if="{{isLogin && !editingNick}}"
         class="ucard__nick"
@@ -41,7 +44,7 @@
       </view>
       <!-- 编辑态：由微信昵称填写能力接管（原生输入框，此时出现系统样式属正常） -->
       <input
-        wx:elif="{{isLogin}}"
+        wx:if="{{isLogin && editingNick}}"
         class="ucard__nick-input"
         type="nickname"
         value="{{user.nickname}}"
@@ -52,20 +55,21 @@
         bindblur="onNickDone"
         bindconfirm="onNickDone"
       />
-      <view wx:else class="ucard__nick ucard__nick--guest">{{displayName}}</view>
+      <view wx:if="{{!isLogin}}" class="ucard__nick ucard__nick--guest">{{displayName}}</view>
 
       <view class="ucard__sub">
         <!-- 未登录时不显示会员等级：否则会误导为「已是铜签会员」 -->
         <text wx:if="{{isLogin}}" class="ucard__level">{{user.memberName || '铜签会员'}}</text>
         <text wx:else class="ucard__level ucard__level--guest">登录后可享会员权益</text>
         <text wx:if="{{isLogin}}" class="ucard__points">成长值 {{user.points || 0}}</text>
+        <text wx:if="{{isLogin && user.phoneBound}}" class="ucard__points">{{user.phoneMask}}</text>
       </view>
     </view>
 
     <!-- 有未保存改动时才高亮可点，避免常驻按钮误导用户去点 -->
     <view
       class="ucard__save {{hasPending ? '' : 'ucard__save--idle'}}"
-      bindtap="onSaveProfile"
+      catchtap="onSaveProfile"
     >{{hasPending ? '保存' : '已同步'}}</view>
   </view>
 
@@ -87,7 +91,8 @@
     </view>
   </view>
 
-  <!-- ============ 功能列表 ============ -->
+  <!-- ============ 分组一：交易与资产 ============ -->
+  <view class="group-title">交易与资产</view>
   <view class="card menu">
     <view class="menu__item" bindtap="goOrders">
       <text class="menu__icon">🧾</text>
@@ -107,29 +112,41 @@
       <text class="menu__tip">美团券到店自助核销</text>
       <text class="menu__arrow">›</text>
     </view>
+    <view class="menu__item" bindtap="goInvoice">
+      <text class="menu__icon">📑</text>
+      <text class="menu__text">发票管理</text>
+      <text class="menu__tip">{{invoiceTip}}</text>
+      <text class="menu__arrow">›</text>
+    </view>
+    <view class="menu__item" bindtap="goAddress">
+      <text class="menu__icon">🏠</text>
+      <text class="menu__text">收货地址</text>
+      <text class="menu__tip">{{addressTip}}</text>
+      <text class="menu__arrow">›</text>
+    </view>
+  </view>
+
+  <!-- ============ 分组二：门店与服务 ============ -->
+  <view class="group-title">门店与服务</view>
+  <view class="card menu">
     <view class="menu__item" bindtap="goStoreList">
       <text class="menu__icon">🏪</text>
       <text class="menu__text">选择门店</text>
       <text class="menu__tip ellipsis">{{store ? store.name : '未选择'}}</text>
       <text class="menu__arrow">›</text>
     </view>
-    <view class="menu__item" bindtap="onInvoice">
-      <text class="menu__icon">🧾</text>
-      <text class="menu__text">发票抬头</text>
-      <text class="menu__tip">支持个人 / 公司</text>
+    <view class="menu__item" bindtap="goService">
+      <text class="menu__icon">💬</text>
+      <text class="menu__text">在线客服</text>
+      <text class="menu__tip">文字 / 图片 / 语音 · 有问必答</text>
       <text class="menu__arrow">›</text>
     </view>
-    <button
-      class="menu__item menu__item--btn"
-      open-type="getPhoneNumber"
-      bindgetphonenumber="onBindPhone"
-      hover-class="none"
-    >
-      <text class="menu__icon">📱</text>
-      <text class="menu__text">绑定手机号</text>
-      <text class="menu__tip">{{user.phoneMask || '未绑定'}}</text>
+    <view class="menu__item" bindtap="goFranchise">
+      <text class="menu__icon">🤝</text>
+      <text class="menu__text">加盟咨询</text>
+      <text class="menu__tip">城市合伙人计划</text>
       <text class="menu__arrow">›</text>
-    </button>
+    </view>
     <view class="menu__item" bindtap="callShop">
       <text class="menu__icon">☎️</text>
       <text class="menu__text">联系门店</text>
@@ -148,7 +165,38 @@
     </button>
   </view>
 
+  <!-- ============ 分组三：账户与设置 ============ -->
+  <view class="group-title">账户与设置</view>
   <view class="card menu">
+    <view class="menu__item" bindtap="goProfile">
+      <text class="menu__icon">👤</text>
+      <text class="menu__text">个人资料</text>
+      <text class="menu__tip">{{user.phoneMask || '完善姓名 / 生日 / 城市'}}</text>
+      <text class="menu__arrow">›</text>
+    </view>
+    <button
+      class="menu__item menu__item--btn"
+      open-type="getPhoneNumber"
+      bindgetphonenumber="onBindPhone"
+      hover-class="none"
+    >
+      <text class="menu__icon">📱</text>
+      <text class="menu__text">绑定手机号</text>
+      <text class="menu__tip">{{user.phoneMask || '未绑定'}}</text>
+      <text class="menu__arrow">›</text>
+    </button>
+    <view class="menu__item" bindtap="goSettings">
+      <text class="menu__icon">⚙️</text>
+      <text class="menu__text">账号设置</text>
+      <text class="menu__tip">切换账号 / 退出 / 注销</text>
+      <text class="menu__arrow">›</text>
+    </view>
+    <view class="menu__item" bindtap="goAgreement">
+      <text class="menu__icon">📄</text>
+      <text class="menu__text">协议及政策</text>
+      <text class="menu__tip">开票须知 · 隐私 · 用户协议</text>
+      <text class="menu__arrow">›</text>
+    </view>
     <view class="menu__item" bindtap="showAbout">
       <text class="menu__icon">ℹ️</text>
       <text class="menu__text">关于我们</text>

@@ -1,7 +1,4 @@
-.page {
-  min-height: 100vh;
-  padding-bottom: 40rpx;
-}
+/* .page / .tip / .empty__hint 已在 app.wxss 全局定义 */
 
 /* ---------- 用户卡 ---------- */
 .ucard {
@@ -12,14 +9,14 @@
   color: #fff;
 }
 /* 外层 wrap：真正约束尺寸的元素。button 自带 padding/宽度默认值，
-   靠它兜底裁剪成 132rpx 圆形，红色卡片上才不会拖出一截浅色椭圆 */
+   靠内层 button 自己裁剪成 132rpx 圆形；wrap 不裁剪，相机角标才能完整露出 */
 .ucard__avatar-wrap {
   position: relative;
   width: 132rpx;
   height: 132rpx;
   flex: none;
   border-radius: 50%;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 0 0 4rpx rgba(255, 255, 255, 0.34), 0 6rpx 18rpx rgba(0, 0, 0, 0.16);
 }
 .ucard__avatar {
@@ -204,6 +201,27 @@
   width: 1rpx;
   height: 48rpx;
   background: #ededf0;
+}
+
+/* ---------- 分组标题 ---------- */
+/* 三个分组（交易与资产 / 门店与服务 / 账户与设置）：用短竖线 + 小字标题分隔，
+   比用更多卡片堆叠更容易扫读 */
+.group-title {
+  display: flex;
+  align-items: center;
+  padding: 0 32rpx;
+  margin: 28rpx 0 -4rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: var(--c-text-sub);
+}
+.group-title::before {
+  content: '';
+  width: 6rpx;
+  height: 22rpx;
+  border-radius: 4rpx;
+  background: var(--c-primary);
+  margin-right: 12rpx;
 }
 
 /* ---------- 菜单 ---------- */

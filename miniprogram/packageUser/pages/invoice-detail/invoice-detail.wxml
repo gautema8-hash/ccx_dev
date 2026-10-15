@@ -1,0 +1,122 @@
+<!-- 开票详情：进度 + 发票信息 + 订单快照 -->
+<view class="page" style="{{themeStyle}}">
+  <block wx:if="{{rec}}">
+    <!-- 状态头 -->
+    <view class="hero hero--{{rec.status}}">
+      <view class="hero__status">{{rec.statusText}}</view>
+      <view class="hero__desc">{{statusDesc}}</view>
+    </view>
+
+    <!-- 进度时间线 -->
+    <view class="card tl">
+      <view class="tl__item {{item.done ? 'is-done' : ''}} {{item.fail ? 'is-fail' : ''}}" wx:for="{{steps}}" wx:key="key">
+        <view class="tl__rail">
+          <text class="tl__dot"></text>
+          <text wx:if="{{index !== steps.length - 1}}" class="tl__line"></text>
+        </view>
+        <view class="tl__body">
+          <text class="tl__title">{{item.title}}</text>
+          <text class="tl__time">{{item.timeText}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 发票信息 -->
+    <view class="block-title">发票信息</view>
+    <view class="card kv">
+      <view class="kv__row">
+        <text class="kv__k">发票抬头</text>
+        <text class="kv__v">{{rec.title}}</text>
+      </view>
+      <view class="kv__row">
+        <text class="kv__k">抬头类型</text>
+        <text class="kv__v">{{rec.titleType === 'company' ? '公司' : '个人'}}</text>
+      </view>
+      <view class="kv__row" wx:if="{{rec.taxNo}}">
+        <text class="kv__k">纳税人识别号</text>
+        <text class="kv__v kv__v--mono">{{rec.taxNo}}</text>
+      </view>
+      <view class="kv__row">
+        <text class="kv__k">接收邮箱</text>
+        <text class="kv__v">{{rec.email}}</text>
+      </view>
+      <view class="kv__row">
+        <text class="kv__k">开票金额</text>
+        <text class="kv__v kv__v--price">¥{{amountYuan}}</text>
+      </view>
+      <view class="kv__row" wx:if="{{rec.invoiceNo}}">
+        <text class="kv__k">发票号码</text>
+        <text class="kv__v kv__v--mono">{{rec.invoiceNo}}</text>
+      </view>
+      <view class="kv__row" wx:if="{{rec.issuedAt}}">
+        <text class="kv__k">开具时间</text>
+        <text class="kv__v">{{issuedText}}</text>
+      </view>
+    </view>
+
+    <!-- 已开具：发票文件 -->
+    <view wx:if="{{rec.status === 'ISSUED'}}" class="card file">
+      <view class="file__icon">🧾</view>
+      <view class="file__body">
+        <text class="file__title">电子发票已开具</text>
+        <text class="file__sub">{{rec.invoiceUrl ? '可下载保存或转发给报销同事' : '发票文件由商家上传，可联系门店获取'}}</text>
+      </view>
+    </view>
+    <view wx:if="{{rec.status === 'ISSUED'}}" class="ops">
+      <view wx:if="{{rec.invoiceUrl}}" class="btn-primary grow" bindtap="openInvoice">查看发票</view>
+      <view wx:if="{{rec.invoiceUrl}}" class="btn-ghost grow" bindtap="copyInvoice">复制链接</view>
+      <view wx:else class="btn-ghost grow" bindtap="callShop">联系门店</view>
+    </view>
+
+    <!-- 已驳回：原因 + 重提 -->
+    <block wx:if="{{rec.status === 'REJECTED'}}">
+      <view class="card reject">
+        <text class="reject__title">驳回原因</text>
+        <text class="reject__text">{{rec.remark || '商家未填写原因，可联系门店确认后重新提交'}}</text>
+      </view>
+      <view class="ops">
+        <view class="btn-primary grow" bindtap="reapply">修改后重新申请</view>
+        <view class="btn-ghost grow" bindtap="callShop">联系门店</view>
+      </view>
+    </block>
+
+    <!-- 订单快照 -->
+    <view class="block-title">订单信息</view>
+    <view class="card ord" wx:if="{{rec.order}}">
+      <view class="ord__row">
+        <text class="ord__k">订单号</text>
+        <text class="ord__v">{{rec.order.orderNo}}</text>
+        <text class="ord__link" bindtap="goOrder">查看订单 ›</text>
+      </view>
+      <view class="ord__row">
+        <text class="ord__k">门店</text>
+        <text class="ord__v">{{rec.order.storeName || '—'}}</text>
+      </view>
+      <view class="ord__row">
+        <text class="ord__k">就餐方式</text>
+        <text class="ord__v">{{diningText}}</text>
+      </view>
+      <view class="ord__row" wx:if="{{rec.order.payTime}}">
+        <text class="ord__k">支付时间</text>
+        <text class="ord__v">{{payText}}</text>
+      </view>
+      <view class="divider"></view>
+      <view class="ord__item" wx:for="{{rec.order.items}}" wx:key="index">
+        <text class="ord__name ellipsis">{{item.name}}{{item.spicy ? '（' + item.spicy + '）' : ''}}</text>
+        <text class="ord__count">×{{item.quantity}}</text>
+        <text class="ord__amount">¥{{item.amountText}}</text>
+      </view>
+      <view class="ord__foot">
+        <text>共 {{rec.order.itemCount}} 件</text>
+        <text class="ord__pay">实付 <text class="ord__pay-num">¥{{rec.order.amountText}}</text></text>
+      </view>
+    </view>
+    <view class="page__tip">开具电子发票需与订单实付金额一致，如有疑问请联系门店或在线客服</view>
+  </block>
+
+  <view wx:elif="{{!loading}}" class="empty">
+    <view class="empty__icon">🗂️</view>
+    <view class="empty__text">开票记录不存在</view>
+    <view class="empty__hint">请返回「开票历史」重新选择</view>
+  </view>
+</view>

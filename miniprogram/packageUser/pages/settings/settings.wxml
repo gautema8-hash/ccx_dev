@@ -1,0 +1,41 @@
+<!-- 账号设置：注销账号 / 退出登录 / 切换账号 -->
+<view class="page" style="{{themeStyle}}">
+  <view class="card acct">
+    <view class="acct__row">
+      <text class="acct__label">账号</text>
+      <text class="acct__value">{{user.phoneMask || user.nickname || '微信用户'}}</text>
+    </view>
+    <view class="acct__row acct__row--last">
+      <text class="acct__label">会员</text>
+      <text class="acct__value">{{user.memberName || '铜签会员'}} · 成长值 {{user.points || 0}}</text>
+    </view>
+  </view>
+
+  <view class="card menu">
+    <view class="menu__item" bindtap="onSwitch">
+      <text class="menu__icon">🔄</text>
+      <text class="menu__text">切换账号</text>
+      <text class="menu__tip">退出当前账号并重新登录</text>
+      <text class="menu__arrow">›</text>
+    </view>
+    <view class="menu__item" bindtap="onLogout">
+      <text class="menu__icon">🚪</text>
+      <text class="menu__text">退出登录</text>
+      <text class="menu__arrow">›</text>
+    </view>
+  </view>
+
+  <view class="card menu">
+    <view class="menu__item menu__item--danger" bindtap="onCancel">
+      <text class="menu__icon">⚠️</text>
+      <text class="menu__text">注销账号</text>
+      <text class="menu__tip">不可恢复</text>
+      <text class="menu__arrow">›</text>
+    </view>
+  </view>
+
+  <view class="tips">
+    <text>注销账号后，你的昵称、头像、手机号等个人信息将被删除或匿名化，历史订单与未使用的优惠券将一并作废，且不可恢复。</text>
+    <text wx:if="{{ongoingCount}}" class="tips__warn">当前有 {{ongoingCount}} 个进行中的订单，需完成或取消后才能注销。</text>
+  </view>
+</view>

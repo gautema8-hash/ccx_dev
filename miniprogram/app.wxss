@@ -181,6 +181,19 @@ button::after {
   box-shadow: 0 -6rpx 20rpx rgba(31, 31, 31, 0.05);
 }
 
+/* 页面容器：各页根节点统一用它，保证最小高度与底部留白一致 */
+.page {
+  min-height: 100vh;
+  padding-bottom: 40rpx;
+}
+
+/* 列表顶部说明条 */
+.tip {
+  font-size: 23rpx;
+  color: var(--c-text-sub);
+  padding: 20rpx 32rpx 4rpx;
+}
+
 /* 空态 */
 .empty {
   padding: 120rpx 0;
@@ -197,6 +210,15 @@ button::after {
   margin-top: 24rpx;
   color: var(--c-text-sub);
   font-size: 26rpx;
+}
+/* 空态引导文案：告诉用户「下一步该做什么」，而不只是「暂无数据」 */
+.empty__hint {
+  margin-top: 16rpx;
+  font-size: 23rpx;
+  color: var(--c-text-weak);
+  padding: 0 80rpx;
+  text-align: center;
+  line-height: 1.6;
 }
 
 /* 分割线 */

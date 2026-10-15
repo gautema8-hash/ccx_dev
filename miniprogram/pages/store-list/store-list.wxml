@@ -1,10 +1,10 @@
-<!-- 选择门店：定位 → 就近排序 → 切换（菜单/库存/主题都跟着变） -->
+<!-- 选择门店：定位 → 下拉筛选 / 关键词搜索 → 按距离升序 → 点击进门店页 -->
 <view class="page" style="{{themeStyle}}">
   <!-- 定位状态条 -->
   <view class="locbar {{locState}}">
     <block wx:if="{{locState === 'OK'}}">
       <text class="locbar__icon">📍</text>
-      <text class="locbar__text">已按距你由近到远排序</text>
+      <text class="locbar__text">{{sortText}}</text>
       <text class="locbar__btn" bindtap="refresh">刷新</text>
     </block>
     <block wx:elif="{{locState === 'DENIED'}}">
@@ -23,8 +23,9 @@
     </block>
   </view>
 
-  <!-- 搜索 + 类型筛选 -->
+  <!-- 搜索 -->
   <view class="filters">
+    <text class="filters__icon">🔍</text>
     <input
       class="filters__input"
       value="{{keyword}}"
@@ -33,22 +34,56 @@
       confirm-type="search"
       bindinput="onKeyword"
     />
-  </view>
-  <view class="tabs">
-    <view class="tabs__item {{type === '' ? 'is-on' : ''}}" data-t="" bindtap="onType">全部门店</view>
-    <view class="tabs__item {{type === 'DIRECT' ? 'is-on' : ''}}" data-t="DIRECT" bindtap="onType">直营店</view>
-    <view class="tabs__item {{type === 'FRANCHISE' ? 'is-on' : ''}}" data-t="FRANCHISE" bindtap="onType">加盟店</view>
+    <text wx:if="{{keyword}}" class="filters__clear" bindtap="clearKeyword">✕</text>
   </view>
 
+  <!-- 下拉筛选栏（吸顶，面板挂在栏下方，跟着一起吸附） -->
+  <view class="barwrap">
+    <view class="bar">
+      <view class="bar__item {{panel === 'state' ? 'is-on' : ''}} {{onlyOpen ? 'is-active' : ''}}" data-p="state" bindtap="togglePanel">
+        <text>{{onlyOpen ? '仅看营业中' : '全部营业状态'}}</text>
+        <text class="bar__caret">▾</text>
+      </view>
+      <view class="bar__item {{panel === 'type' ? 'is-on' : ''}} {{type ? 'is-active' : ''}}" data-p="type" bindtap="togglePanel">
+        <text>{{typeLabel}}</text>
+        <text class="bar__caret">▾</text>
+      </view>
+      <view class="bar__item {{panel === 'range' ? 'is-on' : ''}} {{maxKm ? 'is-active' : ''}}" data-p="range" bindtap="togglePanel">
+        <text>{{rangeLabel}}</text>
+        <text class="bar__caret">▾</text>
+      </view>
+    </view>
+
+    <view wx:if="{{panel}}" class="panel">
+      <block wx:if="{{panel === 'state'}}">
+        <view class="panel__item {{!onlyOpen ? 'is-on' : ''}}" data-v="" bindtap="onState">全部门店</view>
+        <view class="panel__item {{onlyOpen ? 'is-on' : ''}}" data-v="1" bindtap="onState">仅看营业中</view>
+      </block>
+      <block wx:elif="{{panel === 'type'}}">
+        <view class="panel__item {{type === '' ? 'is-on' : ''}}" data-v="" bindtap="onType">全部类型</view>
+        <view class="panel__item {{type === 'DIRECT' ? 'is-on' : ''}}" data-v="DIRECT" bindtap="onType">直营店</view>
+        <view class="panel__item {{type === 'FRANCHISE' ? 'is-on' : ''}}" data-v="FRANCHISE" bindtap="onType">加盟店</view>
+      </block>
+      <block wx:else>
+        <view class="panel__item {{!maxKm ? 'is-on' : ''}}" data-v="" bindtap="onRange">不限距离</view>
+        <view class="panel__item {{maxKm === 3 ? 'is-on' : ''}}" data-v="3" bindtap="onRange">3km 内</view>
+        <view class="panel__item {{maxKm === 5 ? 'is-on' : ''}}" data-v="5" bindtap="onRange">5km 内</view>
+        <view class="panel__item {{maxKm === 10 ? 'is-on' : ''}}" data-v="10" bindtap="onRange">10km 内</view>
+        <view class="panel__note" wx:if="{{!hasLocation}}">需开启定位才能按距离筛选</view>
+      </block>
+    </view>
+  </view>
+  <view wx:if="{{panel}}" class="mask" bindtap="closePanel"></view>
+
   <!-- 门店列表 -->
-  <scroll-view class="list" scroll-y enhanced show-scrollbar="{{false}}">
+  <view class="list">
     <view
       wx:for="{{stores}}"
       wx:for-item="s"
       wx:key="id"
       class="store {{s.id === currentId ? 'is-current' : ''}}"
       data-id="{{s.id}}"
-      bindtap="onPick"
+      bindtap="goDetail"
     >
       <view class="store__head">
         <view class="store__name ellipsis">{{s.name}}</view>
@@ -71,14 +106,16 @@
       <view class="store__ops">
         <view class="btn-ghost store__op" catchtap="onNavigate" data-id="{{s.id}}">导航</view>
         <view class="btn-ghost store__op" catchtap="onCall" data-id="{{s.id}}">打电话</view>
-        <view class="store__choose">{{s.id === currentId ? '当前门店' : '选择该店'}}</view>
+        <view class="store__choose" catchtap="onPick" data-id="{{s.id}}">{{s.id === currentId ? '当前门店' : '选择该店'}}</view>
       </view>
     </view>
 
     <view wx:if="{{!loading && !stores.length}}" class="empty">
       <view class="empty__icon">🏪</view>
-      <view class="empty__text">{{keyword ? '没有匹配的门店' : '附近暂无营业门店'}}</view>
+      <view class="empty__text">{{hasFilter ? '没有符合条件的门店' : '附近暂无门店'}}</view>
+      <view wx:if="{{hasFilter}}" class="empty__hint">试着放宽距离范围或清除筛选条件</view>
+      <view wx:if="{{hasFilter}}" class="btn-ghost reset" bindtap="resetFilter">清除筛选</view>
     </view>
     <view class="list__holder"></view>
-  </scroll-view>
+  </view>
 </view>

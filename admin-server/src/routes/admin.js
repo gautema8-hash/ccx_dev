@@ -904,6 +904,111 @@ async function summary(ctx) {
   });
 }
 
+/* ============================================================ 在线客服（小程序「我的 → 在线客服」的回复端） */
+/**
+ * 客服消息的读写都在小程序后端（会话未读数、最后消息预览属于同一套一致性规则），
+ * 管理端只做三件事：权限校验、门店范围过滤、把操作转成内部调用。
+ */
+async function listServiceTickets(ctx) {
+  rbac.assertPerm(ctx, rbac.PERMS.SERVICE_READ);
+  const qs = new URLSearchParams();
+  qs.set('status', String(ctx.query.status || 'OPEN'));
+  qs.set('size', String(pageArgs(ctx.query, 50, 100).size));
+  /* 全部门店权限的账号不加范围（能看全部会话）；否则只看自己门店的 + 未指定门店的公共会话 */
+  if (!ctx.scope.allStores) qs.set('storeIds', (ctx.scope.storeIds || []).join(','));
+  return ctx.ok(await internalApi.listServiceTickets(qs.toString()));
+}
+
+async function getServiceTicket(ctx) {
+  rbac.assertPerm(ctx, rbac.PERMS.SERVICE_READ);
+  const r = await internalApi.getServiceTicket(ctx.params.id);
+  /* 单会话也可能属于无门店的公共会话：只有会话挂了门店才做范围校验 */
+  if (r && r.ticket && r.ticket.storeId) rbac.assertStore(ctx, r.ticket.storeId);
+  return ctx.ok(r);
+}
+
+async function replyServiceTicket(ctx) {
+  rbac.assertPerm(ctx, rbac.PERMS.SERVICE_REPLY);
+  const b = ctx.body || {};
+  const content = String(b.content || '').trim();
+  if (!content && !b.mediaUrl) throw bizError(CODES.PARAM_INVALID, '回复内容不能为空');
+  const id = ctx.params.id;
+  const detail = await internalApi.getServiceTicket(id);
+  if (detail && detail.ticket && detail.ticket.storeId) rbac.assertStore(ctx, detail.ticket.storeId);
+  const r = await internalApi.replyServiceTicket(id, {
+    content,
+    type: b.type || 'text',
+    mediaUrl: b.mediaUrl || '',
+    meta: b.meta || {},
+    staffId: ctx.staff.id,
+  });
+  await staffAuth.audit(ctx, 'SERVICE_REPLY', String(id), { length: content.length });
+  return ctx.ok(r);
+}
+
+async function closeServiceTicket(ctx) {
+  rbac.assertPerm(ctx, rbac.PERMS.SERVICE_REPLY);
+  const r = await internalApi.closeServiceTicket(ctx.params.id, ctx.staff.id);
+  await staffAuth.audit(ctx, 'SERVICE_CLOSE', String(ctx.params.id), {});
+  return ctx.ok(r);
+}
+
+/* ============================================================ 发票管理（受理 / 开具 / 驳回） */
+async function listInvoiceRecords(ctx) {
+  rbac.assertPerm(ctx, rbac.PERMS.INVOICE_READ);
+  const qs = new URLSearchParams();
+  if (ctx.query.status) qs.set('status', String(ctx.query.status));
+  qs.set('size', String(pageArgs(ctx.query, 50, 200).size));
+  const storeId = ctx.query.storeId || '';
+  if (storeId) {
+    rbac.assertStore(ctx, storeId);
+    qs.set('storeIds', storeId);
+  } else if (!ctx.scope.allStores) {
+    qs.set('storeIds', (ctx.scope.storeIds || []).join(','));
+  }
+  return ctx.ok(await internalApi.listInvoiceRecords(qs.toString()));
+}
+
+async function updateInvoiceRecord(ctx) {
+  rbac.assertPerm(ctx, rbac.PERMS.INVOICE_WRITE);
+  const b = ctx.body || {};
+  const r = await internalApi.updateInvoiceRecord(ctx.params.id, {
+    status: b.status,
+    invoiceNo: b.invoiceNo || '',
+    invoiceUrl: b.invoiceUrl || '',
+    remark: b.remark || '',
+    staffId: ctx.staff.id,
+  });
+  await staffAuth.audit(ctx, 'INVOICE_' + String(b.status || ''), String(ctx.params.id), { invoiceNo: b.invoiceNo || '' });
+  return ctx.ok(r);
+}
+
+/* ============================================================ 内容运营：加盟配置 / 协议及政策 */
+async function getFranchise(ctx) {
+  rbac.assertPerm(ctx, rbac.PERMS.CONTENT_READ);
+  return ctx.ok(await internalApi.getFranchise(ctx.scope.brandId));
+}
+
+async function saveFranchise(ctx) {
+  rbac.assertPerm(ctx, rbac.PERMS.CONTENT_WRITE);
+  const r = await internalApi.updateFranchise(Object.assign({ brandId: ctx.scope.brandId }, ctx.body || {}));
+  await staffAuth.audit(ctx, 'FRANCHISE_UPDATE', ctx.scope.brandId, { keys: Object.keys(ctx.body || {}) });
+  return ctx.ok(r);
+}
+
+async function listAgreements(ctx) {
+  rbac.assertPerm(ctx, rbac.PERMS.CONTENT_READ);
+  return ctx.ok(await internalApi.listAgreements());
+}
+
+async function saveAgreement(ctx) {
+  rbac.assertPerm(ctx, rbac.PERMS.CONTENT_WRITE);
+  const code = ctx.params.code;
+  const r = await internalApi.updateAgreement(code, ctx.body || {});
+  await staffAuth.audit(ctx, 'AGREEMENT_UPDATE', code, { keys: Object.keys(ctx.body || {}) });
+  return ctx.ok(r);
+}
+
 module.exports = {
   getBrand, saveBrand,
   listStores, saveStore, toggleStore, syncStoreMenu,
@@ -914,4 +1019,8 @@ module.exports = {
   listThemes, saveTheme, activateTheme, toggleTheme, deleteTheme,
   verifyVoucher, listVouchers, refundVoucher,
   listAudit, listLoginLogs, summary,
+  /* 我的模块新增 */
+  listServiceTickets, getServiceTicket, replyServiceTicket, closeServiceTicket,
+  listInvoiceRecords, updateInvoiceRecord,
+  getFranchise, saveFranchise, listAgreements, saveAgreement,
 };

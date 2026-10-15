@@ -98,9 +98,9 @@ function startServer() {
     await page.waitForSelector('nav a[data-v="dashboard"]', { timeout: 15000 });
     ok('登录成功，进入经营看板');
 
-    /* 3. 侧边菜单数量（admin 全权限 → 9 个菜单） */
+    /* 3. 侧边菜单数量（admin 全权限 → 13 个菜单：含客服消息 / 发票管理 / 加盟配置 / 协议及政策） */
     const navCount = await page.$$eval('nav a', (a) => a.length);
-    eq('侧边菜单数量（超管全权限）', navCount, 9);
+    eq('侧边菜单数量（超管全权限）', navCount, 13);
     const me = await page.$eval('.me', (e) => e.textContent);
     truthy('显示当前登录人', me.indexOf('品牌管理员') > -1, me.trim().replace(/\s+/g, ' '));
 
@@ -112,6 +112,11 @@ function startServer() {
       { v: 'theme', title: '主题管理', has: '.theme-preview' },
       { v: 'coupon', title: '优惠券', has: 'table' },
       { v: 'orders', title: '订单管理', has: 'table' },
+      /* 本次新增的四个运营面板 */
+      { v: 'service', title: '客服消息', has: '.svc' },
+      { v: 'invoice', title: '发票管理', has: 'table' },
+      { v: 'franchise', title: '加盟配置', has: 'input' },
+      { v: 'agreement', title: '协议及政策', has: 'table' },
       { v: 'audit', title: '审计日志', has: 'table' },
       { v: 'dashboard', title: '经营看板', has: '.card' },
     ];

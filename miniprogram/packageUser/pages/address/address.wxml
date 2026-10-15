@@ -1,0 +1,42 @@
+<!-- 地址管理：列表 / 新增 / 编辑 / 删除 / 设为默认 -->
+<view class="page" style="{{themeStyle}}">
+  <view class="tip" wx:if="{{list.length}}">共 {{list.length}} 个地址，最多可保存 20 个</view>
+
+  <view class="list">
+    <view class="addr" wx:for="{{list}}" wx:key="id" data-id="{{item.id}}">
+      <view class="addr__main" bindtap="onEdit" data-id="{{item.id}}">
+        <view class="addr__head">
+          <text class="addr__name">{{item.name}}</text>
+          <text class="addr__phone">{{item.phoneMask || item.phone}}</text>
+          <text wx:if="{{item.tag}}" class="addr__tag">{{item.tag}}</text>
+        </view>
+        <view class="addr__detail">
+          <text wx:if="{{item.isDefault}}" class="addr__badge">默认</text>
+          <text class="addr__text">{{item.regionText}} {{item.detail}}</text>
+        </view>
+      </view>
+      <view class="addr__ops">
+        <view class="addr__op" catchtap="onSetDefault" data-id="{{item.id}}" data-default="{{item.isDefault}}">
+          <text class="addr__dot {{item.isDefault ? 'is-on' : ''}}"></text>
+          <text class="addr__op-text">{{item.isDefault ? '默认地址' : '设为默认'}}</text>
+        </view>
+        <view class="addr__op addr__op--right">
+          <text class="addr__act" catchtap="onEdit" data-id="{{item.id}}">编辑</text>
+          <text class="addr__act addr__act--danger" catchtap="onDelete" data-id="{{item.id}}">删除</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空态：给出明确的下一步动作，而不是只写「暂无数据」 -->
+  <view wx:if="{{!loading && !list.length}}" class="empty">
+    <view class="empty__icon">📍</view>
+    <view class="empty__text">还没有收货地址</view>
+    <view class="empty__hint">添加地址后，下单自取 / 外卖配送时可直接选择，不用每次重复填写</view>
+  </view>
+
+  <view class="bar-holder" wx:if="{{list.length || loading}}"></view>
+  <view class="action-bar">
+    <view class="btn-primary grow" bindtap="onAdd">＋ 新增地址</view>
+  </view>
+</view>

@@ -1,0 +1,84 @@
+.page {
+  min-height: 100vh;
+  padding-bottom: 40rpx;
+}
+
+/* ---------- 账号信息 ---------- */
+.acct {
+  padding: 8rpx 24rpx;
+}
+.acct__row {
+  display: flex;
+  align-items: center;
+  min-height: 96rpx;
+  border-bottom: 1rpx solid #f4f4f6;
+}
+.acct__row--last {
+  border-bottom: none;
+}
+.acct__label {
+  width: 160rpx;
+  flex: none;
+  font-size: 28rpx;
+  color: var(--c-text);
+}
+.acct__value {
+  flex: 1;
+  min-width: 0;
+  font-size: 27rpx;
+  color: var(--c-text-sub);
+  text-align: right;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ---------- 菜单（与「我的」页保持同一视觉规范） ---------- */
+.menu {
+  padding: 0 24rpx;
+}
+.menu__item {
+  display: flex;
+  align-items: center;
+  height: 104rpx;
+  border-bottom: 1rpx solid #f4f4f6;
+}
+.menu__item:last-child {
+  border-bottom: none;
+}
+.menu__icon {
+  font-size: 36rpx;
+  width: 56rpx;
+  flex: none;
+}
+.menu__text {
+  font-size: 28rpx;
+  color: var(--c-text);
+}
+.menu__item--danger .menu__text {
+  color: var(--c-primary);
+}
+.menu__tip {
+  margin-left: auto;
+  margin-right: 12rpx;
+  font-size: 23rpx;
+  color: #b8b8bd;
+}
+.menu__arrow {
+  color: #c8c8cd;
+  font-size: 32rpx;
+  flex: none;
+}
+
+.tips {
+  padding: 8rpx 36rpx 40rpx;
+  font-size: 22rpx;
+  color: var(--c-text-weak);
+  line-height: 1.7;
+}
+.tips__warn {
+  display: block;
+  margin-top: 12rpx;
+  color: var(--c-primary);
+  font-size: 23rpx;
+}

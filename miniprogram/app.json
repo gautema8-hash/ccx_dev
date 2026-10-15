@@ -7,6 +7,7 @@
     "pages/confirm/confirm",
     "pages/order-detail/order-detail",
     "pages/store-list/store-list",
+    "pages/store-detail/store-detail",
     "pages/voucher/voucher"
   ],
   "subPackages": [
@@ -14,7 +15,19 @@
       "root": "packageUser",
       "name": "user",
       "pages": [
-        "pages/coupon/coupon"
+        "pages/coupon/coupon",
+        "pages/address/address",
+        "pages/address-edit/address-edit",
+        "pages/service/service",
+        "pages/franchise/franchise",
+        "pages/agreement/agreement",
+        "pages/agreement-detail/agreement-detail",
+        "pages/profile/profile",
+        "pages/settings/settings",
+        "pages/invoice/invoice",
+        "pages/invoice-apply/invoice-apply",
+        "pages/invoice-detail/invoice-detail",
+        "pages/invoice-title/invoice-title"
       ]
     }
   ],

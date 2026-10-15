@@ -1,0 +1,257 @@
+/* ---------- 状态头 ---------- */
+.hero {
+  padding: 44rpx 40rpx 40rpx;
+  background: linear-gradient(135deg, #d32f2f, #b71c1c);
+  color: #fff;
+}
+.hero--ISSUED {
+  background: linear-gradient(135deg, #2e9e52, #1b7a3a);
+}
+.hero--REJECTED {
+  background: linear-gradient(135deg, #9a9a9f, #6f6f75);
+}
+.hero__status {
+  font-size: 42rpx;
+  font-weight: 700;
+  letter-spacing: 2rpx;
+}
+.hero__desc {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  opacity: 0.86;
+  line-height: 1.6;
+}
+
+/* ---------- 时间线 ---------- */
+.tl {
+  margin-top: -20rpx;
+  padding: 28rpx 24rpx 8rpx;
+}
+.tl__item {
+  display: flex;
+  align-items: stretch;
+}
+.tl__rail {
+  flex: none;
+  width: 44rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.tl__dot {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  background: #dcdce0;
+  margin-top: 8rpx;
+}
+.tl__item.is-done .tl__dot {
+  background: var(--c-primary);
+}
+.tl__item.is-fail .tl__dot {
+  background: #9a9a9f;
+}
+.tl__line {
+  flex: 1;
+  width: 2rpx;
+  background: #ededf0;
+  margin: 6rpx 0;
+}
+.tl__body {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 26rpx;
+}
+.tl__title {
+  display: block;
+  font-size: 27rpx;
+  color: var(--c-text-sub);
+}
+.tl__item.is-done .tl__title {
+  color: var(--c-text);
+  font-weight: 600;
+}
+.tl__time {
+  display: block;
+  margin-top: 4rpx;
+  font-size: 22rpx;
+  color: var(--c-text-weak);
+}
+
+/* ---------- 键值行 ---------- */
+.kv {
+  padding: 8rpx 24rpx;
+}
+.kv__row {
+  display: flex;
+  align-items: flex-start;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f4f4f6;
+}
+.kv__row:last-child {
+  border-bottom: none;
+}
+.kv__k {
+  flex: none;
+  width: 200rpx;
+  font-size: 25rpx;
+  color: var(--c-text-sub);
+}
+.kv__v {
+  flex: 1;
+  min-width: 0;
+  font-size: 26rpx;
+  color: var(--c-text);
+  word-break: break-all;
+  text-align: right;
+}
+.kv__v--mono {
+  font-family: DIN, -apple-system, sans-serif;
+}
+.kv__v--price {
+  color: var(--c-primary);
+  font-weight: 600;
+  font-family: DIN, -apple-system, sans-serif;
+}
+
+/* ---------- 发票文件 ---------- */
+.file {
+  display: flex;
+  align-items: center;
+}
+.file__icon {
+  flex: none;
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 20rpx;
+  background: var(--c-primary-weak);
+  font-size: 44rpx;
+  text-align: center;
+  line-height: 88rpx;
+  margin-right: 20rpx;
+}
+.file__body {
+  flex: 1;
+  min-width: 0;
+}
+.file__title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--c-text);
+}
+.file__sub {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: var(--c-text-weak);
+  line-height: 1.5;
+}
+
+/* ---------- 操作区 ---------- */
+.ops {
+  display: flex;
+  align-items: center;
+  padding: 4rpx 24rpx 0;
+}
+.ops .btn-ghost {
+  margin-left: 20rpx;
+  height: 84rpx;
+  border-radius: 42rpx;
+}
+
+/* ---------- 驳回 ---------- */
+.reject__title {
+  display: block;
+  font-size: 27rpx;
+  font-weight: 600;
+  color: var(--c-primary);
+}
+.reject__text {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 25rpx;
+  color: #4a4a4f;
+  line-height: 1.7;
+}
+
+/* ---------- 订单快照 ---------- */
+.ord {
+  padding: 8rpx 24rpx 20rpx;
+}
+.ord__row {
+  display: flex;
+  align-items: center;
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #f4f4f6;
+}
+.ord__k {
+  flex: none;
+  width: 200rpx;
+  font-size: 25rpx;
+  color: var(--c-text-sub);
+}
+.ord__v {
+  flex: 1;
+  min-width: 0;
+  font-size: 26rpx;
+  color: var(--c-text);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ord__link {
+  flex: none;
+  margin-left: 16rpx;
+  font-size: 23rpx;
+  color: var(--c-primary);
+}
+.ord__item {
+  display: flex;
+  align-items: center;
+  padding: 8rpx 0;
+  font-size: 25rpx;
+}
+.ord__name {
+  flex: 1;
+  min-width: 0;
+  color: #4a4a4f;
+}
+.ord__count {
+  flex: none;
+  width: 80rpx;
+  text-align: right;
+  color: var(--c-text-weak);
+  font-size: 23rpx;
+}
+.ord__amount {
+  flex: none;
+  width: 130rpx;
+  text-align: right;
+  color: var(--c-text);
+  font-family: DIN, -apple-system, sans-serif;
+}
+.ord__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16rpx;
+  padding-top: 18rpx;
+  border-top: 1rpx solid #f4f4f6;
+  font-size: 24rpx;
+  color: var(--c-text-sub);
+}
+.ord__pay-num {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: var(--c-primary);
+  font-family: DIN, -apple-system, sans-serif;
+  margin-left: 6rpx;
+}
+
+.page__tip {
+  padding: 4rpx 32rpx 0;
+  font-size: 21rpx;
+  color: var(--c-text-weak);
+  line-height: 1.7;
+}

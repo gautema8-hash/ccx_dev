@@ -81,6 +81,29 @@ async function updateProfile(ctx) {
     fields.push('avatar = ?');
     values.push(b.avatar.slice(0, 500));
   }
+  /* ---- 个人资料扩展（「我的 → 个人资料」）---- */
+  if (b.gender !== undefined && b.gender !== '') {
+    const g = Number(b.gender);
+    if ([0, 1, 2].indexOf(g) === -1) throw bizError(CODES.PARAM_INVALID, '性别取值不合法');
+    fields.push('gender = ?');
+    values.push(g);
+  }
+  if (typeof b.birthday === 'string' && b.birthday) {
+    const bd = b.birthday.trim();
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(bd);
+    if (!m) throw bizError(CODES.PARAM_INVALID, '生日格式应为 YYYY-MM-DD');
+    const d = new Date(bd + 'T00:00:00');
+    const valid = !isNaN(d.getTime()) && d.getFullYear() === Number(m[1]) && d.getMonth() + 1 === Number(m[2]) && d.getDate() === Number(m[3]);
+    if (!valid) throw bizError(CODES.PARAM_INVALID, '生日不是有效日期');
+    if (Number(m[1]) < 1900) throw bizError(CODES.PARAM_INVALID, '生日年份不合法');
+    if (d.getTime() > Date.now()) throw bizError(CODES.PARAM_INVALID, '生日不能晚于今天');
+    fields.push('birthday = ?');
+    values.push(bd);
+  }
+  if (typeof b.city === 'string' && b.city.trim()) {
+    fields.push('city = ?');
+    values.push(b.city.trim().slice(0, 64));
+  }
   if (!fields.length) throw bizError(CODES.PARAM_INVALID, '没有需要更新的字段');
   fields.push('updated_at = ?');
   values.push(Date.now());
@@ -143,6 +166,62 @@ async function stats(ctx) {
     memberLevel: Number(row.memberLevel || 1),
     memberName: row.memberName || '铜签会员',
   });
+}
+
+/* ============================================================ 账号注销 ============================================================ */
+/**
+ * 注销账号（「我的 → 账号设置」）
+ *
+ * 合规要点：
+ *   · 用户协议已明示「注销后不可恢复，历史订单与优惠券一并作废」，这里按此执行
+ *   · openid 会被改名释放（del_<id>_<rand>），下次用同一微信进入即全新账号，
+ *     避免「注销后仍能凭旧 openid 找回历史数据」的假注销
+ *   · 注销留痕只存 openid 的 SHA-256，不保留明文
+ *   · 有进行中订单 / 未结退款时拒绝注销 —— 否则履约与资金会对不上账
+ */
+async function cancelAccount(ctx) {
+  const reason = String((ctx.body && ctx.body.reason) || '').slice(0, 200);
+
+  const ongoing = await db.queryOne(
+    "SELECT COUNT(*) AS c FROM mp_order WHERE user_id = ? AND status NOT IN ('DONE','CANCELED')",
+    [ctx.user.id]
+  );
+  if (Number(ongoing.c) > 0) {
+    throw bizError(CODES.STATE_CONFLICT, '你有进行中的订单，请完成或取消后再注销账号');
+  }
+  const refunding = await db.queryOne(
+    "SELECT COUNT(*) AS c FROM mp_refund r JOIN mp_order o ON o.id = r.order_id WHERE o.user_id = ? AND r.status IN ('APPLIED','APPROVED')",
+    [ctx.user.id]
+  );
+  if (Number(refunding.c) > 0) {
+    throw bizError(CODES.STATE_CONFLICT, '你有正在处理中的退款申请，请等待处理完成后再注销');
+  }
+
+  const now = Date.now();
+  const openidHash = crypto.createHash('sha256').update(String(ctx.user.openid || '')).digest('hex');
+  await db.execute(
+    `UPDATE mp_user
+     SET status = 0, cancel_at = ?, openid = ?, unionid = '', nickname = '已注销用户', avatar = '', phone = '',
+         gender = 0, birthday = '', city = '', points = 0, updated_at = ?
+     WHERE id = ?`,
+    [now, 'del_' + ctx.user.id + '_' + crypto.randomBytes(4).toString('hex'), now, ctx.user.id]
+  );
+  await db.execute('INSERT INTO mp_user_cancel_log (user_id, openid_hash, reason, created_at) VALUES (?,?,?,?)', [
+    ctx.user.id,
+    openidHash,
+    reason,
+    now,
+  ]);
+  /* 未使用的券全部作废（已使用的保留，用于对账） */
+  await db.execute("UPDATE mp_user_coupon SET status = 'EXPIRED' WHERE user_id = ? AND status = 'UNUSED'", [ctx.user.id]);
+  /* 地址簿等个人数据直接删除 */
+  await db.execute('DELETE FROM mp_address WHERE user_id = ?', [ctx.user.id]);
+  await db.execute("UPDATE mp_service_ticket SET status = 'CLOSED', updated_at = ? WHERE user_id = ? AND status = 'OPEN'", [now, ctx.user.id]);
+
+  await auth.invalidateUser(ctx.user.id);
+  await auth.logout(ctx.tokenPayload);
+  logger.info('account canceled', { uid: ctx.user.id });
+  return ctx.ok({ ok: true, cancelAt: now });
 }
 
 /* ============================================================ 头像上传 */
@@ -281,6 +360,7 @@ module.exports = {
   me,
   updateProfile,
   bindPhone,
+  cancelAccount,
   stats,
   coupons,
   uploadAvatar,
