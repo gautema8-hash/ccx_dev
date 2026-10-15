@@ -120,21 +120,6 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-/* 右上角操作区：我的 + 切换门店（去掉 tabBar 后的主要导航入口） */
-.shop__acts {
-  flex: none;
-  display: flex;
-  align-items: center;
-}
-.shop__me {
-  flex: none;
-  padding: 8rpx 20rpx;
-  border-radius: 24rpx;
-  background: rgba(255, 255, 255, 0.92);
-  color: #c62828;
-  font-size: 22rpx;
-  font-weight: 600;
-}
 .shop__switch {
   flex: none;
   margin-left: 12rpx;
@@ -299,6 +284,9 @@
 
 .dishes {
   flex: 1;
+  /* 关键：flex 子项默认 min-width:auto，会被长文本菜品名撑宽，
+     导致整行右移、「+」按钮被挤出屏幕右缘 —— 必须允许收缩 */
+  min-width: 0;
   height: 100%;
   background: #fff;
 }
@@ -396,18 +384,60 @@
   font-weight: 400;
   margin-left: 2rpx;
 }
+/* 加购区：价格右侧，飘字与按钮都挂这里 */
+.dish__ctrl {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: none;
+  margin-left: 12rpx;
+}
 .dish__add {
-  width: 46rpx;
-  height: 46rpx;
+  width: 52rpx;
+  height: 52rpx;
   border-radius: 50%;
   background: linear-gradient(135deg, #d32f2f, #b71c1c);
   color: #fff;
-  font-size: 32rpx;
+  font-size: 36rpx;
+  font-weight: 600;
+  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4rpx 10rpx rgba(198, 40, 40, 0.3);
-  transition: transform 0.12s ease;
+  box-shadow: 0 4rpx 10rpx rgba(198, 40, 40, 0.32);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+/* 按下反馈：hover-class 缩放（is-press）+ 短暂高光 */
+.dish__add.is-press {
+  transform: scale(0.82);
+  box-shadow: 0 2rpx 6rpx rgba(198, 40, 40, 0.24);
+}
+/* 「+1」飘字：上浮渐隐，pointer-events 不挡点击 */
+@keyframes plus-one-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(8rpx) scale(0.7);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-8rpx) scale(1.15);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-52rpx) scale(1);
+  }
+}
+.dish__plusone {
+  position: absolute;
+  right: 4rpx;
+  top: -6rpx;
+  z-index: 3;
+  color: #c62828;
+  font-size: 28rpx;
+  font-weight: 700;
+  text-shadow: 0 2rpx 6rpx rgba(255, 255, 255, 0.9);
+  animation: plus-one-pop 0.7s ease-out forwards;
+  pointer-events: none;
 }
 .dish__qty {
   min-width: 44rpx;

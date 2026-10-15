@@ -13,11 +13,7 @@
           <text wx:if="{{distanceText}}" class="shop__dist">{{distanceText}} · </text>{{shop.notice || ''}}
         </view>
       </view>
-      <!-- 去掉底部 tabBar 后的统一入口：门店切换 + 我的（订单/优惠券等均在「我的」内） -->
-      <view class="shop__acts">
-        <view class="shop__me" bindtap="goMine">我的</view>
-        <view class="shop__switch">切换门店 ›</view>
-      </view>
+      <view class="shop__switch">切换门店 ›</view>
     </view>
     <view class="shop__bottom">
       <view class="seg">
@@ -161,28 +157,42 @@
                   <text class="dish__price-unit">/{{dish.unit}}</text>
                 </view>
 
-                <!-- 售罄：置灰不可点 -->
-                <view wx:if="{{dish.soldOut}}" class="dish__soldout">已售罄</view>
-                <!-- 需选辣度的菜：数量只读 + 加号进规格层 -->
-                <block wx:elif="{{dish.spicy}}">
-                  <view wx:if="{{countMap[dish.id]}}" class="dish__qty">{{countMap[dish.id]}}</view>
-                  <view
-                    class="dish__add"
-                    hover-class="is-press"
-                    data-id="{{dish.id}}"
-                    bindtap="onAddDish"
-                  >+</view>
-                </block>
-                <!-- 无规格的菜：直接加减 -->
-                <stepper
-                  wx:else
-                  size="small"
-                  value="{{countMap[dish.id] || 0}}"
-                  min="{{0}}"
-                  max="{{dish.stock}}"
-                  data-id="{{dish.id}}"
-                  bind:change="onDishStepperChange"
-                />
+                <!-- 右侧加购区：飘「+1」挂在 ctrl 上，按钮切换成 stepper 时动画不被打断 -->
+                <view class="dish__ctrl">
+                  <view wx:if="{{popDishId === dish.id}}" class="dish__plusone">+1</view>
+
+                  <!-- 售罄：置灰不可点 -->
+                  <view wx:if="{{dish.soldOut}}" class="dish__soldout">已售罄</view>
+                  <!-- 需选辣度的菜：数量只读 + 加号进规格层 -->
+                  <block wx:elif="{{dish.spicy}}">
+                    <view wx:if="{{countMap[dish.id]}}" class="dish__qty">{{countMap[dish.id]}}</view>
+                    <view
+                      class="dish__add"
+                      hover-class="is-press"
+                      data-id="{{dish.id}}"
+                      bindtap="onAddDish"
+                    >+</view>
+                  </block>
+                  <!-- 无规格的菜：数量为 0 只显示醒目「+」，有数量后切步进器可加减 -->
+                  <block wx:else>
+                    <stepper
+                      wx:if="{{countMap[dish.id]}}"
+                      size="small"
+                      value="{{countMap[dish.id]}}"
+                      min="{{0}}"
+                      max="{{dish.stock}}"
+                      data-id="{{dish.id}}"
+                      bind:change="onDishStepperChange"
+                    />
+                    <view
+                      wx:else
+                      class="dish__add"
+                      hover-class="is-press"
+                      data-id="{{dish.id}}"
+                      bindtap="onQuickAdd"
+                    >+</view>
+                  </block>
+                </view>
               </view>
             </view>
           </view>

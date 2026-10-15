@@ -36,6 +36,30 @@
     "backgroundColor": "#F5F5F7",
     "enablePullDownRefresh": false
   },
+  "tabBar": {
+    "color": "#8A8A8E",
+    "selectedColor": "#C62828",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/menu/menu",
+        "text": "点单"
+      },
+      {
+        "pagePath": "pages/cart/cart",
+        "text": "购物车"
+      },
+      {
+        "pagePath": "pages/orders/orders",
+        "text": "订单"
+      },
+      {
+        "pagePath": "pages/mine/mine",
+        "text": "我的"
+      }
+    ]
+  },
   "permission": {
     "scope.userLocation": {
       "desc": "用于为你推荐最近的门店并计算距离，方便就近点单与到店核销"

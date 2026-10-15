@@ -167,7 +167,7 @@ Page({
   /* ------------------------- 入口 ------------------------- */
 
   goOrders() {
-    wx.navigateTo({ url: '/pages/orders/orders' });
+    wx.switchTab({ url: '/pages/orders/orders' });
   },
 
   goCoupon() {

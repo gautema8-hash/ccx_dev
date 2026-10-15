@@ -122,13 +122,13 @@ Page({
         wx.showToast({ title: '已加入购物车', icon: 'success' });
         this._navTimer = setTimeout(() => {
           this._navTimer = null;
-          wx.redirectTo({ url: '/pages/cart/cart' });
+          wx.switchTab({ url: '/pages/cart/cart' });
         }, 700);
       })
       .catch(() => toast('操作失败'));
   },
 
   goMenu() {
-    wx.redirectTo({ url: '/pages/menu/menu' });
+    wx.switchTab({ url: '/pages/menu/menu' });
   },
 });

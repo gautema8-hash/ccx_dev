@@ -109,7 +109,7 @@ Page({
   },
 
   goMenu() {
-    wx.redirectTo({ url: '/pages/menu/menu' });
+    wx.switchTab({ url: '/pages/menu/menu' });
   },
 
   /* ---------------- 领券 ---------------- */

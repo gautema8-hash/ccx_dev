@@ -184,7 +184,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
       return null;
     })(d.categories);
     truthy('定位到带辣度的菜品', !!spicyDish, spicyDish && spicyDish.name);
-    eq('列表加号数（= 需选辣度的菜品数）', (await menu.$$('.dish__add')).length, 19);
+    /* 「+」按钮现在覆盖全部在售菜品：19 个辣度菜 + 10 个无规格菜（数量为 0 时显示「+」） */
+    eq('列表加号数（辣度菜 + 无规格在售菜）', (await menu.$$('.dish__add')).length, 29);
 
     await tap(await menu.$('.dish__add'));
     d = await menu.data();
@@ -284,7 +285,12 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     eq('跳到分包优惠券页', couponPage.path, 'packageUser/pages/coupon/coupon');
     eq('券列表条数', (await couponPage.$$('.coupon')).length, 1);
     await tap(await couponPage.$('.coupon')); // 选第一张 → 自动返回
-    await sleep(1400);
+    /* 选券回传（globalData + navigateBack）偶发慢于 1.4s，轮询等返回而不是死等 */
+    for (let i = 0; i < 15; i++) {
+      const cur = await mini.currentPage();
+      if (cur.path === 'pages/confirm/confirm') break;
+      await sleep(300);
+    }
 
     eq('自动返回结算页', (await mini.currentPage()).path, 'pages/confirm/confirm');
     cd = await (await mini.currentPage()).data();

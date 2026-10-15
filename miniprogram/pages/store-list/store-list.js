@@ -143,7 +143,7 @@ Page({
     wx.showToast({ title: '已切换到 ' + s.name, icon: 'none', duration: 1400 });
     setTimeout(() => {
       if (this.data.from === 'order') wx.navigateBack();
-      else wx.redirectTo({ url: '/pages/menu/menu' });
+      else wx.switchTab({ url: '/pages/menu/menu' });
     }, 700);
   },
 

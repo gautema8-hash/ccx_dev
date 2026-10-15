@@ -129,10 +129,6 @@ Page({
     wx.navigateTo({ url: '/pages/store-list/store-list' });
   },
 
-  /** 去掉底部 tabBar 后，「我的」的唯一入口（订单/优惠券/核销均在「我的」内） */
-  goMine() {
-    wx.navigateTo({ url: '/pages/mine/mine' });
-  },
 
   onHide() {
     this.visible = false;
@@ -142,6 +138,7 @@ Page({
     this.visible = false;
     if (this.unsubscribe) this.unsubscribe();
     clearTimeout(this._lockTimer);
+    clearTimeout(this._popTimer);
   },
 
   /* ============================ 数据加载 ============================ */
@@ -384,6 +381,39 @@ Page({
     if (delta > 0) this.feedback();
   },
 
+  /**
+   * 无规格菜的一键加购（醒目「+」按钮）
+   * 与 stepper 的区别：不需要先展示步进器，点一下直接 +1 并给「+1」飘字反馈；
+   * 有数量后按钮切换成 stepper，可继续加减。
+   */
+  onQuickAdd(e) {
+    const id = e.currentTarget.dataset.id;
+    const dish = this.dishMap[id];
+    if (!dish) return;
+    if (dish.soldOut) {
+      wx.showToast({ title: '「' + dish.name + '」已售罄', icon: 'none' });
+      return;
+    }
+    /* 与 stepper 的 max=dish.stock 同一套约束：加到库存上限给出明确提示 */
+    if (cart.getDishCount(id) >= dish.stock) {
+      wx.showToast({ title: '已达库存上限', icon: 'none' });
+      return;
+    }
+    cart.add(dish, null, 1);
+    this.feedback();
+    this.popPlus(id);
+  },
+
+  /** 「+1」飘字：加购时在按钮上方叠一个上浮渐隐的提示（0.7s 自动消失） */
+  popPlus(id) {
+    if (this._popTimer) clearTimeout(this._popTimer);
+    this.setData({ popDishId: id });
+    this._popTimer = setTimeout(() => {
+      this._popTimer = null;
+      this.setData({ popDishId: '' });
+    }, 700);
+  },
+
   feedback() {
     if (wx.vibrateShort) wx.vibrateShort({ type: 'light', fail: () => {} });
   },
@@ -415,7 +445,7 @@ Page({
       wx.showToast({ title: '还没选串，点「+」开始吧', icon: 'none' });
       return;
     }
-    wx.navigateTo({ url: '/pages/cart/cart' });
+    wx.switchTab({ url: '/pages/cart/cart' });
   },
 
   onShareAppMessage() {
