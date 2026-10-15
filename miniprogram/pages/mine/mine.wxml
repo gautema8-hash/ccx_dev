@@ -4,35 +4,53 @@
   <!-- 头像与名字的四种状态由 syncProfile() 统一派生：
        未登录 / 已登录未设置 / 已设置 / 头像加载失败 -->
   <view class="ucard">
-    <button
-      class="ucard__avatar"
-      open-type="chooseAvatar"
-      bindchooseavatar="onChooseAvatar"
-      hover-class="none"
-      aria-label="更换头像"
-    >
-      <image
-        wx:if="{{user.avatar && !avatarBroken}}"
-        class="ucard__img"
-        src="{{user.avatar}}"
-        mode="aspectFill"
-        binderror="onAvatarError"
-      />
-      <view wx:else class="ucard__ph">{{avatarText}}</view>
+    <!-- 头像：open-type=chooseAvatar 必须挂在 button 上，但微信 button 自带
+         padding/宽度默认值，直接用会渲染成一个大椭圆。所以：
+         ① 外层 wrap 固定 132rpx 圆形并裁剪；② 相机角标挂在 wrap 上不被裁掉 -->
+    <view class="ucard__avatar-wrap">
+      <button
+        class="ucard__avatar"
+        open-type="chooseAvatar"
+        bindchooseavatar="onChooseAvatar"
+        hover-class="none"
+        aria-label="更换头像"
+      >
+        <image
+          wx:if="{{user.avatar && !avatarBroken}}"
+          class="ucard__img"
+          src="{{user.avatar}}"
+          mode="aspectFill"
+          binderror="onAvatarError"
+        />
+        <view wx:else class="ucard__ph">{{avatarText}}</view>
+      </button>
       <view class="ucard__camera">📷</view>
-    </button>
+    </view>
 
     <view class="ucard__main">
-      <!-- 已登录：可唤起微信昵称填写能力；未登录：只展示，不给编辑入口 -->
-      <input
-        wx:if="{{isLogin}}"
+      <!-- 展示态：纯文本紧贴头像。
+           不能直接摆 input(type=nickname)：原生组件自带系统背景且尺寸不受 CSS 约束，
+           在 iOS 上会撑出一块大底、把名字顶到角落 —— 必须展示/编辑分离 -->
+      <view
+        wx:if="{{isLogin && !editingNick}}"
         class="ucard__nick"
+        bindtap="onNickTap"
+      >
+        <text class="ucard__nick-text">{{displayName}}</text>
+        <text class="ucard__nick-edit">✎</text>
+      </view>
+      <!-- 编辑态：由微信昵称填写能力接管（原生输入框，此时出现系统样式属正常） -->
+      <input
+        wx:elif="{{isLogin}}"
+        class="ucard__nick-input"
         type="nickname"
         value="{{user.nickname}}"
         placeholder="点击设置昵称"
         placeholder-class="ucard__ph-text"
         maxlength="16"
-        bindblur="onNickBlur"
+        focus
+        bindblur="onNickDone"
+        bindconfirm="onNickDone"
       />
       <view wx:else class="ucard__nick ucard__nick--guest">{{displayName}}</view>
 

@@ -157,7 +157,7 @@ Page({
         wx.showToast({ title: '已加入购物车', icon: 'success' });
         this._navTimer = setTimeout(() => {
           this._navTimer = null;
-          wx.switchTab({ url: '/pages/cart/cart' });
+          wx.redirectTo({ url: '/pages/cart/cart' });
         }, 700);
       })
       .catch(() => toast('操作失败'));
@@ -258,7 +258,7 @@ Page({
       diningType: o.diningType,
       tableLabel: o.diningType === 'takeout' ? '自取加菜' : o.tableNo + ' 桌加菜',
     };
-    wx.switchTab({
+    wx.redirectTo({
       url: '/pages/menu/menu',
       success: () => wx.showToast({ title: '正在为 ' + (o.tableNo || '本单') + ' 加菜', icon: 'none' }),
     });

@@ -21,6 +21,7 @@ Page({
     displayName: '未登录', // 昵称行的展示文案
     isLogin: false,
     hasPending: false, // 有未保存的头像/昵称改动
+    editingNick: false, // 昵称编辑态（展示用纯文本，点击才切原生输入框）
   },
 
   onLoad() {
@@ -115,6 +116,18 @@ Page({
     this.pendingAvatar = tempPath;
   },
 
+  /** 点击昵称 → 进入编辑态（由微信昵称填写能力接管） */
+  onNickTap() {
+    if (!this.data.isLogin) return;
+    this.setData({ editingNick: true });
+  },
+
+  /** 编辑结束（失焦/确认）：回退展示态并按需保存 */
+  onNickDone(e) {
+    this.setData({ editingNick: false });
+    this.onNickBlur(e);
+  },
+
   onNickBlur(e) {
     const nickname = ((e.detail && e.detail.value) || '').trim();
     if (!nickname || nickname === String(this.data.user.nickname || '')) return;
@@ -154,7 +167,7 @@ Page({
   /* ------------------------- 入口 ------------------------- */
 
   goOrders() {
-    wx.switchTab({ url: '/pages/orders/orders' });
+    wx.navigateTo({ url: '/pages/orders/orders' });
   },
 
   goCoupon() {

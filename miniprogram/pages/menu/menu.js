@@ -129,6 +129,11 @@ Page({
     wx.navigateTo({ url: '/pages/store-list/store-list' });
   },
 
+  /** 去掉底部 tabBar 后，「我的」的唯一入口（订单/优惠券/核销均在「我的」内） */
+  goMine() {
+    wx.navigateTo({ url: '/pages/mine/mine' });
+  },
+
   onHide() {
     this.visible = false;
   },
@@ -410,7 +415,7 @@ Page({
       wx.showToast({ title: '还没选串，点「+」开始吧', icon: 'none' });
       return;
     }
-    wx.switchTab({ url: '/pages/cart/cart' });
+    wx.navigateTo({ url: '/pages/cart/cart' });
   },
 
   onShareAppMessage() {

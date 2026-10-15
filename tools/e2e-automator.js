@@ -237,7 +237,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
     /* ================= 5. 购物车 ================= */
     console.log('\n[5] 购物车：锅底 / 蘸料 / 金额');
-    await mini.switchTab('/pages/cart/cart');
+    await mini.reLaunch('/pages/cart/cart');
     await sleep(1500);
     const cartPage = await mini.currentPage();
     eq('当前页', cartPage.path, 'pages/cart/cart');
@@ -332,7 +332,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
     /* ================= 10. 订单列表 ================= */
     console.log('\n[10] 订单列表：筛选与「进行中」角标（本次修复项）');
-    await mini.switchTab('/pages/orders/orders');
+    await mini.reLaunch('/pages/orders/orders');
     await sleep(1700);
     const ordersPage = await mini.currentPage();
     d = await ordersPage.data();
@@ -355,9 +355,9 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     /* ================= 11. 再来一单 ================= */
     console.log('\n[11] 再来一单：明细回填购物车');
     await adminCall('/admin/orders/' + od.order.id + '/done');
-    await mini.switchTab('/pages/menu/menu');
+    await mini.reLaunch('/pages/menu/menu');
     await sleep(700);
-    await mini.switchTab('/pages/orders/orders');
+    await mini.reLaunch('/pages/orders/orders');
     await sleep(1700);
     const ordersPage2 = await mini.currentPage();
     const reorderBtn = await ordersPage2.$('.order__actions .btn-ghost');
@@ -378,7 +378,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
     /* ================= 12. 我的 ================= */
     console.log('\n[12] 我的页：用户体系与统计');
-    await mini.switchTab('/pages/mine/mine');
+    await mini.reLaunch('/pages/mine/mine');
     await sleep(1600);
     const md = await (await mini.currentPage()).data();
     eq('订单总数已统计', md.stats.orderCount, 1);

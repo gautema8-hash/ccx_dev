@@ -13,7 +13,11 @@
           <text wx:if="{{distanceText}}" class="shop__dist">{{distanceText}} · </text>{{shop.notice || ''}}
         </view>
       </view>
-      <view class="shop__switch">切换门店 ›</view>
+      <!-- 去掉底部 tabBar 后的统一入口：门店切换 + 我的（订单/优惠券等均在「我的」内） -->
+      <view class="shop__acts">
+        <view class="shop__me" bindtap="goMine">我的</view>
+        <view class="shop__switch">切换门店 ›</view>
+      </view>
     </view>
     <view class="shop__bottom">
       <view class="seg">

@@ -120,6 +120,21 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+/* 右上角操作区：我的 + 切换门店（去掉 tabBar 后的主要导航入口） */
+.shop__acts {
+  flex: none;
+  display: flex;
+  align-items: center;
+}
+.shop__me {
+  flex: none;
+  padding: 8rpx 20rpx;
+  border-radius: 24rpx;
+  background: rgba(255, 255, 255, 0.92);
+  color: #c62828;
+  font-size: 22rpx;
+  font-weight: 600;
+}
 .shop__switch {
   flex: none;
   margin-left: 12rpx;

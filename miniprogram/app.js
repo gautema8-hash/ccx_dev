@@ -63,7 +63,7 @@ App({
   /** 页面不存在时的兜底（防止白屏） */
   onPageNotFound(res) {
     console.warn('[app] page not found:', res && res.path);
-    wx.switchTab({ url: '/pages/menu/menu', fail: () => wx.reLaunch({ url: '/pages/menu/menu' }) });
+    wx.reLaunch({ url: '/pages/menu/menu' });
   },
 
   /** 未捕获的 Promise 异常：不让它静默消失，统一落日志 */
