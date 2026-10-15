@@ -237,13 +237,28 @@
 .menu__item:last-child {
   border-bottom: none;
 }
-.menu__item--btn {
+/**
+ * button 复用的菜单行（分享 / 手机号授权这类必须挂在 button 上的能力）
+ *
+ * 必须写成双类 `.menu__item.menu__item--btn`：小程序 button 自带
+ * `margin-left/right: auto` + 内容自适应宽度，单靠 `.menu__item--btn`（单类）
+ * 权重压不住内置样式，整行会被压成内容宽度并居中 ——
+ * 实测：单类时 width=184px / margin=79px（正常行是 342px），副文案一长主文案就折行。
+ */
+.menu__item.menu__item--btn {
+  display: flex;
+  align-items: center;
   width: 100%;
+  margin: 0;
   padding: 0;
   background: transparent;
   text-align: left;
   line-height: 1;
   border-radius: 0;
+}
+/* 内置 button 用 ::after 画边框，去掉才不会在行间多一条线 */
+.menu__item--btn::after {
+  border: none;
 }
 .menu__icon {
   font-size: 36rpx;
@@ -253,6 +268,8 @@
 .menu__text {
   font-size: 28rpx;
   color: #1f1f1f;
+  /* 不参与压缩：否则右侧副文案一长，就会把这里挤成两行 */
+  flex: none;
 }
 .menu__tip {
   margin-left: auto;

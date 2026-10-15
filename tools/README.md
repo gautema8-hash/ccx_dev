@@ -168,11 +168,30 @@ node tools/admin-e2e.js    # 31 项
 ## 6. `shot-page.js` —— 模拟器截图
 
 ```bash
-node tools/shot-page.js pages/mine/mine                  # → shot-pages-mine-mine.png
-node tools/shot-page.js pages/menu/menu shot-menu.png    # 指定输出路径
+node tools/shot-page.js pages/mine/mine                          # → shot-pages-mine-mine.png
+node tools/shot-page.js pages/menu/menu shot-menu.png            # 指定输出路径
+node tools/shot-page.js pages/mine/mine docs/assets/x.png 560    # 第 4 参 = 先滚动 N px 再截
 ```
 
 改版对图、留证用。`screenshot` 偶尔超时（大屏渲染慢），重跑一次即可。
+
+**为什么必须截图**：下面这类「布局塌陷」在代码里看不出来，静态审查与所有断言都是绿的，只有截图能发现 —— 已成惯例：**改完「我的」页等长页面，出图看一眼再提交**。
+
+### 排查：菜单行塌陷（半行宽 / 居中 / 文字折行）
+
+**症状**：`<button class="menu__item menu__item--btn" open-type="...">` 复用成菜单行时，整行只有内容宽度且居中，主文案被副文案挤成两行；同结构的 `<view class="menu__item">` 行却完全正常。
+
+**原因**：小程序 `button` 内置样式带 `margin: 0 auto` + 内容自适应宽度，**单类选择器压不住**。
+
+**判据**（automator 读计算样式，正常 vs 塌陷一目了然）：
+
+| 属性 | 正常行 `<view>` | 塌陷行 `<button>` |
+| --- | --- | --- |
+| `width` | 342px | **184px** |
+| `margin-left` / `margin-right` | 0 / 0 | **79px / 79px** |
+| `display` | flex（自家 `align-items:center` 确实生效） | flex |
+
+**修法**：选择器改**双类** `.menu__item.menu__item--btn`，显式写 `display:flex; align-items:center; width:100%; margin:0`；再用 `.menu__item--btn::after { border: none }` 去掉内置边框伪元素；主文案加 `flex: none` 防被压缩。凡是把 `button` 当布局容器复用（`open-type="share"` / `"getPhoneNumber"`）都要这么重置。
 
 ---
 
