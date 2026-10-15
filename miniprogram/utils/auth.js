@@ -176,15 +176,28 @@ function uploadAvatar(filePath) {
   );
 }
 
-/** 绑定手机号（getPhoneNumber 回调后调用） */
+/**
+ * 绑定 / 更换手机号（getPhoneNumber 回调后调用）
+ *
+ * 同一个接口同时承担「首次绑定」与「换绑」：服务端直接 UPDATE mp_user.phone 覆盖旧值，
+ * 不需要先解绑，也没有「已绑定」的拒绝逻辑 —— 用户换号是正常诉求。
+ *
+ * 注意 phoneBound 必须一起写回本地缓存：接口响应只带 phoneMask，
+ * 若只合并 phoneMask，绑定成功后入口仍会显示「绑定手机号」，直到重启小程序重新拉用户态。
+ */
 function bindPhone(detail) {
-  if (config.USE_MOCK) return Promise.resolve({ phoneMask: '138****0000' });
+  if (config.USE_MOCK) {
+    /* 保持与真实接口一致的响应形状（只回传给 phoneMask），本地缓存则补全 phoneBound */
+    const masked = Object.assign({}, localUser() || {}, { phoneMask: '138****0000', phoneBound: true });
+    saveUser(masked);
+    return Promise.resolve({ phoneMask: masked.phoneMask });
+  }
   return request({
     url: '/user/phone',
     method: 'POST',
     data: { encryptedData: detail.encryptedData, iv: detail.iv, code: detail.code },
   }).then((r) => {
-    const user = Object.assign({}, localUser() || {}, { phoneMask: r.phoneMask });
+    const user = Object.assign({}, localUser() || {}, { phoneMask: r.phoneMask, phoneBound: true });
     saveUser(user);
     return r;
   });

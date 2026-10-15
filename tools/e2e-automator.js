@@ -473,11 +473,19 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     for (const item of ['发票管理', '收货地址', '在线客服', '加盟咨询', '个人资料', '账号设置', '协议及政策', '选择门店']) {
       truthy('入口存在：' + item, !!(await elOf(minePage, TXT(item))));
     }
+    /* 手机号入口：文案随绑定态变化（未绑定「绑定手机号」/ 已绑定「手机号 … · 更换」），
+       两种写法都含「手机号」三字，用宽松匹配即可覆盖两态 */
+    truthy('入口存在：手机号（绑定 / 更换）', !!(await elOf(minePage, TXT('手机号'))));
     const mineData = await minePage.data();
+    /* 绑定态由 syncProfile 派生：必须与脱敏号同源，否则会出现「绑了却仍显示绑定手机号」 */
+    eq('手机号绑定态为布尔值', typeof mineData.phoneBound, 'boolean');
+    eq('绑定态与脱敏号一致', mineData.phoneBound === !!mineData.phoneMask, true);
     truthy('发票入口副文案有值', !!mineData.invoiceTip, mineData.invoiceTip);
     truthy('地址入口副文案有值', !!mineData.addressTip, mineData.addressTip);
     /* 旧的「发票抬头」二级 ActionSheet 已下线，抬头管理改为发票管理内的独立页 */
     eq('旧「发票抬头」入口已移除', !!(await elOf(minePage, TXT('发票抬头'))), false);
+    /* 「分享给好友」按钮已移除：分享能力保留在微信右上角「···」原生菜单，页面内不再摆入口 */
+    eq('「分享给好友」入口已移除', !!(await elOf(minePage, TXT('分享给好友'))), false);
 
     /* ================= 14. 收货地址：新增 / 设为默认 / 删除 ================= */
     console.log('\n[14] 收货地址：新增（含校验）→ 编辑 → 设为默认');

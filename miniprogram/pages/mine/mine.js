@@ -24,6 +24,8 @@ Page({
     avatarBroken: false, // 头像 URL 加载失败 → 回退文字
     displayName: '未登录', // 昵称行的展示文案
     isLogin: false,
+    phoneBound: false, // 手机号是否已绑定（由 syncProfile 派生，入口文案/换绑逻辑共用）
+    phoneMask: '', // 脱敏手机号，如 138****0000
     hasPending: false, // 有未保存的头像/昵称改动
     editingNick: false, // 昵称编辑态（展示用纯文本，点击才切原生输入框）
   },
@@ -63,10 +65,16 @@ Page({
     const isLogin = !!(user.id || user.openid);
     const nickname = String(user.nickname || '').trim();
 
+    /* 手机号是否已绑定：以 phoneMask 为准（有脱敏号即已绑定）。
+       不只看 phoneBound，是因为它是后来才加到接口里的字段，
+       本地缓存里的老用户对象可能没有 —— 用 phoneMask 兜底才不会出现「已绑定却仍显示绑定」 */
+    const phoneBound = !!(user.phoneBound || user.phoneMask);
+    const phoneMask = user.phoneMask || '';
+
     let displayName;
     if (!isLogin) displayName = '未登录';
     else if (nickname) displayName = nickname;
-    else if (user.phoneMask) displayName = user.phoneMask;
+    else if (phoneMask) displayName = phoneMask;
     else displayName = '微信用户';
 
     /* 头像占位文字：优先昵称首字，其次固定字，保证任何状态都不空白 */
@@ -76,6 +84,8 @@ Page({
 
     this.setData({
       isLogin,
+      phoneBound,
+      phoneMask,
       displayName,
       avatarText,
       /* 换了头像 URL 就重置失败态，否则新图会被旧的失败标记挡住 */
@@ -291,16 +301,19 @@ Page({
 
   onBindPhone(e) {
     const detail = e && e.detail ? e.detail : {};
+    /* 用户点了「拒绝」也会走到这里（errMsg 形如 getPhoneNumber:fail user deny） */
     if (!detail.encryptedData && !detail.code) {
-      toast('未获取到手机号授权');
+      toast('已取消手机号授权');
       return;
     }
-    wx.showLoading({ title: '绑定中', mask: true });
+    /* 已绑定就是「更换」：同一个按钮复用，服务端 UPDATE 覆盖，无需先解绑 */
+    const rebind = !!this.data.phoneBound;
+    wx.showLoading({ title: rebind ? '更换中' : '绑定中', mask: true });
     auth
       .bindPhone(detail)
       .then((r) => {
         wx.hideLoading();
-        toast('已绑定 ' + (r.phoneMask || ''), 'success');
+        toast((rebind ? '已更换为 ' : '已绑定 ') + (r.phoneMask || ''), 'success');
         this.refreshUser();
       })
       .catch((err) => {
@@ -309,6 +322,8 @@ Page({
       });
   },
 
+  /* 页面级分享配置：不在页面上摆「分享给好友」按钮，但右上角「···」的原生转发仍可用。
+     保留这两个钩子，是为了让原生分享带上门店与slogan，而不是裸链接（删掉即失去自定义文案）。 */
   onShareAppMessage() {
     return {
       title: '老北京麻辣串串香 · 现串现涮，快来一起撸串',

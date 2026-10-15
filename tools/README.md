@@ -7,8 +7,8 @@
 | `audit-miniprogram.js` | 小程序静态审查 | 无 |
 | `check-wxml-comments.js` | WXML 注释布局扫描（编译失败 / 界面静默少一块时用） | 无 |
 | `build-preview.js` | 构建离线预览单文件 | 无 |
-| `verify-preview.js` | 预览版回归（41 项） | 无 |
-| `e2e-automator.js` | 模拟器端到端（204 项） | 微信开发者工具 + `miniprogram-automator` |
+| `verify-preview.js` | 预览版回归（48 项） | 无 |
+| `e2e-automator.js` | 模拟器端到端（208 项） | 微信开发者工具 + `miniprogram-automator` |
 | `admin-e2e.js` | 商家后台端到端（31 项） | `admin-server` 运行中 + `puppeteer-core` |
 | `shot-page.js` | 模拟器页面截图（改版对图/留证） | 微信开发者工具 + `miniprogram-automator` |
 
@@ -148,7 +148,9 @@ E2E_RESET=1 node tools/e2e-automator.js
 
 **归因方法（避免误改产品代码）**：把改动 `git checkout HEAD --` 临时还原后再跑一次，若同样失败 → 与本次改动无关。
 
-**处理**：重启开发者工具项目窗口（`cli.bat close` + `open` + `auto`）。若仍不稳定，需要**完全退出开发者工具再重新打开**（进程级状态无法靠关窗口清掉）。恢复后用例应回到 204/204。
+**处理**：重启开发者工具项目窗口（`cli.bat close` + `open` + `auto`）。若仍不稳定，需要**完全退出开发者工具再重新打开**（进程级状态无法靠关窗口清掉）。恢复后用例应回到 208/208。
+
+> 总数会随条件断言浮动：带 `E2E_RESET=1`（清空地址/客服/开票数据）时基线为 **208**，不带时「清理测试数据」「地址空态引导」等 1~2 项会降级为 `skip`（实测 207）。判据是 **失败数必须为 0**，而不是死盯总数。
 
 ---
 

@@ -110,6 +110,15 @@ MENU_SVC.getMenu().then((menu) => {
   eq('会员名', user.memberName, '铜签会员');
   truthy('token 已落 Storage', !!win.wx.getStorageSync('lbz_token'));
 
+  console.log('\n[4b] 手机号绑定 / 更换（复用 utils/auth.js 的 mock 分支）');
+  return AUTH.bindPhone({}).then((r) => {
+    eq('返回脱敏手机号', r.phoneMask, '138****0000');
+    const lu = AUTH.localUser() || {};
+    eq('本地缓存回写 phoneMask', lu.phoneMask, '138****0000');
+    eq('本地缓存回写 phoneBound（否则绑定后入口仍显示「绑定手机号」）', lu.phoneBound, true);
+    eq('换绑为覆盖式更新，不丢其他用户字段', lu.nickname, '串串香食客');
+  });
+}).then(() => {
   console.log('\n[5] 完整下单链路（与预览页点击顺序一致）');
   const menu = win.getApp().globalData.menuCache.data;
   const d101 = menu.categories[1].dishes[0];
@@ -202,6 +211,11 @@ MENU_SVC.getMenu().then((menu) => {
   uiSrc.replace(/act:\s*'([a-zA-Z_$][\w$]*)'/g, (_, n) => acts.add(n));
   const missAct = [...acts].filter((n) => !defined.has(n));
   eq('步进器 act 全部有定义（缺失：' + (missAct.join(',') || '无') + '）', missAct.length, 0);
+
+  /* 「我的」页入口：「分享给好友」已按要求移除；手机号入口保留并状态化（未绑定 / 已绑定·更换） */
+  truthy('「我的」页无「分享给好友」入口', uiSrc.indexOf('分享给好友') === -1);
+  truthy('「我的」页含手机号入口（A.bindPhone）', uiSrc.indexOf('A.bindPhone()') !== -1);
+  truthy('手机号入口状态化文案齐备（绑定 / 更换）', /绑定手机号/.test(uiSrc) && /· 更换/.test(uiSrc));
 
   console.log('\n========================================');
   console.log('  通过 ' + pass + ' 项 / 失败 ' + fails.length + ' 项');

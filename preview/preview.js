@@ -843,8 +843,17 @@
             <span class="menu__tip ell">${esc(shop.address || '')}</span>
             <span class="menu__arrow">›</span>
           </div>
-          <div class="menu__item" onclick="A.share()">
-            <span class="menu__icon">📣</span><span class="menu__text">分享给好友</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="menu-list">
+          <!-- 手机号：与小程序一致 —— 微信登录只返回 openid，拿不到手机号，必须由用户点一次
+               getPhoneNumber 授权；绑定后同一个入口即「更换」，服务端覆盖，无需先解绑 -->
+          <div class="menu__item" onclick="A.bindPhone()">
+            <span class="menu__icon">📱</span>
+            <span class="menu__text">${u.phoneBound || u.phoneMask ? '手机号' : '绑定手机号'}</span>
+            <span class="menu__tip">${u.phoneBound || u.phoneMask ? esc(u.phoneMask) + ' · 更换' : '微信一键授权，免填号码'}</span>
             <span class="menu__arrow">›</span>
           </div>
         </div>
@@ -1421,8 +1430,33 @@
     openLocation() {
       UI.toast('已模拟打开地图：东直门内大街 188 号');
     },
-    share() {
-      UI.toast('已模拟转发给好友（小程序内为原生转发面板）');
+    /**
+     * 手机号绑定 / 更换（对应小程序的 getPhoneNumber 一键授权）
+     * 预览版没有微信原生授权面板，用确认弹窗模拟用户点「允许」这一步；
+     * 已绑定时同一入口走「更换」分支 —— 与小程序一致，绑一次即可，之后随时换号。
+     */
+    bindPhone() {
+      const bound = !!(S.user && (S.user.phoneBound || S.user.phoneMask));
+      UI.modal(
+        {
+          title: bound ? '更换手机号' : '绑定手机号',
+          content: bound
+            ? '将重新唤起微信「手机号快速验证」，新号码直接覆盖原号码，无需先解绑。'
+            : '将唤起微信「手机号快速验证」组件，用户点一次授权即可，无需手动输入号码。',
+          confirmText: bound ? '更换' : '允许',
+        },
+        (r) => {
+          if (!r.confirm) {
+            UI.toast('已取消手机号授权');
+            return;
+          }
+          AUTH.bindPhone({}).then((res) => {
+            S.user = Object.assign({}, S.user, { phoneMask: res.phoneMask, phoneBound: true });
+            render();
+            UI.toast((bound ? '已更换为 ' : '已绑定 ') + res.phoneMask);
+          });
+        }
+      );
     },
     resetLocal() {
       UI.modal({ title: '提示', content: '将清空本地购物车、订单记录与登录态，确定继续？' }, (r) => {

@@ -57,7 +57,7 @@
         <text wx:if="{{isLogin}}" class="ucard__level">{{user.memberName || '铜签会员'}}</text>
         <text wx:else class="ucard__level ucard__level--guest">登录后可享会员权益</text>
         <text wx:if="{{isLogin}}" class="ucard__points">成长值 {{user.points || 0}}</text>
-        <text wx:if="{{isLogin && user.phoneBound}}" class="ucard__points">{{user.phoneMask}}</text>
+        <text wx:if="{{isLogin && phoneBound}}" class="ucard__points">{{phoneMask}}</text>
       </view>
     </view>
 
@@ -153,11 +153,6 @@
       <text class="menu__tip ellipsis">{{shop.address || ''}}</text>
       <text class="menu__arrow">›</text>
     </view>
-    <button class="menu__item menu__item--btn" open-type="share" hover-class="none">
-      <text class="menu__icon">📣</text>
-      <text class="menu__text">分享给好友</text>
-      <text class="menu__arrow">›</text>
-    </button>
   </view>
 
   <!-- ============ 分组三：账户与设置 ============ -->
@@ -166,9 +161,11 @@
     <view class="menu__item" bindtap="goProfile">
       <text class="menu__icon">👤</text>
       <text class="menu__text">个人资料</text>
-      <text class="menu__tip">{{user.phoneMask || '完善姓名 / 生日 / 城市'}}</text>
+      <text class="menu__tip">{{phoneMask || '完善姓名 / 生日 / 城市'}}</text>
       <text class="menu__arrow">›</text>
     </view>
+    <!-- 手机号：微信一键授权（getPhoneNumber）免手动填号，绑定后同一个按钮即「更换」。
+         微信登录只返回 openid，拿不到手机号，必须由用户点一次授权，详见 docs/11 第六章 -->
     <button
       class="menu__item menu__item--btn"
       open-type="getPhoneNumber"
@@ -176,8 +173,8 @@
       hover-class="none"
     >
       <text class="menu__icon">📱</text>
-      <text class="menu__text">绑定手机号</text>
-      <text class="menu__tip">{{user.phoneMask || '未绑定'}}</text>
+      <text class="menu__text">{{phoneBound ? '手机号' : '绑定手机号'}}</text>
+      <text class="menu__tip">{{phoneBound ? phoneMask + ' · 更换' : '微信一键授权，免填号码'}}</text>
       <text class="menu__arrow">›</text>
     </button>
     <view class="menu__item" bindtap="goSettings">
