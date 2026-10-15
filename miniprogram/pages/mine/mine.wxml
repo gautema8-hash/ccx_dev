@@ -1,20 +1,31 @@
 <!-- 我的：用户体系 + 权益入口 + 分包入口 -->
 <view class="page" style="{{themeStyle}}">
   <!-- ============ 用户卡 ============ -->
+  <!-- 头像与名字的四种状态由 syncProfile() 统一派生：
+       未登录 / 已登录未设置 / 已设置 / 头像加载失败 -->
   <view class="ucard">
     <button
       class="ucard__avatar"
       open-type="chooseAvatar"
       bindchooseavatar="onChooseAvatar"
       hover-class="none"
+      aria-label="更换头像"
     >
-      <image wx:if="{{user.avatar}}" class="ucard__img" src="{{user.avatar}}" mode="aspectFill" />
-      <view wx:else class="ucard__ph">🌶️</view>
+      <image
+        wx:if="{{user.avatar && !avatarBroken}}"
+        class="ucard__img"
+        src="{{user.avatar}}"
+        mode="aspectFill"
+        binderror="onAvatarError"
+      />
+      <view wx:else class="ucard__ph">{{avatarText}}</view>
       <view class="ucard__camera">📷</view>
     </button>
 
     <view class="ucard__main">
+      <!-- 已登录：可唤起微信昵称填写能力；未登录：只展示，不给编辑入口 -->
       <input
+        wx:if="{{isLogin}}"
         class="ucard__nick"
         type="nickname"
         value="{{user.nickname}}"
@@ -23,13 +34,21 @@
         maxlength="16"
         bindblur="onNickBlur"
       />
+      <view wx:else class="ucard__nick ucard__nick--guest">{{displayName}}</view>
+
       <view class="ucard__sub">
-        <text class="ucard__level">{{user.memberName || '铜签会员'}}</text>
-        <text class="ucard__points">成长值 {{user.points || 0}}</text>
+        <!-- 未登录时不显示会员等级：否则会误导为「已是铜签会员」 -->
+        <text wx:if="{{isLogin}}" class="ucard__level">{{user.memberName || '铜签会员'}}</text>
+        <text wx:else class="ucard__level ucard__level--guest">登录后可享会员权益</text>
+        <text wx:if="{{isLogin}}" class="ucard__points">成长值 {{user.points || 0}}</text>
       </view>
     </view>
 
-    <view class="ucard__save" bindtap="onSaveProfile">保存</view>
+    <!-- 有未保存改动时才高亮可点，避免常驻按钮误导用户去点 -->
+    <view
+      class="ucard__save {{hasPending ? '' : 'ucard__save--idle'}}"
+      bindtap="onSaveProfile"
+    >{{hasPending ? '保存' : '已同步'}}</view>
   </view>
 
   <!-- ============ 权益数据 ============ -->

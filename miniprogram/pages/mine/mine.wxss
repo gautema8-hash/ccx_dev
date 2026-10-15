@@ -13,37 +13,46 @@
 }
 .ucard__avatar {
   position: relative;
-  width: 128rpx;
-  height: 128rpx;
+  width: 132rpx;
+  height: 132rpx;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  overflow: visible;
   flex: none;
   padding: 0;
   border: none;
   line-height: 1;
+  /* 白色描边 + 外圈微光：让头像在红色底上不糊成一团 */
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 0 4rpx rgba(255, 255, 255, 0.34), 0 6rpx 18rpx rgba(0, 0, 0, 0.16);
+  overflow: visible;
 }
 .ucard__img {
-  width: 128rpx;
-  height: 128rpx;
+  width: 132rpx;
+  height: 132rpx;
   border-radius: 50%;
   display: block;
+  /* 图片本身也裁圆，避免 aspectFill 溢出方角 */
+  overflow: hidden;
 }
+/* 无头像 / 头像加载失败时的文字占位：品牌色渐变 + 白色首字 */
 .ucard__ph {
-  width: 128rpx;
-  height: 128rpx;
+  width: 132rpx;
+  height: 132rpx;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 60rpx;
+  font-size: 52rpx;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0;
+  background: linear-gradient(145deg, #e05252 0%, #c62828 55%, #a51f1f 100%);
 }
 .ucard__camera {
   position: absolute;
-  right: -4rpx;
-  bottom: -4rpx;
-  width: 40rpx;
-  height: 40rpx;
+  right: -2rpx;
+  bottom: -2rpx;
+  width: 42rpx;
+  height: 42rpx;
   border-radius: 50%;
   background: #fff;
   color: #c62828;
@@ -51,6 +60,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 3rpx solid #c62828;
+  box-sizing: border-box;
 }
 .ucard__main {
   flex: 1;
@@ -63,25 +74,42 @@
   color: #fff;
   height: 52rpx;
   line-height: 52rpx;
+  /* 昵称最长 16 字，超宽必须截断而不是撑破卡片 */
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* 未登录时的展示行：不加粗，弱化存在感 */
+.ucard__nick--guest {
+  font-weight: 500;
+  opacity: 0.85;
 }
 .ucard__ph-text {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 32rpx;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 30rpx;
 }
 .ucard__sub {
-  margin-top: 12rpx;
+  margin-top: 14rpx;
   display: flex;
   align-items: center;
 }
+/* 会员标签做成胶囊，比原来的方块更精致 */
 .ucard__level {
-  font-size: 22rpx;
+  font-size: 21rpx;
   background: rgba(255, 255, 255, 0.22);
-  border-radius: 8rpx;
-  padding: 2rpx 12rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.32);
+  border-radius: 999rpx;
+  padding: 4rpx 14rpx;
+  line-height: 1.2;
+}
+.ucard__level--guest {
+  background: rgba(255, 255, 255, 0.14);
+  border-style: dashed;
 }
 .ucard__points {
   font-size: 22rpx;
-  opacity: 0.8;
+  opacity: 0.82;
   margin-left: 14rpx;
 }
 .ucard__save {
@@ -89,12 +117,20 @@
   height: 60rpx;
   padding: 0 28rpx;
   border-radius: 30rpx;
-  background: rgba(255, 255, 255, 0.9);
+  background: #fff;
   color: #c62828;
   font-size: 24rpx;
   font-weight: 600;
   display: flex;
   align-items: center;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.14);
+}
+/* 无改动时弱化为「已同步」，不诱导点击 */
+.ucard__save--idle {
+  background: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.72);
+  box-shadow: none;
+  font-weight: 500;
 }
 
 /* ---------- 数据条 ---------- */

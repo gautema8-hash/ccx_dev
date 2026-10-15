@@ -15,10 +15,17 @@ Page({
     store: null,
     shop: {},
     version: config.VERSION,
+    /* ---- 用户卡展示态（由 syncProfile 统一派生，避免 WXML 里堆判断） ---- */
+    avatarText: '客', // 无头像时的文字占位
+    avatarBroken: false, // 头像 URL 加载失败 → 回退文字
+    displayName: '未登录', // 昵称行的展示文案
+    isLogin: false,
+    hasPending: false, // 有未保存的头像/昵称改动
   },
 
   onLoad() {
     this.setData({ user: auth.localUser() || getApp().globalData.userInfo || {} });
+    this.syncProfile();
     menuService
       .getMenu()
       .then((menu) => this.setData({ shop: menu.shop }))
@@ -35,6 +42,44 @@ Page({
   refreshUser() {
     const user = auth.localUser() || getApp().globalData.userInfo;
     if (user) this.setData({ user });
+    this.syncProfile();
+  },
+
+  /**
+   * 由 user 派生出头像与名字的展示态
+   *
+   * 为什么要单独抽：昵称/头像有「未登录 / 已登录未设置 / 已设置 / 加载失败」四种组合，
+   * 全写在 WXML 里会变成一长串三元表达式，既难读又容易漏状态（比如未登录却显示「铜签会员」）。
+   * 这里统一算好，WXML 只负责渲染。
+   */
+  syncProfile() {
+    const user = this.data.user || {};
+    const isLogin = !!(user.id || user.openid);
+    const nickname = String(user.nickname || '').trim();
+
+    let displayName;
+    if (!isLogin) displayName = '未登录';
+    else if (nickname) displayName = nickname;
+    else if (user.phoneMask) displayName = user.phoneMask;
+    else displayName = '微信用户';
+
+    /* 头像占位文字：优先昵称首字，其次固定字，保证任何状态都不空白 */
+    let avatarText = '客';
+    if (nickname) avatarText = Array.from(nickname)[0] || '客';
+    else if (!isLogin) avatarText = '游';
+
+    this.setData({
+      isLogin,
+      displayName,
+      avatarText,
+      /* 换了头像 URL 就重置失败态，否则新图会被旧的失败标记挡住 */
+      avatarBroken: user.avatar ? this.data.avatarBroken : false,
+    });
+  },
+
+  /** 头像加载失败（链接失效/被回收）→ 回退到文字头像，不留白块 */
+  onAvatarError() {
+    this.setData({ avatarBroken: true });
   },
 
   refreshStats() {
@@ -61,18 +106,20 @@ Page({
   /* ------------------------- 用户资料 ------------------------- */
 
   onChooseAvatar(e) {
-    const tempPath = e.detail.avatarUrl;
+    const tempPath = e.detail && e.detail.avatarUrl;
     if (!tempPath) return;
     // 先存到本地持久目录，避免临时文件被回收（真实环境上传后再落库）
     const user = Object.assign({}, this.data.user, { avatar: tempPath });
-    this.setData({ user });
+    this.setData({ user, avatarBroken: false, hasPending: true });
+    this.syncProfile();
     this.pendingAvatar = tempPath;
   },
 
   onNickBlur(e) {
-    const nickname = (e.detail.value || '').trim();
-    if (!nickname) return;
-    this.setData({ 'user.nickname': nickname });
+    const nickname = ((e.detail && e.detail.value) || '').trim();
+    if (!nickname || nickname === String(this.data.user.nickname || '')) return;
+    this.setData({ 'user.nickname': nickname, hasPending: true });
+    this.syncProfile();
     this.pendingNickname = nickname;
   },
 
@@ -93,6 +140,9 @@ Page({
         this.pendingAvatar = null;
         this.pendingNickname = null;
         this.setData({ user });
+        /* 先清 pending 再派生：否则保存成功后「保存」按钮不会消失 */
+        this.setData({ hasPending: false });
+        this.syncProfile();
         toast('已保存', 'success');
       })
       .catch(() => {

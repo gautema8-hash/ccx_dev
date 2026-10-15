@@ -386,6 +386,12 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     eq('未使用优惠券数量（1 张新客券用掉后为 0）', md.stats.couponCount, 0);
     eq('积分随完成订单到账', md.stats.points, 22);
     truthy('已拿到用户信息', !!md.user.openid, md.user.nickname);
+
+    /* 用户卡展示态：头像与名字必须由 syncProfile 正确派生，任何状态都不能空白 */
+    eq('已识别为登录态', md.isLogin, true);
+    truthy('名字有兜底文案（不会空白）', !!md.displayName, md.displayName);
+    truthy('头像占位文字有兜底', !!md.avatarText, md.avatarText);
+    eq('无改动时不显示「保存」高亮', md.hasPending, false);
   } catch (e) {
     bad('测试中断', (e && e.message) || e);
     console.error(e);
